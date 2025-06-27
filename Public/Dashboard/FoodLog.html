@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest - Food Log</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="FoodLog.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
+                <h3 class="user-name">John Doe</h3>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashbaord.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">🍽️</span>
+                    Food Log
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    Buddies
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header-section">
+                <h1>Food Log</h1>
+                <button class="btn btn-primary add-entry-btn">Add Entry</button>
+            </div>
+            
+            <p class="description">Track your daily food intake to monitor your nutrition and progress towards your health goals. Log meals, snacks, and beverages to gain insights into your dietary habits.</p>
+
+            <section class="summary-section">
+                <h2>Today's Summary</h2>
+                <div class="progress-bars">
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Calories</span>
+                            <span class="remaining">Remaining: 700</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                            <span class="progress-text">1300/2000</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Protein</span>
+                            <span class="remaining">Remaining: 25g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%;"></div>
+                            <span class="progress-text">75/100g</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Carbohydrates</span>
+                            <span class="remaining">Remaining: 150g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 50%;"></div>
+                            <span class="progress-text">150/300g</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Fats</span>
+                            <span class="remaining">Remaining: 15g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                            <span class="progress-text">60/75g</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="meals-section">
+                <h2>Logged Meals</h2>
+                <div class="meal-list">
+                    <div class="meal-item">
+                        <span class="meal-icon">🍳</span>
+                        <div class="meal-content">
+                            <h3>Breakfast</h3>
+                            <p>Oatmeal with banana and honey</p>
+                            <span class="calories">320 calories</span>
+                        </div>
+                    </div>
+
+                    <div class="meal-item">
+                        <span class="meal-icon">🥗</span>
+                        <div class="meal-content">
+                            <h3>Lunch</h3>
+                            <p>Grilled chicken salad with avocado</p>
+                            <span class="calories">450 calories</span>
+                        </div>
+                    </div>
+
+                    <div class="meal-item">
+                        <span class="meal-icon">🍎</span>
+                        <div class="meal-content">
+                            <h3>Snack</h3>
+                            <p>Apple and almonds</p>
+                            <span class="calories">180 calories</span>
+                        </div>
+                    </div>
+
+                    <div class="meal-item">
+                        <span class="meal-icon">🍽️</span>
+                        <div class="meal-content">
+                            <h3>Dinner</h3>
+                            <p>Salmon with quinoa and vegetables</p>
+                            <span class="calories">550 calories</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

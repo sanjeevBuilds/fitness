@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest - Posture Scan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="Posture.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
+                <h3 class="user-name">John Doe</h3>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashbaord.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🍽️</span>
+                    Food Log
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    Buddies
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1>Posture Scan</h1>
+            <p class="description">Initiate a posture scan using your webcam or upload an image to analyze your posture. Gain insights and personalized recommendations for improvement.</p>
+
+            <div class="tab-switcher">
+                <button class="tab-btn active">Webcam Scan</button>
+                <button class="tab-btn">Upload Image</button>
+            </div>
+
+            <div class="scan-container">
+                <div class="webcam-area">
+                    <div class="camera-overlay">
+                        <span class="camera-icon">📷</span>
+                        <span class="play-icon">▶️</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary scan-btn">Start Scan</button>
+            </div>
+
+            <div class="scan-history">
+                <h2>Scan History</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Score</th>
+                                <th>Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2024-01-15</td>
+                                <td>92</td>
+                                <td>Excellent posture! Keep it up.</td>
+                            </tr>
+                            <tr>
+                                <td>2024-01-14</td>
+                                <td>85</td>
+                                <td>Good alignment, slight forward head posture.</td>
+                            </tr>
+                            <tr>
+                                <td>2024-01-13</td>
+                                <td>78</td>
+                                <td>Shoulders slightly rounded, consider exercises.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

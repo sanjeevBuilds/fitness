@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - HealthQuest</title>
+    <link rel="stylesheet" href="Settings.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (maintained from dashboard) -->
+        <div class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
+                <div class="user-info">
+                    <h3>John Doe</h3>
+                    <p>Level 24</p>
+                </div>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="Posture.html">Posture Scan</a>
+                <a href="FoodLog.html">Food Log</a>
+                <a href="Buddies.html">Buddies</a>
+                <a href="Settings.html" class="active">Settings</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1>Settings</h1>
+
+            <!-- Account Information Section -->
+            <section class="settings-section">
+                <h2>Account Information</h2>
+                <div class="form-group">
+                    <label for="profile-name">Profile Name</label>
+                    <input type="text" id="profile-name" value="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="john.doe@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="••••••••">
+                    <button class="update-btn">Update Password</button>
+                </div>
+            </section>
+
+            <!-- Notification Preferences Section -->
+            <section class="settings-section">
+                <h2>Notification Preferences</h2>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label>Friend Requests</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="friend-requests" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Receive notifications when someone sends you a friend request</p>
+                    </div>
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label>Activity Updates</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="activity-updates" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Get updates about your friends' activities and achievements</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- App Settings Section -->
+            <section class="settings-section">
+                <h2>App Settings</h2>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label>Dark Mode</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="dark-mode">
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Switch between light and dark mode</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Legal & Support Section -->
+            <section class="settings-section">
+                <h2>Legal & Support</h2>
+                <div class="link-list">
+                    <a href="#" class="nav-link">
+                        Privacy Policy
+                        <span class="arrow">→</span>
+                    </a>
+                    <a href="#" class="nav-link">
+                        Terms of Service
+                        <span class="arrow">→</span>
+                    </a>
+                    <a href="#" class="nav-link">
+                        Help & Support
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Connected Devices Section -->
+            <section class="settings-section">
+                <h2>Connected Devices</h2>
+                <div class="link-list">
+                    <a href="#" class="nav-link">
+                        Manage Devices
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

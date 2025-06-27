@@ -1,0 +1,266 @@
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: rgb(247,252,250);
+    color: #333;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: white;
+    padding: 2rem;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.user-info p {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar nav a {
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: #333;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar nav a:hover {
+    background-color: rgba(41,236,139, 0.1);
+}
+
+.sidebar nav a.active {
+    background-color: rgb(41,236,139);
+    color: white;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+/* Settings Section Styles */
+.settings-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.settings-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: rgb(41,236,139);
+    outline: none;
+}
+
+.update-btn {
+    background-color: rgb(41,236,139);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    box-shadow: 0 2px 4px rgba(41,236,139, 0.2);
+    transition: all 0.3s ease;
+}
+
+.update-btn:hover {
+    background-color: rgb(37,212,125);
+    box-shadow: 0 4px 8px rgba(41,236,139, 0.3);
+}
+
+/* Toggle Switch Styles */
+.toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.toggle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ddd;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: rgb(41,236,139);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.hint-text {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* Link List Styles */
+.link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.nav-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    text-decoration: none;
+    color: #333;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(41,236,139, 0.1);
+}
+
+.arrow {
+    color: #666;
+    font-size: 1.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+
+    .settings-section {
+        padding: 1rem;
+    }
+}

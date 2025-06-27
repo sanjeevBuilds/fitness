@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
+                <h3 class="user-name">John Doe</h3>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🍽️</span>
+                    Food Log
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    Buddies
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1>Dashboard</h1>
+            
+            <div class="level-progress">
+                <div class="level-info">
+                    <h2>Level 8</h2>
+                    <span class="xp">750/1000 XP</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Daily Steps</h3>
+                    <div class="stat-value">8,250</div>
+                    <div class="stat-change positive">+10%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Minutes</h3>
+                    <div class="stat-value">45</div>
+                    <div class="stat-change positive">+5%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Posture Score</h3>
+                    <div class="stat-value">88</div>
+                    <div class="stat-change positive">+22%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Calorie Intake</h3>
+                    <div class="stat-value">1,850</div>
+                    <div class="stat-change negative">-8%</div>
+                </div>
+            </div>
+
+            <div class="tasks-section">
+                <h2>Daily Tasks</h2>
+                <div class="task-list">
+                    <div class="task-item completed">
+                        <span class="task-checkbox">✅</span>
+                        Walk 10,000 steps
+                    </div>
+                    <div class="task-item">
+                        <span class="task-checkbox">⬜</span>
+                        Log your meals
+                    </div>
+                    <div class="task-item">
+                        <span class="task-checkbox">⬜</span>
+                        Complete a posture scan
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-section">
+                <h2>Recent Activity</h2>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <span class="activity-icon">📊</span>
+                        <div class="activity-details">
+                            <span class="activity-xp">+50 XP</span>
+                            Completed a posture scan
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">🍳</span>
+                        <div class="activity-details">
+                            <span class="activity-xp">+20 XP</span>
+                            Logged breakfast
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">👣</span>
+                        <div class="activity-details">
+                            <span class="activity-xp">+30 XP</span>
+                            Reached 5,000 steps
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

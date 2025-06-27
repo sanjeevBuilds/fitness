@@ -1,0 +1,158 @@
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.description {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 800px;
+}
+
+.add-entry-btn {
+    padding: 0.8rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Summary Section Styles */
+.summary-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.progress-item {
+    width: 100%;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.remaining {
+    color: var(--primary-btn);
+    font-size: 0.9rem;
+}
+
+.progress-bar {
+    height: 24px;
+    background: var(--primary-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-btn);
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Meals Section Styles */
+.meals-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.meal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.meal-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.5rem;
+    background: var(--primary-bg);
+    border-radius: var(--border-radius);
+    transition: transform 0.3s ease;
+}
+
+.meal-item:hover {
+    transform: translateY(-2px);
+}
+
+.meal-icon {
+    font-size: 1.8rem;
+    margin-right: 1rem;
+}
+
+.meal-content {
+    flex: 1;
+}
+
+.meal-content h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.meal-content p {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.calories {
+    color: var(--primary-btn);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .add-entry-btn {
+        width: 100%;
+    }
+
+    .progress-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .meal-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .meal-icon {
+        margin: 0 0 1rem 0;
+    }
+}
