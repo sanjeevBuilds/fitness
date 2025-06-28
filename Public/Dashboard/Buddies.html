@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Buddies.css">
+    <script src="Buddies.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -29,11 +30,11 @@
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="#" class="nav-item active">
+                <a href="Buddies.html" class="nav-item active">
                     <span class="nav-icon">👥</span>
                     Buddies
                 </a>
-                <a href="#" class="nav-item">
+                <a href="Settings.html" class="nav-item">
                     <span class="nav-icon">⚙️</span>
                     Settings
                 </a>
@@ -48,7 +49,10 @@
             </div>
 
             <section class="friend-requests">
-                <h2>Friend Requests</h2>
+                <div class="requests-header">
+                    <h2>Friend Requests</h2>
+                    <button class="btn btn-danger reject-all-btn">Reject All</button>
+                </div>
                 <div class="request-list">
                     <div class="request-item">
                         <img src="../../assets/avator1.jpeg" alt="Sarah" class="request-avatar">
@@ -56,7 +60,10 @@
                             <h3>Sarah Johnson</h3>
                             <span class="level-tag">Level 6</span>
                         </div>
-                        <button class="btn btn-primary accept-btn">Accept</button>
+                        <div class="request-actions">
+                            <button class="btn btn-primary accept-btn">Accept</button>
+                            <button class="btn btn-danger reject-btn">Reject</button>
+                        </div>
                     </div>
                     <div class="request-item">
                         <img src="../../assets/avator2.jpeg" alt="Mike" class="request-avatar">
@@ -64,7 +71,10 @@
                             <h3>Mike Chen</h3>
                             <span class="level-tag">Level 4</span>
                         </div>
-                        <button class="btn btn-primary accept-btn">Accept</button>
+                        <div class="request-actions">
+                            <button class="btn btn-primary accept-btn">Accept</button>
+                            <button class="btn btn-danger reject-btn">Reject</button>
+                        </div>
                     </div>
                 </div>
             </section>
