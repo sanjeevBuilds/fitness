@@ -24,15 +24,15 @@
                     <span class="nav-icon">📊</span>
                     Posture Scan
                 </a>
-                <a href="#" class="nav-item active">
+                <a href="FoodLog.html" class="nav-item active">
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="#" class="nav-item">
+                <a href="Buddies.html" class="nav-item">
                     <span class="nav-icon">👥</span>
                     Buddies
                 </a>
-                <a href="#" class="nav-item">
+                <a href="Settings.html" class="nav-item">
                     <span class="nav-icon">⚙️</span>
                     Settings
                 </a>
@@ -42,55 +42,93 @@
         <main class="main-content">
             <div class="header-section">
                 <h1>Food Log</h1>
-                <button class="btn btn-primary add-entry-btn">Add Entry</button>
+                <button class="btn btn-primary add-entry-btn" id="show-logger-btn">Add Entry</button>
             </div>
             
             <p class="description">Track your daily food intake to monitor your nutrition and progress towards your health goals. Log meals, snacks, and beverages to gain insights into your dietary habits.</p>
 
+            <!-- Food Logger Modal -->
+            <div class="food-logger-modal" id="food-logger-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Add Food Entry</h2>
+                        <button class="close-btn" id="close-logger-btn">×</button>
+                    </div>
+                    
+                    <div class="food-search-section">
+                        <div class="search-container">
+                            <input type="text" id="food-search" placeholder="Search for a food (e.g., 'almonds', 'boiled egg')" class="food-search-input">
+                            <div class="autocomplete-list" id="autocomplete-list"></div>
+                        </div>
+                        
+                        <div class="quantity-section">
+                            <label for="quantity-select">Quantity:</label>
+                            <select id="quantity-select" disabled>
+                                <option value="">Select quantity</option>
+                                <option value="handful">Handful</option>
+                                <option value="100g">100g</option>
+                                <option value="250g">250g</option>
+                                <option value="500g">500g</option>
+                                <option value="1 cup">1 cup</option>
+                                <option value="1 tbsp">1 tbsp</option>
+                                <option value="1 tsp">1 tsp</option>
+                                <option value="1 medium">1 medium</option>
+                                <option value="1 large">1 large</option>
+                                <option value="1 small">1 small</option>
+                            </select>
+                        </div>
+                        
+                        <div class="nutritional-preview" id="nutritional-preview"></div>
+                        
+                        <button class="btn btn-primary add-food-btn" id="add-food-btn" disabled>Add to Log</button>
+                    </div>
+                </div>
+            </div>
+
             <section class="summary-section">
                 <h2>Today's Summary</h2>
                 <div class="progress-bars">
-                    <div class="progress-item">
+                    <div class="progress-item" data-type="calories">
                         <div class="progress-label">
                             <span>Calories</span>
-                            <span class="remaining">Remaining: 700</span>
+                            <span class="remaining">Remaining: 2000</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 65%;"></div>
-                            <span class="progress-text">1300/2000</span>
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/2000</span>
                         </div>
                     </div>
 
-                    <div class="progress-item">
+                    <div class="progress-item" data-type="protein">
                         <div class="progress-label">
                             <span>Protein</span>
-                            <span class="remaining">Remaining: 25g</span>
+                            <span class="remaining">Remaining: 100g</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 75%;"></div>
-                            <span class="progress-text">75/100g</span>
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/100g</span>
                         </div>
                     </div>
 
-                    <div class="progress-item">
+                    <div class="progress-item" data-type="carbs">
                         <div class="progress-label">
                             <span>Carbohydrates</span>
-                            <span class="remaining">Remaining: 150g</span>
+                            <span class="remaining">Remaining: 300g</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 50%;"></div>
-                            <span class="progress-text">150/300g</span>
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/300g</span>
                         </div>
                     </div>
 
-                    <div class="progress-item">
+                    <div class="progress-item" data-type="fat">
                         <div class="progress-label">
                             <span>Fats</span>
-                            <span class="remaining">Remaining: 15g</span>
+                            <span class="remaining">Remaining: 75g</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 80%;"></div>
-                            <span class="progress-text">60/75g</span>
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/75g</span>
                         </div>
                     </div>
                 </div>
@@ -99,44 +137,12 @@
             <section class="meals-section">
                 <h2>Logged Meals</h2>
                 <div class="meal-list">
-                    <div class="meal-item">
-                        <span class="meal-icon">🍳</span>
-                        <div class="meal-content">
-                            <h3>Breakfast</h3>
-                            <p>Oatmeal with banana and honey</p>
-                            <span class="calories">320 calories</span>
-                        </div>
-                    </div>
-
-                    <div class="meal-item">
-                        <span class="meal-icon">🥗</span>
-                        <div class="meal-content">
-                            <h3>Lunch</h3>
-                            <p>Grilled chicken salad with avocado</p>
-                            <span class="calories">450 calories</span>
-                        </div>
-                    </div>
-
-                    <div class="meal-item">
-                        <span class="meal-icon">🍎</span>
-                        <div class="meal-content">
-                            <h3>Snack</h3>
-                            <p>Apple and almonds</p>
-                            <span class="calories">180 calories</span>
-                        </div>
-                    </div>
-
-                    <div class="meal-item">
-                        <span class="meal-icon">🍽️</span>
-                        <div class="meal-content">
-                            <h3>Dinner</h3>
-                            <p>Salmon with quinoa and vegetables</p>
-                            <span class="calories">550 calories</span>
-                        </div>
-                    </div>
+                    <!-- Meals will be dynamically added here -->
                 </div>
             </section>
         </main>
     </div>
+
+    <script src="FoodLog.js"></script>
 </body>
 </html>

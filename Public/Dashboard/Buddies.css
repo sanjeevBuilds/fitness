@@ -29,6 +29,37 @@
     margin-bottom: 2rem;
 }
 
+.requests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.requests-header h2 {
+    margin: 0;
+}
+
+.reject-all-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reject-all-btn:hover {
+    background: #c82333;
+}
+
+.reject-all-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
 .request-list {
     display: flex;
     flex-direction: column;
@@ -42,7 +73,7 @@
     padding: 1rem;
     background: var(--primary-bg);
     border-radius: var(--border-radius);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .request-item:hover {
@@ -69,9 +100,58 @@
     color: var(--text-light);
 }
 
-.accept-btn {
+.request-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.accept-btn,
+.reject-btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: var(--primary-btn);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-btn-hover);
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    cursor: not-allowed;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+    cursor: not-allowed;
+}
+
+.btn-success:hover {
+    background: #28a745;
 }
 
 /* Leaderboard Styles */
