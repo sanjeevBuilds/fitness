@@ -7,6 +7,24 @@
     --danger: #ff4757;
     --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     --border-radius: 12px;
+    --card-bg: white;
+    --sidebar-bg: white;
+    --input-bg: white;
+    --border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-bg: rgb(18, 24, 22);
+    --primary-btn: rgb(30, 200, 120);
+    --primary-btn-hover: rgb(25, 170, 100);
+    --text-dark: rgb(240, 255, 250);
+    --text-light: rgba(240, 255, 250, 0.7);
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --card-bg: rgb(28, 36, 34);
+    --sidebar-bg: rgb(28, 36, 34);
+    --input-bg: rgb(28, 36, 34);
+    --border-color: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -14,12 +32,14 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 body {
     background-color: var(--primary-bg);
     color: var(--text-dark);
     line-height: 1.6;
+    transition: background 0.3s, color 0.3s;
 }
 
 .container {
@@ -30,7 +50,7 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: 280px;
-    background: white;
+    background: var(--sidebar-bg);
     padding: 2rem;
     box-shadow: var(--card-shadow);
 }
@@ -68,9 +88,13 @@ body {
     transition: all 0.3s ease;
 }
 
+.nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
 .nav-item.active {
-    background: var(--primary-bg);
-    color: var(--primary-btn);
+    background: var(--primary-btn);
+    color: rgb(18, 24, 22);
 }
 
 .nav-icon {
@@ -83,6 +107,7 @@ body {
     flex: 1;
     padding: 2rem;
     position: relative;
+    background-color: var(--primary-bg);
 }
 
 /* Coin Wallet */
@@ -90,7 +115,7 @@ body {
     position: absolute;
     top: 2rem;
     right: 2rem;
-    background: white;
+    background: var(--card-bg);
     padding: 1rem 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -150,7 +175,7 @@ body {
 }
 
 .level-progress {
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -166,9 +191,10 @@ body {
 
 .progress-bar {
     height: 20px;
-    background: #eee;
+    background: var(--border-color);
     border-radius: 10px;
     overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 
 .progress-fill {
@@ -184,7 +210,7 @@ body {
 }
 
 .stat-item {
-    background: white;
+    background: var(--card-bg);
     padding: 1rem 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -214,7 +240,7 @@ body {
 
 /* Mini Challenges Section */
 .mini-challenges-section {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -316,8 +342,9 @@ body {
     align-items: center;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
 }
 
 .challenge-cost {
@@ -341,6 +368,8 @@ body {
     color: var(--primary-btn);
     font-weight: 600;
     font-size: 0.9rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
 }
 
 .reward-badge {
@@ -348,6 +377,8 @@ body {
     color: var(--text-light);
     font-size: 0.8rem;
     margin-top: 0.2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
 }
 
 .unlock-btn {
@@ -355,6 +386,8 @@ body {
     padding: 0.8rem 1rem;
     font-weight: 600;
     transition: all 0.3s ease;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
 }
 
 .unlock-btn:hover {
@@ -364,7 +397,7 @@ body {
 
 /* Titles Section */
 .titles-section {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -464,7 +497,7 @@ body {
 
 /* Smart Quest Scaling Section */
 .smart-quests-section {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -542,11 +575,12 @@ body {
 }
 
 .reward-xp, .reward-coins {
-    background: white;
+    background: var(--card-bg);
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
+    border: 1px solid var(--border-color);
 }
 
 .reward-xp {
@@ -615,7 +649,7 @@ body {
 
 /* Checklist Section */
 .checklist-section {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -728,7 +762,7 @@ body {
 }
 
 .activity-section {
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -743,7 +777,7 @@ body {
     display: flex;
     align-items: center;
     padding: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .activity-icon {
@@ -779,12 +813,13 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
+    background: var(--card-bg);
     border-radius: var(--border-radius);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     width: 90%;
     max-width: 400px;
     padding: 2rem;
+    color: var(--text-dark);
 }
 
 .modal-header {
@@ -792,6 +827,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
@@ -834,6 +870,7 @@ body {
     border-radius: var(--border-radius);
     font-size: 1.2rem;
     font-weight: 600;
+    border: 1px solid var(--border-color);
 }
 
 .modal-actions {
@@ -970,7 +1007,7 @@ body {
 
 /* Daily Summary Section */
 .daily-summary-section {
-    background: white;
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -1034,4 +1071,126 @@ body {
 
 .summary-change.negative {
     color: var(--danger);
+}
+
+/* Dark Mode Specific Overrides */
+body.dark-mode .sidebar {
+    background: rgb(28, 36, 34);
+    box-shadow: var(--card-shadow);
+}
+
+body.dark-mode .main-content {
+    background-color: var(--primary-bg);
+}
+
+body.dark-mode .coin-wallet {
+    background: rgb(28, 36, 34);
+    color: var(--text-dark);
+}
+
+body.dark-mode .level-progress {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .stat-item {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .daily-summary-section,
+body.dark-mode .checklist-section,
+body.dark-mode .smart-quests-section,
+body.dark-mode .mini-challenges-section,
+body.dark-mode .titles-section,
+body.dark-mode .activity-section {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .summary-card {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .checklist-item {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .quest-item {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .challenge-card {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .title-card {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .quest-toggle {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .quest-toggle::after {
+    background: rgb(240, 255, 250);
+}
+
+body.dark-mode .quest-checkbox:checked + .quest-toggle {
+    background: var(--primary-btn);
+}
+
+body.dark-mode .unlock-modal .modal-content {
+    background: rgb(28, 36, 34);
+    color: var(--text-dark);
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .modal-cost {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .challenge-details,
+body.dark-mode .title-progress {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .reward-xp,
+body.dark-mode .reward-coins {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .scaling-notice {
+    background: rgba(30, 200, 120, 0.1);
+    border: 1px solid var(--primary-btn);
+}
+
+body.dark-mode .activity-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .nav-item {
+    color: var(--text-dark);
+}
+
+body.dark-mode .nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nav-item.active {
+    background: var(--primary-btn);
+    color: rgb(18, 24, 22);
 }

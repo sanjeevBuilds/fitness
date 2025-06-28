@@ -4,11 +4,134 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+:root {
+    --primary-bg: rgb(247, 252, 250);
+    --primary-btn: rgb(41, 236, 139);
+    --primary-btn-hover: rgb(35, 201, 118);
+    --text-dark: #333;
+    --text-light: #666;
+    --card-bg: white;
+    --sidebar-bg: white;
+    --input-bg: white;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode {
+    --primary-bg: rgb(18, 24, 22);
+    --primary-btn: rgb(30, 200, 120);
+    --primary-btn-hover: rgb(25, 170, 100);
+    --text-dark: rgb(240, 255, 250);
+    --text-light: rgba(240, 255, 250, 0.7);
+    --card-bg: rgb(28, 36, 34);
+    --sidebar-bg: rgb(28, 36, 34);
+    --input-bg: rgb(28, 36, 34);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 body {
-    background-color: rgb(247,252,250);
-    color: #333;
+    background-color: var(--primary-bg);
+    color: var(--text-dark);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: rgb(18,24,22);
+    color: rgb(240,255,250);
+}
+
+body.dark-mode .sidebar {
+    background-color: rgb(28,36,34);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .settings-section {
+    background: rgb(28,36,34);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode h1,
+body.dark-mode h2 {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode label {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"] {
+    background: rgb(28,36,34);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgb(240,255,250);
+}
+
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="email"]:focus,
+body.dark-mode input[type="password"]:focus {
+    border-color: rgb(30,200,120);
+}
+
+body.dark-mode .update-btn {
+    background-color: rgb(30,200,120);
+    box-shadow: 0 2px 4px rgba(30,200,120, 0.2);
+}
+
+body.dark-mode .update-btn:hover {
+    background-color: rgb(25,170,100);
+    box-shadow: 0 4px 8px rgba(30,200,120, 0.3);
+}
+
+body.dark-mode .slider {
+    background-color: rgba(255,255,255,0.2);
+}
+
+body.dark-mode .slider:before {
+    background-color: rgb(240,255,250);
+}
+
+body.dark-mode .hint-text {
+    color: rgba(240,255,250,0.7);
+}
+
+body.dark-mode .nav-link {
+    color: rgb(240,255,250);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-mode .nav-link:hover {
+    background-color: rgba(30,200,120,0.1);
+}
+
+body.dark-mode .sidebar nav a {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode .sidebar nav a:hover {
+    background-color: rgba(30,200,120, 0.1);
+}
+
+body.dark-mode .sidebar nav a.active {
+    background-color: rgb(30,200,120);
+    color: rgb(18,24,22);
+}
+
+/* Theme Feedback Animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .dashboard-container {
@@ -19,7 +142,7 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: 250px;
-    background-color: white;
+    background-color: var(--sidebar-bg);
     padding: 2rem;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -41,11 +164,12 @@ body {
 .user-info h3 {
     font-size: 1rem;
     margin-bottom: 0.25rem;
+    color: var(--text-dark);
 }
 
 .user-info p {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-light);
 }
 
 .sidebar nav {
@@ -57,7 +181,7 @@ body {
 .sidebar nav a {
     padding: 0.75rem 1rem;
     text-decoration: none;
-    color: #333;
+    color: var(--text-dark);
     border-radius: 8px;
     transition: all 0.3s ease;
 }
@@ -67,7 +191,7 @@ body {
 }
 
 .sidebar nav a.active {
-    background-color: rgb(41,236,139);
+    background-color: var(--primary-btn);
     color: white;
 }
 
@@ -77,27 +201,28 @@ body {
     padding: 2rem;
     max-width: 800px;
     margin: 0 auto;
+    background-color: var(--primary-bg);
 }
 
 h1 {
     font-size: 1.75rem;
     margin-bottom: 2rem;
-    color: #333;
+    color: var(--text-dark);
 }
 
 /* Settings Section Styles */
 .settings-section {
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--card-shadow);
 }
 
 .settings-section h2 {
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: var(--text-dark);
 }
 
 /* Form Styles */
@@ -108,7 +233,7 @@ h1 {
 label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #555;
+    color: var(--text-dark);
     font-weight: 500;
 }
 
@@ -117,22 +242,23 @@ input[type="email"],
 input[type="password"] {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    background: white;
+    background: var(--input-bg);
+    color: var(--text-dark);
     transition: border-color 0.3s ease;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-    border-color: rgb(41,236,139);
+    border-color: var(--primary-btn);
     outline: none;
 }
 
 .update-btn {
-    background-color: rgb(41,236,139);
+    background-color: var(--primary-btn);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -145,7 +271,7 @@ input[type="password"]:focus {
 }
 
 .update-btn:hover {
-    background-color: rgb(37,212,125);
+    background-color: var(--primary-btn-hover);
     box-shadow: 0 4px 8px rgba(41,236,139, 0.3);
 }
 
@@ -168,17 +294,31 @@ input[type="password"]:focus {
     align-items: center;
 }
 
+.toggle-header label {
+    margin-bottom: 0;
+    cursor: pointer;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
 .toggle-switch {
     position: relative;
     display: inline-block;
     width: 50px;
     height: 26px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .toggle-switch input {
     opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
+    cursor: pointer;
 }
 
 .slider {
@@ -188,34 +328,71 @@ input[type="password"]:focus {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ddd;
-    transition: 0.4s;
+    background-color: var(--border-color);
+    transition: 0.4s ease;
     border-radius: 34px;
+    z-index: 1;
+    border: 2px solid var(--border-color);
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--card-bg);
+    transition: 0.4s ease;
     border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 input:checked + .slider {
-    background-color: rgb(41,236,139);
+    background-color: var(--primary-btn);
+    border-color: var(--primary-btn);
 }
 
 input:checked + .slider:before {
     transform: translateX(24px);
+    background-color: white;
+}
+
+/* Dragging styles */
+.toggle-switch.dragging {
+    cursor: grabbing;
+}
+
+.toggle-switch.dragging .slider {
+    transition: none;
+}
+
+.toggle-switch.dragging .slider:before {
+    transition: none;
+}
+
+/* Make toggle more visible and interactive */
+.toggle-switch:hover .slider {
+    box-shadow: 0 0 5px rgba(41,236,139, 0.3);
+}
+
+.toggle-switch:active .slider:before {
+    transform: scale(0.9);
+}
+
+input:checked + .slider:active:before {
+    transform: translateX(24px) scale(0.9);
+}
+
+/* Focus styles for accessibility */
+.toggle-switch input:focus + .slider {
+    box-shadow: 0 0 0 2px rgba(41,236,139, 0.3);
 }
 
 .hint-text {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-light);
 }
 
 /* Link List Styles */
@@ -231,7 +408,7 @@ input:checked + .slider:before {
     align-items: center;
     padding: 0.75rem;
     text-decoration: none;
-    color: #333;
+    color: var(--text-dark);
     border-radius: 8px;
     transition: background-color 0.3s ease;
 }
@@ -241,7 +418,7 @@ input:checked + .slider:before {
 }
 
 .arrow {
-    color: #666;
+    color: var(--text-light);
     font-size: 1.25rem;
 }
 

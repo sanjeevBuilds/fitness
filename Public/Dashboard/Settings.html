@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - HealthQuest</title>
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Settings.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -95,9 +96,9 @@
                 <div class="toggle-group">
                     <div class="toggle-item">
                         <div class="toggle-header">
-                            <label>Dark Mode</label>
+                            <label for="dark-mode">Dark Mode</label>
                             <div class="toggle-switch">
-                                <input type="checkbox" id="dark-mode">
+                                <input type="checkbox" id="dark-mode" name="dark-mode">
                                 <span class="slider"></span>
                             </div>
                         </div>
@@ -137,5 +138,6 @@
             </section>
         </main>
     </div>
+    <script src="Settings.js"></script>
 </body>
 </html>

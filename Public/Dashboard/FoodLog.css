@@ -1,3 +1,11 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
 .header-section {
     display: flex;
     justify-content: space-between;
@@ -466,4 +474,194 @@
         position: static;
         margin-top: 1rem;
     }
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: rgb(18, 24, 22);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .sidebar {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .main-content {
+    background-color: rgb(18, 24, 22);
+}
+
+body.dark-mode .summary-section,
+body.dark-mode .meals-section {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .add-entry-btn {
+    background: rgb(30, 200, 120);
+}
+
+body.dark-mode .add-entry-btn:hover {
+    background: rgb(25, 170, 100);
+}
+
+body.dark-mode .food-logger-modal .modal-content {
+    background: rgb(28, 36, 34);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .close-btn {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .close-btn:hover {
+    background: rgba(30, 200, 120, 0.1);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .food-search-input {
+    background: rgb(28, 36, 34);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .food-search-input:focus {
+    border-color: rgb(30, 200, 120);
+    box-shadow: 0 0 0 3px rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .autocomplete-list {
+    background: rgb(28, 36, 34);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .autocomplete-item {
+    color: rgb(240, 255, 250);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .autocomplete-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .food-name {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .food-brand {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode #quantity-select {
+    background: rgb(28, 36, 34);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode #quantity-select:focus {
+    border-color: rgb(30, 200, 120);
+    box-shadow: 0 0 0 3px rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode #quantity-select:disabled {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .nutritional-preview {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nutritional-info h4 {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .nutrition-item .label {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .nutrition-item .value {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .add-food-btn {
+    background: rgb(30, 200, 120);
+}
+
+body.dark-mode .add-food-btn:hover:not(:disabled) {
+    background: rgb(25, 170, 100);
+}
+
+body.dark-mode .progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .progress-fill {
+    background: rgb(30, 200, 120);
+}
+
+body.dark-mode .progress-text {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .remaining {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .meal-item {
+    background: rgba(30, 200, 120, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .meal-content h3 {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .meal-content p {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .calories {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .macro {
+    background: rgb(28, 36, 34);
+    color: rgba(240, 255, 250, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .delete-meal-btn {
+    background: #dc3545;
+}
+
+body.dark-mode .delete-meal-btn:hover {
+    background: #c82333;
+}
+
+body.dark-mode .nav-item {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nav-item.active {
+    background: rgb(30, 200, 120);
+    color: rgb(18, 24, 22);
 }

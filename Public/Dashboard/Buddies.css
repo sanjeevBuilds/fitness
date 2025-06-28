@@ -1,3 +1,11 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
 /* Search Bar Styles */
 .search-container {
     margin-bottom: 2rem;
@@ -34,10 +42,43 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    cursor: pointer;
 }
 
 .requests-header h2 {
     margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn:hover {
+    background: rgba(41, 236, 139, 0.1);
+}
+
+.toggle-arrow {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    transition: transform 0.3s ease;
+}
+
+.toggle-arrow.collapsed {
+    transform: rotate(-90deg);
 }
 
 .reject-all-btn {
@@ -65,6 +106,14 @@
     flex-direction: column;
     gap: 1rem;
     margin-top: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.request-list.collapsed {
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
 }
 
 .request-item {
@@ -152,6 +201,96 @@
 
 .btn-success:hover {
     background: #28a745;
+}
+
+/* My Friends Section Styles */
+.my-friends {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.my-friends h2 {
+    margin-bottom: 1.5rem;
+}
+
+.friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.friend-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--primary-bg);
+    border-radius: var(--border-radius);
+    transition: transform 0.3s ease;
+}
+
+.friend-item:hover {
+    transform: translateY(-2px);
+}
+
+.friend-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.friend-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.friend-info h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.friend-level {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.friend-xp {
+    font-size: 0.9rem;
+    color: var(--primary-btn);
+    font-weight: 500;
+}
+
+.copy-routine-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background: transparent;
+    color: var(--primary-btn);
+    border: 1px solid var(--primary-btn);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.copy-routine-btn:hover {
+    background: var(--primary-btn);
+    color: white;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary-btn);
+    color: var(--primary-btn);
+}
+
+.btn-outline:hover {
+    background: var(--primary-btn);
+    color: white;
 }
 
 /* Leaderboard Styles */
@@ -262,6 +401,7 @@ tr:hover {
 /* Responsive Design */
 @media (max-width: 768px) {
     .request-item,
+    .friend-item,
     .activity-item {
         flex-direction: column;
         text-align: center;
@@ -269,11 +409,13 @@ tr:hover {
     }
 
     .request-avatar,
+    .friend-avatar,
     .activity-avatar {
         margin: 0 0 1rem 0;
     }
 
-    .request-info {
+    .request-info,
+    .friend-info {
         margin-bottom: 1rem;
     }
 
@@ -282,11 +424,146 @@ tr:hover {
         align-items: center;
     }
 
-    .accept-btn {
+    .accept-btn,
+    .copy-routine-btn {
         width: 100%;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .requests-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 
     .table-container {
         margin: 0 -1rem;
     }
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: rgb(18, 24, 22);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .sidebar {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .main-content {
+    background-color: rgb(18, 24, 22);
+}
+
+body.dark-mode .search-bar {
+    background: rgb(28, 36, 34);
+    color: rgb(240, 255, 250);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .search-bar:focus {
+    box-shadow: 0 0 0 2px rgb(30, 200, 120);
+}
+
+body.dark-mode .friend-requests,
+body.dark-mode .my-friends,
+body.dark-mode .leaderboard,
+body.dark-mode .recent-activity {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .toggle-btn:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .toggle-arrow {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .request-item,
+body.dark-mode .friend-item {
+    background: rgba(30, 200, 120, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .level-tag,
+body.dark-mode .friend-level {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .friend-xp {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .copy-routine-btn {
+    color: rgb(30, 200, 120);
+    border-color: rgb(30, 200, 120);
+}
+
+body.dark-mode .copy-routine-btn:hover {
+    background: rgb(30, 200, 120);
+    color: rgb(18, 24, 22);
+}
+
+body.dark-mode .btn-primary {
+    background: rgb(30, 200, 120);
+}
+
+body.dark-mode .btn-primary:hover {
+    background: rgb(25, 170, 100);
+}
+
+body.dark-mode th {
+    background: rgba(30, 200, 120, 0.1);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode th,
+body.dark-mode td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .activity-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .activity-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .activity-name {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .activity-action {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .activity-xp {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .nav-item {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nav-item.active {
+    background: rgb(30, 200, 120);
+    color: rgb(18, 24, 22);
 }

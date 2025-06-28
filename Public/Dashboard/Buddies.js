@@ -67,6 +67,85 @@ function rejectAllRequests() {
     rejectAllBtn.textContent = 'All Rejected';
 }
 
+// Toggle friend requests section
+function toggleFriendRequests() {
+    const requestList = document.getElementById('request-list');
+    const toggleArrow = document.querySelector('.toggle-arrow');
+    const isCollapsed = requestList.classList.contains('collapsed');
+    
+    if (isCollapsed) {
+        // Expand
+        requestList.classList.remove('collapsed');
+        toggleArrow.classList.remove('collapsed');
+        toggleArrow.textContent = '▼';
+    } else {
+        // Collapse
+        requestList.classList.add('collapsed');
+        toggleArrow.classList.add('collapsed');
+        toggleArrow.textContent = '▲';
+    }
+}
+
+// Copy routine functionality
+function copyRoutine(button) {
+    const friendItem = button.closest('.friend-item');
+    const friendName = friendItem.querySelector('h3').textContent;
+    
+    // Change button text temporarily
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    button.style.background = '#28a745';
+    button.style.color = 'white';
+    button.style.borderColor = '#28a745';
+    
+    // Show feedback notification
+    showCopyFeedback(friendName);
+    
+    // Reset button after 2 seconds
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = '';
+        button.style.color = '';
+        button.style.borderColor = '';
+    }, 2000);
+}
+
+// Show copy feedback notification
+function showCopyFeedback(friendName) {
+    const feedback = document.createElement('div');
+    feedback.className = 'copy-feedback';
+    feedback.innerHTML = `
+        <span class="feedback-icon">📋</span>
+        <span class="feedback-text">${friendName}'s routine copied!</span>
+    `;
+    
+    // Add styles
+    feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    // Remove after 2 seconds
+    setTimeout(() => {
+        feedback.remove();
+    }, 2000);
+}
+
 // Add event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Add click event listeners to all accept buttons
@@ -90,4 +169,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (rejectAllBtn) {
         rejectAllBtn.addEventListener('click', rejectAllRequests);
     }
+    
+    // Add click event listener to toggle button
+    const toggleBtn = document.getElementById('requests-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', toggleFriendRequests);
+    }
+    
+    // Add click event listener to header for toggle (bonus)
+    const requestsHeader = document.getElementById('requests-header');
+    if (requestsHeader) {
+        requestsHeader.addEventListener('click', function(e) {
+            // Don't toggle if clicking on buttons
+            if (!e.target.closest('.btn')) {
+                toggleFriendRequests();
+            }
+        });
+    }
+    
+    // Add click event listeners to copy routine buttons
+    const copyRoutineButtons = document.querySelectorAll('.copy-routine-btn');
+    copyRoutineButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            copyRoutine(this);
+        });
+    });
 });
