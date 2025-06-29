@@ -476,6 +476,17 @@
     }
 }
 
+@media (max-width: 480px) {
+    .modal-content {
+        width: 98%;
+        margin: 0.5rem;
+    }
+
+    .food-search-section {
+        padding: 1rem;
+    }
+}
+
 /* Dark Mode Styles */
 body.dark-mode {
     background-color: rgb(18, 24, 22);

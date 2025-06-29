@@ -90,10 +90,21 @@ body.dark-mode .update-btn:hover {
 
 body.dark-mode .slider {
     background-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.2);
 }
 
 body.dark-mode .slider:before {
     background-color: rgb(240,255,250);
+}
+
+body.dark-mode input:checked + .slider {
+    background-color: rgb(30,200,120);
+    border-color: rgb(30,200,120);
+}
+
+body.dark-mode input:checked + .slider:before {
+    background-color: white;
+    transform: translateX(24px);
 }
 
 body.dark-mode .hint-text {
@@ -328,11 +339,11 @@ input[type="password"]:focus {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--border-color);
+    background-color: #ccc;
     transition: 0.4s ease;
     border-radius: 34px;
     z-index: 1;
-    border: 2px solid var(--border-color);
+    border: 2px solid #ccc;
 }
 
 .slider:before {
@@ -342,7 +353,7 @@ input[type="password"]:focus {
     width: 18px;
     left: 2px;
     bottom: 2px;
-    background-color: var(--card-bg);
+    background-color: white;
     transition: 0.4s ease;
     border-radius: 50%;
     z-index: 2;

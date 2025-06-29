@@ -135,6 +135,18 @@ tr:hover {
     }
 }
 
+@media (max-width: 480px) {
+    .webcam-area {
+        aspect-ratio: 3/4;
+    }
+
+    .scan-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+    }
+}
+
 /* Dark Mode Styles */
 body.dark-mode {
     background-color: rgb(18, 24, 22);

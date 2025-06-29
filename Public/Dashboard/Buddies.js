@@ -1,3 +1,6 @@
+// Buddies Page JavaScript
+console.log('Buddies.js loaded successfully');
+
 // Friend request acceptance functionality
 function acceptRequest(button) {
     // Change button text to "Added"
@@ -69,21 +72,37 @@ function rejectAllRequests() {
 
 // Toggle friend requests section
 function toggleFriendRequests() {
+    console.log('Toggle function called');
+    
     const requestList = document.getElementById('request-list');
     const toggleArrow = document.querySelector('.toggle-arrow');
+    
+    console.log('Request list element:', requestList);
+    console.log('Toggle arrow element:', toggleArrow);
+    
+    if (!requestList || !toggleArrow) {
+        console.error('Required elements not found');
+        return;
+    }
+    
     const isCollapsed = requestList.classList.contains('collapsed');
+    console.log('Is collapsed:', isCollapsed);
     
     if (isCollapsed) {
         // Expand
+        console.log('Expanding...');
         requestList.classList.remove('collapsed');
         toggleArrow.classList.remove('collapsed');
         toggleArrow.textContent = '▼';
     } else {
         // Collapse
+        console.log('Collapsing...');
         requestList.classList.add('collapsed');
         toggleArrow.classList.add('collapsed');
         toggleArrow.textContent = '▲';
     }
+    
+    console.log('Final collapsed state:', requestList.classList.contains('collapsed'));
 }
 
 // Copy routine functionality
@@ -172,16 +191,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add click event listener to toggle button
     const toggleBtn = document.getElementById('requests-toggle');
+    console.log('Toggle button found:', toggleBtn);
     if (toggleBtn) {
-        toggleBtn.addEventListener('click', toggleFriendRequests);
+        toggleBtn.addEventListener('click', function(e) {
+            console.log('Toggle button clicked');
+            e.stopPropagation(); // Prevent event bubbling
+            toggleFriendRequests();
+        });
     }
     
     // Add click event listener to header for toggle (bonus)
     const requestsHeader = document.getElementById('requests-header');
+    console.log('Requests header found:', requestsHeader);
     if (requestsHeader) {
         requestsHeader.addEventListener('click', function(e) {
+            console.log('Header clicked, target:', e.target);
             // Don't toggle if clicking on buttons
             if (!e.target.closest('.btn')) {
+                console.log('Header toggle triggered');
                 toggleFriendRequests();
             }
         });

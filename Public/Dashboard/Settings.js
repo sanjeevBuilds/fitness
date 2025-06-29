@@ -1,278 +1,252 @@
-// Settings Page Functionality
+// Settings Page Management
 class SettingsManager {
     constructor() {
-        this.darkModeToggle = document.getElementById('dark-mode');
-        this.friendRequestsToggle = document.getElementById('friend-requests');
-        this.activityUpdatesToggle = document.getElementById('activity-updates');
-        this.isDragging = false;
-        this.currentToggle = null;
-        this.init();
+        this.initializeSettings();
+        this.setupEventListeners();
+        this.setupDragFunctionality();
     }
 
-    init() {
-        // Initialize dark mode
-        this.initDarkMode();
+    initializeSettings() {
+        // Load saved settings from localStorage
+        this.loadSettings();
         
-        // Initialize other toggles
-        this.initOtherToggles();
-        
-        // Apply initial theme
-        this.applyDarkModeTheme();
-        
-        // Add global mouse/touch event listeners
-        this.addGlobalEventListeners();
+        // Apply current settings
+        this.applySettings();
     }
 
-    addGlobalEventListeners() {
-        // Mouse events
-        document.addEventListener('mousemove', (e) => this.handleDrag(e));
-        document.addEventListener('mouseup', () => this.stopDrag());
-        
-        // Touch events for mobile
-        document.addEventListener('touchmove', (e) => this.handleDrag(e), { passive: false });
-        document.addEventListener('touchend', () => this.stopDrag());
+    setupEventListeners() {
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('dark-mode');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('change', (e) => {
+                this.toggleDarkMode(e.target.checked);
+            });
+        }
+
+        // Friend requests toggle
+        const friendRequestsToggle = document.getElementById('friend-requests');
+        if (friendRequestsToggle) {
+            friendRequestsToggle.addEventListener('change', (e) => {
+                this.updateSetting('friendRequests', e.target.checked);
+            });
+        }
+
+        // Activity updates toggle
+        const activityUpdatesToggle = document.getElementById('activity-updates');
+        if (activityUpdatesToggle) {
+            activityUpdatesToggle.addEventListener('change', (e) => {
+                this.updateSetting('activityUpdates', e.target.checked);
+            });
+        }
+
+        // Update password button
+        const updatePasswordBtn = document.querySelector('.update-btn');
+        if (updatePasswordBtn) {
+            updatePasswordBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.updatePassword();
+            });
+        }
+
+        // Add drag functionality to all toggle switches
+        this.setupDragFunctionality();
     }
 
-    initDarkMode() {
-        if (this.darkModeToggle) {
-            // Load saved preference
-            this.loadDarkModePreference();
+    setupDragFunctionality() {
+        const toggleSwitches = document.querySelectorAll('.toggle-switch');
+        
+        toggleSwitches.forEach(toggleSwitch => {
+            const input = toggleSwitch.querySelector('input');
+            const slider = toggleSwitch.querySelector('.slider');
             
-            // Add event listeners
-            this.addToggleEventListeners(this.darkModeToggle, 'darkMode', (isEnabled) => {
-                this.toggleDarkMode(isEnabled);
+            if (!input || !slider) return;
+
+            let isDragging = false;
+            let startX = 0;
+
+            // Mouse events
+            toggleSwitch.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.clientX;
+                toggleSwitch.classList.add('dragging');
             });
-        }
-    }
 
-    initOtherToggles() {
-        // Friend Requests Toggle
-        if (this.friendRequestsToggle) {
-            this.loadTogglePreference('friendRequests', this.friendRequestsToggle);
-            this.addToggleEventListeners(this.friendRequestsToggle, 'friendRequests', (isEnabled) => {
-                this.saveTogglePreference('friendRequests', isEnabled);
-                this.showToggleFeedback('Friend Requests', isEnabled);
+            // Touch events for mobile
+            toggleSwitch.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                toggleSwitch.classList.add('dragging');
             });
-        }
 
-        // Activity Updates Toggle
-        if (this.activityUpdatesToggle) {
-            this.loadTogglePreference('activityUpdates', this.activityUpdatesToggle);
-            this.addToggleEventListeners(this.activityUpdatesToggle, 'activityUpdates', (isEnabled) => {
-                this.saveTogglePreference('activityUpdates', isEnabled);
-                this.showToggleFeedback('Activity Updates', isEnabled);
+            // Global mouse/touch events
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    const currentX = e.clientX;
+                    const deltaX = currentX - startX;
+                    const toggleWidth = toggleSwitch.offsetWidth;
+                    
+                    // Determine if toggle should be on/off based on drag direction
+                    const shouldBeOn = deltaX > toggleWidth / 2;
+                    
+                    if (input.checked !== shouldBeOn) {
+                        input.checked = shouldBeOn;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                }
             });
-        }
-    }
 
-    addToggleEventListeners(toggleElement, key, callback) {
-        const toggleSwitch = toggleElement.closest('.toggle-switch');
-        
-        if (!toggleSwitch) return;
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    toggleSwitch.classList.remove('dragging');
+                }
+            });
 
-        // Click event
-        toggleElement.addEventListener('change', (e) => {
-            callback(e.target.checked);
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    const currentX = e.touches[0].clientX;
+                    const deltaX = currentX - startX;
+                    const toggleWidth = toggleSwitch.offsetWidth;
+                    
+                    const shouldBeOn = deltaX > toggleWidth / 2;
+                    
+                    if (input.checked !== shouldBeOn) {
+                        input.checked = shouldBeOn;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    toggleSwitch.classList.remove('dragging');
+                }
+            });
         });
-
-        // Mouse down event for drag
-        toggleSwitch.addEventListener('mousedown', (e) => {
-            this.startDrag(e, toggleElement, toggleSwitch, callback);
-        });
-
-        // Touch start event for mobile drag
-        toggleSwitch.addEventListener('touchstart', (e) => {
-            this.startDrag(e, toggleElement, toggleSwitch, callback);
-        });
-
-        // Prevent text selection during drag
-        toggleSwitch.addEventListener('selectstart', (e) => e.preventDefault());
     }
 
-    startDrag(event, toggleElement, toggleSwitch, callback) {
-        event.preventDefault();
-        this.isDragging = true;
-        this.currentToggle = { element: toggleElement, switch: toggleSwitch, callback };
-        
-        // Add dragging class for visual feedback
-        toggleSwitch.classList.add('dragging');
-        
-        // Get initial position
-        const rect = toggleSwitch.getBoundingClientRect();
-        this.dragStartX = event.clientX || event.touches[0].clientX;
-        this.toggleWidth = rect.width;
-        this.toggleLeft = rect.left;
-    }
-
-    handleDrag(event) {
-        if (!this.isDragging || !this.currentToggle) return;
-        
-        event.preventDefault();
-        
-        const currentX = event.clientX || event.touches[0].clientX;
-        const deltaX = currentX - this.dragStartX;
-        const toggleElement = this.currentToggle.element;
-        const toggleSwitch = this.currentToggle.switch;
-        
-        // Calculate drag percentage
-        const dragPercentage = Math.max(0, Math.min(1, deltaX / this.toggleWidth));
-        
-        // Update slider position visually
-        const slider = toggleSwitch.querySelector('.slider');
-        if (slider) {
-            const translateX = dragPercentage * 24; // 24px is the max translation
-            slider.style.transform = `translateX(${translateX}px)`;
+    loadSettings() {
+        // Load dark mode setting
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        const darkModeToggle = document.getElementById('dark-mode');
+        if (darkModeToggle) {
+            darkModeToggle.checked = darkMode;
         }
-        
-        // Determine if toggle should be on/off based on drag position
-        const shouldBeOn = dragPercentage > 0.5;
-        
-        // Update toggle state if changed
-        if (toggleElement.checked !== shouldBeOn) {
-            toggleElement.checked = shouldBeOn;
-            this.currentToggle.callback(shouldBeOn);
+
+        // Load other settings
+        const friendRequests = localStorage.getItem('friendRequests') !== 'false'; // Default to true
+        const friendRequestsToggle = document.getElementById('friend-requests');
+        if (friendRequestsToggle) {
+            friendRequestsToggle.checked = friendRequests;
+        }
+
+        const activityUpdates = localStorage.getItem('activityUpdates') !== 'false'; // Default to true
+        const activityUpdatesToggle = document.getElementById('activity-updates');
+        if (activityUpdatesToggle) {
+            activityUpdatesToggle.checked = activityUpdates;
         }
     }
 
-    stopDrag() {
-        if (!this.isDragging || !this.currentToggle) return;
-        
-        this.isDragging = false;
-        const toggleSwitch = this.currentToggle.switch;
-        
-        // Remove dragging class
-        toggleSwitch.classList.remove('dragging');
-        
-        // Reset slider transform
-        const slider = toggleSwitch.querySelector('.slider');
-        if (slider) {
-            slider.style.transform = '';
-        }
-        
-        this.currentToggle = null;
-    }
-
-    loadDarkModePreference() {
-        const savedMode = localStorage.getItem('darkMode');
-        if (savedMode === 'true' && this.darkModeToggle) {
-            this.darkModeToggle.checked = true;
+    applySettings() {
+        // Apply dark mode
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
         }
     }
 
-    loadTogglePreference(key, toggleElement) {
-        const saved = localStorage.getItem(key);
-        if (saved !== null) {
-            toggleElement.checked = saved === 'true';
-        }
-    }
-
-    saveTogglePreference(key, value) {
-        localStorage.setItem(key, value.toString());
-    }
-
-    toggleDarkMode(isDark) {
-        if (isDark) {
+    toggleDarkMode(enabled) {
+        if (enabled) {
             document.body.classList.add('dark-mode');
             localStorage.setItem('darkMode', 'true');
         } else {
             document.body.classList.remove('dark-mode');
             localStorage.setItem('darkMode', 'false');
         }
+
+        // Dispatch event for other components to listen to
+        document.dispatchEvent(new CustomEvent('darkModeChanged', {
+            detail: { enabled }
+        }));
+    }
+
+    updateSetting(key, value) {
+        localStorage.setItem(key, value.toString());
         
         // Show feedback
-        this.showThemeFeedback(isDark);
+        this.showToast(`${key} ${value ? 'enabled' : 'disabled'}`);
     }
 
-    applyDarkModeTheme() {
-        const isDark = localStorage.getItem('darkMode') === 'true';
-        if (isDark) {
-            document.body.classList.add('dark-mode');
+    updatePassword() {
+        const passwordInput = document.getElementById('password');
+        const newPassword = passwordInput.value;
+
+        if (!newPassword || newPassword === '••••••••') {
+            this.showToast('Please enter a new password');
+            return;
         }
+
+        if (newPassword.length < 6) {
+            this.showToast('Password must be at least 6 characters long');
+            return;
+        }
+
+        // Here you would typically make an API call to update the password
+        // For now, we'll just show a success message
+        this.showToast('Password updated successfully!');
+        passwordInput.value = '••••••••';
     }
 
-    showThemeFeedback(isDark) {
-        // Create feedback element
-        const feedback = document.createElement('div');
-        feedback.className = 'theme-feedback';
-        feedback.innerHTML = `
-            <span class="theme-icon">${isDark ? '🌙' : '☀️'}</span>
-            <span class="theme-text">${isDark ? 'Dark Mode' : 'Light Mode'} Enabled</span>
-        `;
+    showToast(message) {
+        // Create toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
         
         // Add styles
-        feedback.style.cssText = `
+        toast.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${isDark ? 'rgb(28,36,34)' : 'white'};
-            color: ${isDark ? 'rgb(240,255,250)' : '#333'};
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            animation: slideIn 0.3s ease;
-        `;
-        
-        document.body.appendChild(feedback);
-        
-        // Remove after 2 seconds
-        setTimeout(() => {
-            feedback.remove();
-        }, 2000);
-    }
-
-    showToggleFeedback(setting, isEnabled) {
-        // Create feedback element
-        const feedback = document.createElement('div');
-        feedback.className = 'toggle-feedback';
-        feedback.innerHTML = `
-            <span class="feedback-icon">${isEnabled ? '✅' : '❌'}</span>
-            <span class="feedback-text">${setting} ${isEnabled ? 'Enabled' : 'Disabled'}</span>
-        `;
-        
-        // Add styles
-        feedback.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${isEnabled ? 'rgb(40, 167, 69)' : 'rgb(220, 53, 69)'};
+            background: #333;
             color: white;
-            padding: 0.75rem 1rem;
+            padding: 12px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            animation: slideIn 0.3s ease;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
         `;
-        
-        document.body.appendChild(feedback);
-        
-        // Remove after 1.5 seconds
+
+        document.body.appendChild(toast);
+
+        // Animate in
         setTimeout(() => {
-            feedback.remove();
-        }, 1500);
+            toast.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
     }
 }
 
-// Initialize settings manager when DOM is loaded
+// Initialize settings when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     new SettingsManager();
 });
 
-// Global function to check if dark mode is enabled
-function isDarkModeEnabled() {
-    return localStorage.getItem('darkMode') === 'true';
-}
-
-// Global function to apply dark mode to any page
+// Global function to apply dark mode (for other pages)
 function applyGlobalDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
     if (isDark) {
