@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: 'default-avatar.png'
+    default: 'avator1.jpeg'
   },
   exp: {
     type: Number,

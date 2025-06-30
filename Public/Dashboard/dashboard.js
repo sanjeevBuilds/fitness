@@ -5,12 +5,20 @@ class UserAuth {
         this.checkAuth();
     }
 
-    // Check if user is authenticated
+    // Check if user is authenticated (now optional)
     checkAuth() {
         const storedUserData = localStorage.getItem('userData');
         if (!storedUserData) {
-            // Redirect to login if not authenticated
-            window.location.href = '/Public/test/login.html';
+            // No authentication required - use default data
+            this.userData = {
+                profileName: 'Guest User',
+                avatar: 'avatar1.png',
+                email: 'guest@example.com',
+                xp: 1250,
+                level: 4,
+                createdAt: new Date().toISOString()
+            };
+            this.displayUserData();
             return;
         }
 
@@ -20,7 +28,16 @@ class UserAuth {
         } catch (error) {
             console.error('Error parsing user data:', error);
             localStorage.removeItem('userData');
-            window.location.href = '/Public/test/login.html';
+            // Use default data instead of redirecting
+            this.userData = {
+                profileName: 'Guest User',
+                avatar: 'avatar1.png',
+                email: 'guest@example.com',
+                xp: 1250,
+                level: 4,
+                createdAt: new Date().toISOString()
+            };
+            this.displayUserData();
         }
     }
 

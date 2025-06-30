@@ -41,7 +41,7 @@ router.post('/createUser', async (req, res) => {
       email: email.toLowerCase(),
       password,
       profileName,
-      avatar: avatar || 'default-avatar.png',
+      avatar: 'avator1.jpeg',
       exp: exp || 0
     });
 
@@ -145,6 +145,7 @@ router.patch('/addExp/:email', async (req, res) => {
 
 // POST login route
 router.post('/login', async (req, res) => {
+  console.log('POST /api/login hit');
   try {
     const { email, password } = req.body;
     

@@ -14,7 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch('/api/login', {
+            console.log('Attempting login with:', { email, password: '***' });
+               const response = await fetch('http://localhost:8000/api/login', {
+         
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -25,9 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
             
-            const data = await response.json();
+            console.log('Response status:', response.status);
             
-            if (response.ok && data.success) {
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server error response:', errorText);
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Login response:', data);
+            
+            if (data.success) {
                 // Store user data in localStorage
                 localStorage.setItem('userData', JSON.stringify({
                     profileName: data.profileName,
@@ -51,7 +62,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Login error:', error);
-            alert('Login failed: Network error. Please try again.');
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                alert('Login failed: Server is not running. Please start the server first.');
+            } else {
+                alert(`Login failed: ${error.message}`);
+            }
         } finally {
             // Re-enable button
             submitBtn.textContent = originalText;
@@ -67,17 +82,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const demoInfo = document.querySelector('.demo-info');
     demoInfo.addEventListener('click', function() {
         emailInput.value = 'demo@example.com';
-        passwordInput.value = 'password123';
+        passwordInput.value = 'test1234';
     });
     
     // Add visual feedback that demo info is clickable
     demoInfo.style.cursor = 'pointer';
     demoInfo.title = 'Click to auto-fill demo credentials';
-    
-    // Check if user is already logged in
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-        // Redirect to dashboard if already logged in
-        window.location.href = '/Public/Dashboard/dashbaord.html';
-    }
 });
