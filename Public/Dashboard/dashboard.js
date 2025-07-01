@@ -535,3 +535,21 @@ function updateUserData(newData) {
         userAuth.updateUserData(newData);
     }
 }
+
+// Smooth scroll for sidebar anchor links (future-proof, in case sections are added)
+document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // Only handle anchor links (not page navigations)
+        if (this.getAttribute('href') && this.getAttribute('href').startsWith('#')) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const section = document.getElementById(targetId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Highlight active nav-item
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+            }
+        }
+    });
+});

@@ -39,12 +39,60 @@ class SettingsManager {
             });
         }
 
-        // Update password button
-        const updatePasswordBtn = document.querySelector('.update-btn');
-        if (updatePasswordBtn) {
-            updatePasswordBtn.addEventListener('click', (e) => {
+        // Save Changes button logic
+        const saveChangesBtn = document.querySelector('.update-btn');
+        if (saveChangesBtn) {
+            saveChangesBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                this.updatePassword();
+
+                // Get input values
+                const profileName = document.getElementById('profile-name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+
+                // Get current user data from localStorage
+                const userData = JSON.parse(localStorage.getItem('userData'));
+                const originalEmail = userData?.email;
+                if (!originalEmail) {
+                    this.showToast('❌ User not found in localStorage', 'error');
+                    return;
+                }
+
+                // Check if any changes were made
+                const noProfileChange = userData.profileName === profileName;
+                const noEmailChange = userData.email === email;
+                const noPasswordChange = !password || password === '••••••••';
+                if (noProfileChange && noEmailChange && noPasswordChange) {
+                    this.showToast('⚠️ No changes to save!', 'error');
+                    return;
+                }
+
+                // Build request body
+                const updateData = {
+                    email,
+                    password,
+                    profileName
+                };
+
+                try {
+                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(originalEmail)}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        // Update localStorage if profileName or email changed
+                        if (userData.profileName !== profileName || userData.email !== email) {
+                            localStorage.setItem('userData', JSON.stringify({ ...userData, profileName, email }));
+                        }
+                        this.showToast('🎉 Changes saved successfully!', 'success');
+                    } else {
+                        this.showToast('❌ ' + (result.error || 'Failed to update profile'), 'error');
+                    }
+                } catch (err) {
+                    this.showToast('❌ Server error. Please try again.', 'error');
+                }
             });
         }
 
@@ -184,60 +232,46 @@ class SettingsManager {
         this.showToast(`${key} ${value ? 'enabled' : 'disabled'}`);
     }
 
-    updatePassword() {
-        const passwordInput = document.getElementById('password');
-        const newPassword = passwordInput.value;
-
-        if (!newPassword || newPassword === '••••••••') {
-            this.showToast('Please enter a new password');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            this.showToast('Password must be at least 6 characters long');
-            return;
-        }
-
-        // Here you would typically make an API call to update the password
-        // For now, we'll just show a success message
-        this.showToast('Password updated successfully!');
-        passwordInput.value = '••••••••';
-    }
-
-    showToast(message) {
+    showToast(message, type = 'success') {
+        // Remove any existing toast
+        const oldToast = document.querySelector('.toast-notification');
+        if (oldToast) oldToast.remove();
         // Create toast notification
         const toast = document.createElement('div');
-        toast.className = 'toast-notification';
+        toast.className = 'toast-notification gamified-toast ' + (type === 'success' ? 'toast-success' : 'toast-error');
         toast.textContent = message;
-        
-        // Add styles
         toast.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
+            top: 32px;
+            right: 32px;
+            background: ${type === 'success' ? 'linear-gradient(90deg, #27ae60 60%, #41e396 100%)' : 'linear-gradient(90deg, #c0392b 60%, #ff7675 100%)'};
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
+            padding: 18px 32px;
+            border-radius: 16px;
+            z-index: 2000;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.18), 0 1.5px 6px rgba(41,236,139,0.12);
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+            transition: opacity 0.25s, transform 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            letter-spacing: 0.5px;
         `;
-
         document.body.appendChild(toast);
-
-        // Animate in
         setTimeout(() => {
-            toast.style.transform = 'translateX(0)';
-        }, 100);
-
-        // Remove after 3 seconds
+            toast.style.opacity = '1';
+            toast.style.transform = 'scale(1) translateY(0)';
+        }, 50);
         setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            toast.style.transform = 'scale(0.95) translateY(-20px)';
             setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
-        }, 3000);
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 250);
+        }, 2500);
     }
 }
 
