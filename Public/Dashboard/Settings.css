@@ -473,3 +473,82 @@ input:checked + .slider:active:before {
         padding: 1rem;
     }
 }
+
+.logout-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2.5rem;
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+.logout-btn-gamified {
+    min-width: 220px;
+    margin: 0 auto;
+    margin-top: 0;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(90deg, var(--primary-btn), var(--primary-btn-hover));
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 16px rgba(41,236,139,0.15);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    animation: bounce 1.5s infinite alternate;
+}
+.logout-btn-gamified:hover {
+    background: linear-gradient(90deg, var(--primary-btn-hover), var(--primary-btn));
+    transform: scale(1.05) rotate(-2deg);
+    box-shadow: 0 8px 24px rgba(41,236,139,0.25);
+}
+body.dark-mode .logout-btn-gamified {
+    background: linear-gradient(90deg, rgb(30,200,120), rgb(25,170,100));
+    color: rgb(18,24,22);
+    box-shadow: 0 4px 16px rgba(30,200,120,0.15);
+}
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+}
+
+.gamified-toast.logout-toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: linear-gradient(90deg, var(--primary-btn), var(--primary-btn-hover));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    box-shadow: 0 6px 24px rgba(41,236,139,0.25);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+    transition: opacity 0.4s, transform 0.4s;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    letter-spacing: 1px;
+    pointer-events: none;
+}
+.gamified-toast.logout-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+}
+.toast-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    animation: bounce 1s infinite alternate;
+}
+body.dark-mode .gamified-toast.logout-toast {
+    background: linear-gradient(90deg, rgb(30,200,120), rgb(25,170,100));
+    color: rgb(18,24,22);
+}

@@ -98,6 +98,20 @@ class SettingsManager {
 
         // Add drag functionality to all toggle switches
         this.setupDragFunctionality();
+
+        // Logout button logic
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Show gamified toast
+                showLogoutToast();
+                // Clear user data and redirect after short delay
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = '../First_Page/FirstPage.html';
+                }, 1200);
+            });
+        }
     }
 
     setupDragFunctionality() {
@@ -290,3 +304,12 @@ function applyGlobalDarkMode() {
 
 // Apply dark mode immediately for faster loading
 applyGlobalDarkMode();
+
+function showLogoutToast() {
+    let toast = document.createElement('div');
+    toast.className = 'gamified-toast logout-toast';
+    toast.innerHTML = '<span class="toast-icon">🚪</span> Logged out! See you soon, adventurer!';
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.classList.add('show'); }, 10);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(()=>toast.remove(), 400); }, 1100);
+}
