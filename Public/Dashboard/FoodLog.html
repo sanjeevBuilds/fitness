@@ -12,8 +12,9 @@
     <div class="container">
         <aside class="sidebar">
             <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
-                <h3 class="user-name">John Doe</h3>
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item">
@@ -163,6 +164,18 @@
         
         // Apply dark mode immediately for faster loading
         applyGlobalDarkMode();
+
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                const avatar = document.getElementById('sidebar-avatar');
+                const name = document.getElementById('sidebar-username');
+                const level = document.getElementById('sidebar-userlevel');
+                if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+                if (name && userData.profileName) name.textContent = userData.profileName;
+                if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            }
+        })();
     </script>
 </body>
 </html>

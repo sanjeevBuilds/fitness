@@ -13,9 +13,9 @@
         <!-- Sidebar (maintained from dashboard) -->
         <div class="sidebar">
             <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
-                <h3 class="user-name">John Doe</h3>
-                <span class="user-level">Level 24</span>
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item">
@@ -58,11 +58,11 @@
                 <h2>Account Information</h2>
                 <div class="form-group">
                     <label for="profile-name">Profile Name</label>
-                    <input type="text" id="profile-name" value="John Doe">
+                    <input type="text" id="profile-name">
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" value="john.doe@example.com">
+                    <input type="email" id="email">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
@@ -148,5 +148,25 @@
     </div>
 
     <script src="Settings.js"></script>
+    <script>
+    // Autofill profileName and email from localStorage if available
+    (function() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            // Sidebar user profile
+            const avatar = document.getElementById('sidebar-avatar');
+            const name = document.getElementById('sidebar-username');
+            const level = document.getElementById('sidebar-userlevel');
+            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+            if (name && userData.profileName) name.textContent = userData.profileName;
+            if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            // Form fields
+            const profileInput = document.getElementById('profile-name');
+            const emailInput = document.getElementById('email');
+            if (profileInput) profileInput.value = userData.profileName || '';
+            if (emailInput) emailInput.value = userData.email || '';
+        }
+    })();
+    </script>
 </body>
 </html>
