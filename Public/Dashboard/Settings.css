@@ -552,3 +552,69 @@ body.dark-mode .gamified-toast.logout-toast {
     background: linear-gradient(90deg, rgb(30,200,120), rgb(25,170,100));
     color: rgb(18,24,22);
 }
+
+/* Avatar Change Section Styles */
+#avatar-section {
+    margin-top: 2rem;
+}
+#change-avatar-btn, #confirm-avatar-btn {
+    background: var(--primary-btn);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    margin-right: 1rem;
+    transition: background 0.3s, box-shadow 0.3s;
+    margin-bottom: 1rem;
+}
+#change-avatar-btn:hover, #confirm-avatar-btn:hover {
+    background: var(--primary-btn-hover);
+    box-shadow: 0 4px 12px rgba(41,236,139,0.15);
+}
+#avatar-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+.avatar-choice {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    object-fit: cover;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.avatar-choice.selected, .avatar-choice:focus {
+    border: 3px solid var(--primary-btn);
+    box-shadow: 0 0 0 3px rgba(41,236,139,0.15);
+}
+#close-avatar-options {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+    align-self: flex-end;
+}
+
+body.dark-mode #change-avatar-btn, body.dark-mode #confirm-avatar-btn {
+    background: var(--primary-btn);
+    color: #121816;
+}
+body.dark-mode #change-avatar-btn:hover, body.dark-mode #confirm-avatar-btn:hover {
+    background: var(--primary-btn-hover);
+}
+body.dark-mode .avatar-choice.selected, body.dark-mode .avatar-choice:focus {
+    border: 3px solid var(--primary-btn);
+    box-shadow: 0 0 0 3px rgba(30,200,120,0.18);
+}

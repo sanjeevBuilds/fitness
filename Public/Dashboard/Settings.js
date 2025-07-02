@@ -112,6 +112,96 @@ class SettingsManager {
                 }, 1200);
             });
         }
+
+        // Avatar change logic
+        const avatarFilenames = [
+            'avator.jpeg', 'avator1.jpeg', 'avator2.jpeg', 'avator3.jpeg', 'avator4.jpeg',
+            'avator5.jpeg', 'avator6.jpeg', 'avator7.jpeg', 'avator8.jpeg', 'avator9.jpeg'
+        ];
+        const changeAvatarBtn = document.getElementById('change-avatar-btn');
+        const avatarOptionsDiv = document.getElementById('avatar-options');
+        const confirmAvatarBtn = document.getElementById('confirm-avatar-btn');
+        const closeAvatarOptionsBtn = document.getElementById('close-avatar-options');
+        let selectedAvatar = null;
+
+        if (changeAvatarBtn) {
+            changeAvatarBtn.addEventListener('click', () => {
+                // Toggle avatar picker
+                const isVisible = avatarOptionsDiv.style.display === 'flex';
+                if (isVisible) {
+                    avatarOptionsDiv.style.display = 'none';
+                    confirmAvatarBtn.style.display = 'none';
+                    if (closeAvatarOptionsBtn) closeAvatarOptionsBtn.style.display = 'none';
+                    return;
+                }
+                avatarOptionsDiv.innerHTML = '';
+                // Add close button at the start
+                if (closeAvatarOptionsBtn) {
+                    avatarOptionsDiv.appendChild(closeAvatarOptionsBtn);
+                    closeAvatarOptionsBtn.style.display = '';
+                }
+                avatarOptionsDiv.style.display = 'flex';
+                confirmAvatarBtn.style.display = 'none';
+                selectedAvatar = null;
+                avatarFilenames.forEach(filename => {
+                    const img = document.createElement('img');
+                    img.src = `../../assets/${filename}`;
+                    img.alt = filename;
+                    img.className = 'avatar-choice';
+                    img.style.width = '64px';
+                    img.style.height = '64px';
+                    img.style.borderRadius = '50%';
+                    img.style.cursor = 'pointer';
+                    img.style.border = '3px solid transparent';
+                    img.style.transition = 'border 0.2s';
+                    img.addEventListener('click', () => {
+                        // Remove highlight from all
+                        avatarOptionsDiv.querySelectorAll('img').forEach(i => i.classList.remove('selected'));
+                        img.classList.add('selected');
+                        selectedAvatar = filename;
+                        confirmAvatarBtn.style.display = '';
+                    });
+                    avatarOptionsDiv.appendChild(img);
+                });
+            });
+        }
+
+        if (closeAvatarOptionsBtn) {
+            closeAvatarOptionsBtn.addEventListener('click', () => {
+                avatarOptionsDiv.style.display = 'none';
+                confirmAvatarBtn.style.display = 'none';
+                closeAvatarOptionsBtn.style.display = 'none';
+            });
+        }
+
+        if (confirmAvatarBtn) {
+            confirmAvatarBtn.addEventListener('click', async () => {
+                if (!selectedAvatar) return;
+                const userData = JSON.parse(localStorage.getItem('userData'));
+                if (!userData || !userData.email) return;
+                try {
+                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ avatar: selectedAvatar })
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        // Update localStorage and sidebar avatar
+                        localStorage.setItem('userData', JSON.stringify({ ...userData, avatar: selectedAvatar }));
+                        const sidebarAvatar = document.getElementById('sidebar-avatar');
+                        if (sidebarAvatar) sidebarAvatar.src = `../../assets/${selectedAvatar}`;
+                        avatarOptionsDiv.style.display = 'none';
+                        confirmAvatarBtn.style.display = 'none';
+                        this.showToast('Avatar updated!', 'success');
+                    } else {
+                        this.showToast(result.error || 'Failed to update avatar', 'error');
+                    }
+                } catch (err) {
+                    this.showToast('Server error. Please try again.', 'error');
+                }
+            });
+        }
     }
 
     setupDragFunctionality() {
