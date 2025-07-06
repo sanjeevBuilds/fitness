@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights - HealthQuest</title>
+    <link rel="stylesheet" href="../Dashboard/dashboard.css">
+    <link rel="stylesheet" href="Insights.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="../Dashboard/dashbaord.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="../Dashboard/FoodLog.html" class="nav-item">
+                    <span class="nav-icon">🍽</span>
+                    Food Log
+                </a>
+                <a href="../Dashboard/FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    Food Suggestion
+                </a>
+                <a href="../Dashboard/Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="Insights.html" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    Insights
+                </a>
+                <a href="../Notifications/Notifications.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    Notification
+                </a>
+                <a href="../Dashboard/Settings.html" class="nav-item">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1>Insights</h1>
+            <p class="description">Your personalized health insights based on posture scores, food logs, and activities.</p>
+            <section class="insight-cards-section">
+                <h2>Insight Cards</h2>
+                <div class="insight-cards-grid">
+                    <div class="insight-card">
+                        <h3>Posture Trend</h3>
+                        <div class="posture-score-row">
+                            <span class="posture-score" id="posture-score">82/100</span>
+                            <span class="posture-score-label">Last 7 Days</span>
+                        </div>
+                        <div class="posture-graph-container">
+                            <canvas id="posture-graph" width="600" height="140"></canvas>
+                        </div>
+                        <div class="posture-avg">Average posture score: <span id="posture-avg">82</span>/100</div>
+                    </div>
+                    <div class="insight-card nutrition-card">
+                        <h3>Nutrition Summary</h3>
+                        <div class="nutrition-summary">
+                            <span id="nutrition-protein">Protein: 60g</span>,
+                            <span id="nutrition-carbs">Carbs: 150g</span>,
+                            <span id="nutrition-fats">Fats: 40g</span>
+                        </div>
+                        <div class="nutrition-bar-container">
+                            <div class="nutrition-bar-labels">
+                                <span>Protein</span>
+                                <span>Carbs</span>
+                                <span>Fats</span>
+                            </div>
+                            <div class="nutrition-bars">
+                                <div class="nutrition-bar protein" style="height:60px"></div>
+                                <div class="nutrition-bar carbs" style="height:150px"></div>
+                                <div class="nutrition-bar fats" style="height:40px"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="detailed-reports-section">
+                <h2>Detailed Reports</h2>
+                <div class="table-container">
+                    <table class="insights-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Insight</th>
+                            </tr>
+                        </thead>
+                        <tbody id="insights-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="future-addons-section">
+                <h2>Future Add-ons</h2>
+                <div class="future-addons-grid">
+                    <div class="future-addon">Sleep Quality (Coming Soon)</div>
+                    <div class="future-addon">Mental Wellness Insights (Coming Soon)</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="Insights.js"></script>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        applyGlobalDarkMode();
+        // Autofill sidebar user info
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                const avatar = document.getElementById('sidebar-avatar');
+                const name = document.getElementById('sidebar-username');
+                const level = document.getElementById('sidebar-userlevel');
+                if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+                if (name && userData.profileName) name.textContent = userData.profileName;
+                if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            }
+        })();
+    </script>
+</body>
+</html>
