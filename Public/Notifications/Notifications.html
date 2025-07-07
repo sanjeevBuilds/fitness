@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - FitWarrior</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Dashboard/dashboard.css">
+  <link rel="stylesheet" href="Notifications.css">
   <style>
     * {
       margin: 0;
@@ -17,6 +20,11 @@
       display: flex;
       background-color: #f5f5f5;
       min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex: 1;
     }
 
     .sidebar {
@@ -133,85 +141,153 @@
 </head>
 
 <body>
-  <div class="sidebar">
-    <div class="user-profile">
-      <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-      <h3 class="user-name" id="sidebar-username">John Doe</h3>
-      <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
-    </div>
-
-    <nav class="nav-menu">
-      <a href="dashbaord.html" class="nav-item">
-        <span class="nav-icon">🏠</span>
-        Home
-      </a>
-      <a href="FoodLog.html" class="nav-item">
-        <span class="nav-icon">🍽</span>
-        Food Log
-      </a>
-      <a href="FoodSuggestion.html" class="nav-item">
-        <span class="nav-icon">💡</span>
-        Food Suggestion
-      </a>
-      <a href="Posture.html" class="nav-item">
-        <span class="nav-icon">📊</span>
-        Posture Scan
-      </a>
-      <a href="../Insights/Insights.html" class="nav-item">
-        <span class="nav-icon">📈</span>
-        Insights
-      </a>
-      <a href="Notification.html" class="nav-item active">
-        <span class="nav-icon">🔔</span>
-        Notification
-      </a>
-      <a href="Settings.html" class="nav-item">
-        <span class="nav-icon">⚙</span>
-        Settings
-      </a>
-    </nav>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="user-profile">
+        <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+        <h3 class="user-name" id="sidebar-username">John Doe</h3>
+        <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="../Dashboard/dashbaord.html" class="nav-item">
+          <span class="nav-icon">🏠</span>
+          Home
+        </a>
+        <a href="../Dashboard/FoodLog.html" class="nav-item">
+          <span class="nav-icon">🍽️</span>
+          Food Log
+        </a>
+        <a href="../Dashboard/FoodSuggestion.html" class="nav-item">
+          <span class="nav-icon">💡</span>
+          Food Suggestion
+        </a>
+        <a href="../Dashboard/Posture.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          Posture Scan
+        </a>
+        <a href="../Insights/Insights.html" class="nav-item">
+          <span class="nav-icon">📈</span>
+          Insights
+        </a>
+        <a href="Notifications.html" class="nav-item active">
+          <span class="nav-icon">🔔</span>
+          Notification
+        </a>
+        <a href="../Dashboard/Settings.html" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          Settings
+        </a>
+      </nav>
+    </aside>
+    <main class="main-content notifications-main">
+      <h1 class="heading">Notifications</h1>
+      <div class="notification-actions">
+        <button id="clearBtn">Clear All</button>
+      </div>
+      <!-- Friend Requests Section -->
+      <div class="friend-requests" id="friend-requests"></div>
+      <!-- Gamified Notification List -->
+      <div class="notification-list" id="notification-list">
+        <!-- Example Notification Card -->
+        <div class="notification-item">
+          <span class="notif-icon">⭐</span>
+          <div class="notif-content">
+            <div class="notif-title">XP Earned <span class="level badge">+50 XP</span></div>
+            <div class="notif-desc">You earned 50 XP for completing your daily posture check</div>
+          </div>
+          <div class="notif-time">4h</div>
+          <button class="mark-read-btn">Mark as Read</button>
+        </div>
+        <div class="notification-item">
+          <span class="notif-icon">💰</span>
+          <div class="notif-content">
+            <div class="notif-title">Coin Balance Update <span class="level badge">+300 Coins</span></div>
+            <div class="notif-desc">You have 300 coins to spend in the rewards store</div>
+          </div>
+          <div class="notif-time">6h</div>
+          <button class="mark-read-btn">Mark as Read</button>
+        </div>
+        <div class="notification-item">
+          <span class="notif-icon">🔥</span>
+          <div class="notif-content">
+            <div class="notif-title">Streak Achievement <span class="level badge">7 Day Streak</span></div>
+            <div class="notif-desc">You've maintained your daily streak for 7 days!</div>
+          </div>
+          <div class="notif-time">10h</div>
+          <button class="mark-read-btn">Mark as Read</button>
+        </div>
+        <div class="notification-item">
+          <span class="notif-icon">🏅</span>
+          <div class="notif-content">
+            <div class="notif-title">Badge Unlocked <span class="level badge">"Early Bird"</span></div>
+            <div class="notif-desc">You unlocked the Early Bird badge for logging breakfast 5 days in a row!</div>
+          </div>
+          <div class="notif-time">12h</div>
+          <button class="mark-read-btn">Mark as Read</button>
+        </div>
+        <div class="notification-item">
+          <span class="notif-icon">👥</span>
+          <div class="notif-content">
+            <div class="notif-title">Buddy Challenge</div>
+            <div class="notif-desc">Join the 'Healthy Habits' challenge with your buddies</div>
+          </div>
+          <div class="notif-time">18h</div>
+          <button class="mark-read-btn">Mark as Read</button>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <div class="content">
-    <h1>Notifications</h1>
-    <p>Check your latest alerts and reminders</p>
-    <button class="clear-btn" onclick="clearNotifications()">Clear All</button>
-
-    <div class="notifications" id="notifications">
-      <div class="notification" onclick="toggleRead(this)">Posture Check Reminder - Don't forget to scan today!</div>
-      <div class="notification" onclick="toggleRead(this)">Meal Log Reminder - Log your lunch meal.</div>
-      <div class="notification" onclick="toggleRead(this)">Insight Available - View your weekly progress report.</div>
-    </div>
-  </div>
-
+  <script src="Notifications.js"></script>
   <script>
-    function toggleRead(el) {
-      el.classList.toggle('read');
-      saveNotifications();
-    }
-
-    function clearNotifications() {
-      const container = document.getElementById('notifications');
+    // Friend Requests Data
+    const friendRequests = [
+      { name: 'Sophie Lee', avatar: '../../assets/avator1.jpeg', level: 3 },
+      { name: 'Max Turner', avatar: '../../assets/avator2.jpeg', level: 2 },
+      { name: 'Priya Singh', avatar: '../../assets/avator3.jpeg', level: 4 }
+    ];
+    function renderFriendRequests() {
+      const container = document.getElementById('friend-requests');
       container.innerHTML = '';
-      localStorage.removeItem('notifications');
+      friendRequests.forEach((req, idx) => {
+        const card = document.createElement('div');
+        card.className = 'friend-request-card';
+        card.innerHTML = `
+          <img src="${req.avatar}" alt="${req.name}" class="friend-avatar">
+          <div class="friend-info">
+            <div class="friend-name">${req.name}</div>
+            <div class="friend-level">Level ${req.level}</div>
+          </div>
+          <div class="friend-actions">
+            <button class="accept-btn" onclick="acceptRequest(${idx})">Accept</button>
+            <button class="decline-btn" onclick="declineRequest(${idx})">Decline</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
-
-    function saveNotifications() {
-      const container = document.getElementById('notifications');
-      const states = Array.from(container.children).map(child => child.classList.contains('read'));
-      localStorage.setItem('notifications', JSON.stringify(states));
+    function acceptRequest(idx) {
+      friendRequests.splice(idx, 1);
+      renderFriendRequests();
     }
-
-    function loadNotifications() {
-      const saved = JSON.parse(localStorage.getItem('notifications'));
-      if (saved) {
-        const container = document.getElementById('notifications');
-        Array.from(container.children).forEach((child, i) => {
-          if (saved[i]) child.classList.add('read');
-        });
-      }
+    function declineRequest(idx) {
+      friendRequests.splice(idx, 1);
+      renderFriendRequests();
     }
-
+    renderFriendRequests();
+    // Mark as Read functionality
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const notif = this.closest('.notification-item');
+        notif.classList.add('read');
+        this.disabled = true;
+        this.textContent = 'Read';
+      });
+    });
+    // Clear All functionality
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('notification-list').innerHTML = '';
+    });
     // Autofill profileName and email from localStorage if available
     (function () {
       const userData = JSON.parse(localStorage.getItem('userData'));
@@ -222,15 +298,18 @@
         if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
         if (name && userData.profileName) name.textContent = userData.profileName;
         if (level && userData.level) level.textContent = 'Level ' + userData.level;
-
-        const profileInput = document.getElementById('profile-name');
-        const emailInput = document.getElementById('email');
-        if (profileInput) profileInput.value = userData.profileName || '';
-        if (emailInput) emailInput.value = userData.email || '';
       }
     })();
-
-    loadNotifications();
+    // Dark mode application (same as Dashboard)
+    function applyGlobalDarkMode() {
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    }
+    applyGlobalDarkMode();
   </script>
 </body>
 

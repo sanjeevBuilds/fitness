@@ -157,3 +157,45 @@ body.dark-mode .future-addon {
     background: rgb(28,36,34);
     color: var(--text-light);
 }
+#nutrition-pie {
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(30, 200, 120, 0.08);
+}
+.nutrition-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+.nutrition-legend span {
+  display: flex;
+  align-items: center;
+}
+.nutrition-legend span span {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+.nutrition-bars-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3rem;
+  height: 160px;
+}
+.nutrition-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nutrition-bar-label {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-light);
+}
