@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - FitWarrior</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      background-color: #f5f5f5;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: #fff;
+      border-radius: 15px;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .user-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .user-level {
+      background-color: #00c853;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 6px rgba(0, 200, 83, 0.4);
+    }
+
+    .sidebar .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      width: 100%;
+    }
+
+    .nav-menu .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 15px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #333;
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-menu .nav-item:hover,
+    .nav-menu .nav-item.active {
+      background-color: #00e676;
+    }
+
+    .nav-icon {
+      font-size: 18px;
+    }
+
+    .content {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .content h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .content p {
+      margin-bottom: 30px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .notifications {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .notification {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notification.read {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+
+    .clear-btn {
+      background-color: #ff5252;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 25px;
+      float: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="user-profile">
+      <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+      <h3 class="user-name" id="sidebar-username">John Doe</h3>
+      <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+    </div>
+
+    <nav class="nav-menu">
+      <a href="dashbaord.html" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        Home
+      </a>
+      <a href="FoodLog.html" class="nav-item">
+        <span class="nav-icon">🍽</span>
+        Food Log
+      </a>
+      <a href="FoodSuggestion.html" class="nav-item">
+        <span class="nav-icon">💡</span>
+        Food Suggestion
+      </a>
+      <a href="Posture.html" class="nav-item">
+        <span class="nav-icon">📊</span>
+        Posture Scan
+      </a>
+      <a href="../Insights/Insights.html" class="nav-item">
+        <span class="nav-icon">📈</span>
+        Insights
+      </a>
+      <a href="Notification.html" class="nav-item active">
+        <span class="nav-icon">🔔</span>
+        Notification
+      </a>
+      <a href="Settings.html" class="nav-item">
+        <span class="nav-icon">⚙</span>
+        Settings
+      </a>
+    </nav>
+  </div>
+
+  <div class="content">
+    <h1>Notifications</h1>
+    <p>Check your latest alerts and reminders</p>
+    <button class="clear-btn" onclick="clearNotifications()">Clear All</button>
+
+    <div class="notifications" id="notifications">
+      <div class="notification" onclick="toggleRead(this)">Posture Check Reminder - Don't forget to scan today!</div>
+      <div class="notification" onclick="toggleRead(this)">Meal Log Reminder - Log your lunch meal.</div>
+      <div class="notification" onclick="toggleRead(this)">Insight Available - View your weekly progress report.</div>
+    </div>
+  </div>
+
+  <script>
+    function toggleRead(el) {
+      el.classList.toggle('read');
+      saveNotifications();
+    }
+
+    function clearNotifications() {
+      const container = document.getElementById('notifications');
+      container.innerHTML = '';
+      localStorage.removeItem('notifications');
+    }
+
+    function saveNotifications() {
+      const container = document.getElementById('notifications');
+      const states = Array.from(container.children).map(child => child.classList.contains('read'));
+      localStorage.setItem('notifications', JSON.stringify(states));
+    }
+
+    function loadNotifications() {
+      const saved = JSON.parse(localStorage.getItem('notifications'));
+      if (saved) {
+        const container = document.getElementById('notifications');
+        Array.from(container.children).forEach((child, i) => {
+          if (saved[i]) child.classList.add('read');
+        });
+      }
+    }
+
+    // Autofill profileName and email from localStorage if available
+    (function () {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      if (userData) {
+        const avatar = document.getElementById('sidebar-avatar');
+        const name = document.getElementById('sidebar-username');
+        const level = document.getElementById('sidebar-userlevel');
+        if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+        if (name && userData.profileName) name.textContent = userData.profileName;
+        if (level && userData.level) level.textContent = 'Level ' + userData.level;
+
+        const profileInput = document.getElementById('profile-name');
+        const emailInput = document.getElementById('email');
+        if (profileInput) profileInput.value = userData.profileName || '';
+        if (emailInput) emailInput.value = userData.email || '';
+      }
+    })();
+
+    loadNotifications();
+  </script>
+</body>
+
+</html>
