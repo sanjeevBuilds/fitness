@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
-// User Schema with validation
+const NotificationSchema = require('./Notification');
+const FriendRequestSchema = require('./FriendRequest');
+const DailyQuestSchema = require('./DailyQuest');
+const MiniChallengeSchema = require('./MiniChallenge');
+const FoodLogSchema = require('./FoodLog');
+const MealPlanSchema = require('./MealPlan');
+const PostureScanSchema = require('./PostureScan');
+const InsightSchema = require('./Insight');
+const BadgeSchema = require('./Badge');
+
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -30,11 +39,24 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Experience cannot be negative']
   },
+  theme: {
+    type: String,
+    enum: ['light', 'dark'],
+    default: 'light'
+  },
+  notifications: [NotificationSchema],
+  friendRequests: [FriendRequestSchema],
+  dailyQuests: [DailyQuestSchema],
+  miniChallenges: [MiniChallengeSchema],
+  foodLogs: [FoodLogSchema],
+  mealPlan: MealPlanSchema,
+  postureScans: [PostureScanSchema],
+  insights: [InsightSchema],
+  badges: [BadgeSchema],
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// Export the model
 module.exports = mongoose.model('User', UserSchema); 
