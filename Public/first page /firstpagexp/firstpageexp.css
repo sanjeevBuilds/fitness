@@ -1,0 +1,112 @@
+:root {
+  --bg: #f4fdf7;
+  --dark: #0b1d0e;
+  --green: #00cc66;
+  --dot: #d6e8de;
+  --dot-active: #00cc66;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg);
+  color: var(--dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.food-section {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px 20px;
+}
+
+h1, h2 {
+  margin: 10px 0;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+h2 {
+  font-size: 32px;
+  color: var(--green);
+}
+
+.fade.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lightbulb-glow {
+  margin: 60px auto;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at center, #ffcc80, #ffb347, #fff0e0);
+  border-radius: 20px;
+  box-shadow: 0 0 40px 10px rgba(255, 190, 110, 0.6);
+  background-image: url("https://i.ibb.co/S6sLxTf/lightbulb.jpg"); /* Optional fallback */
+  background-size: cover;
+  background-position: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+.bottom-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 50px;
+  padding: 0 25px;
+}
+
+.nav-btn {
+  padding: 8px 22px;
+  border-radius: 20px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.skip {
+  background-color: #e8f7ed;
+  color: #003b1e;
+}
+
+.next {
+  background-color: var(--green);
+  color: white;
+}
+
+.next:hover {
+  background-color: #00b359;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  background-color: var(--dot);
+  border-radius: 50%;
+}
+
+.dots span.active {
+  background-color: var(--dot-active);
+}

@@ -1,0 +1,255 @@
+/* === Font & Base Styles === */
+body {
+  margin: 0;
+  font-family: 'Hurme Geometric Sans', sans-serif;
+  background-color: #f7fcfa;
+  color: #122119;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* === Sidebar === */
+.sidebar {
+  background: #ffffff;
+  padding: 20px;
+  width: 220px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 20px;
+  color: #0d1c14;
+  margin-bottom: 40px;
+}
+
+.side-nav a {
+  display: block;
+  text-decoration: none;
+  margin: 15px 0;
+  color: #122119;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.side-nav a.active,
+.side-nav a:hover {
+  background-color: #e8f2ed;
+}
+
+/* === Top Nav === */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px 10px;
+}
+
+.top-nav nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #122119;
+  font-weight: 500;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bell {
+  background: none;
+  border: none;
+  font-size: 18px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+/* === Main Content === */
+.main-content {
+  flex-grow: 1;
+  padding: 0 40px;
+  overflow-y: auto;
+}
+
+.page-header {
+  margin: 20px 0 30px;
+  position: relative;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0d1c14;
+}
+
+.page-header p {
+  margin: 5px 0 15px;
+  color: #61a583;
+  font-weight: 500;
+}
+
+.generate-btn {
+  float: right;
+  padding: 8px 16px;
+  background: #f7fcfa;
+  border: 1px solid #0d1c14;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.search {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #e8f2ed;
+  border: none;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+/* === Suggestions === */
+.suggestions h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #0d1c14;
+}
+
+.suggestion-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin-bottom: 16px;
+  gap: 20px;
+}
+
+.suggestion-card img {
+  width: 180px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.suggestion-card .text {
+  flex-grow: 1;
+}
+
+.suggestion-card .xp {
+  color: #61a583;
+  font-weight: 600;
+}
+
+.suggestion-card h3 {
+  margin: 5px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0d1c14;
+}
+
+.suggestion-card p {
+  margin: 0;
+  font-size: 15px;
+  color: #122119;
+}
+
+/* === Food Expanded View === */
+.food-expanded {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+}
+
+.food-expanded h2 {
+  color: #0d1c14;
+  font-size: 24px;
+  margin-bottom: 0.5rem;
+}
+
+.food-expanded .xp {
+  color: #61a583;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.food-expanded .desc {
+  font-size: 1rem;
+  color: #122119;
+  margin-bottom: 2rem;
+}
+
+.food-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.food-item {
+  background-color: #f7fcfa;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.food-item h3 {
+  margin: 0;
+  color: #0d1c14;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.view-recipe-btn {
+  margin-top: 0.5rem;
+  background-color: #7aee8c;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #0d1c14;
+}
+
+.recipe {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #122119;
+  background: #e8f2ed;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.recipe.hidden {
+  display: none;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #61a583;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  padding: 0;
+}
+
+.hidden { 
+display: none;
+}
