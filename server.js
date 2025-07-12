@@ -63,4 +63,7 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
+
+  // Insert sample user if SAMPLE_USER env variable is true
+ 
 });

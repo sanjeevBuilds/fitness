@@ -28,29 +28,23 @@ router.get('/getUser/:email', async (req, res) => {
 // POST create new user
 router.post('/createUser', async (req, res) => {
   try {
-    const { email, password, profileName, avatar, exp } = req.body;
-    
+    const userData = req.body;
+    userData.email = userData.email.toLowerCase();
+
     // Check if user already exists
-    const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
+    const existingUser = await UserModel.findOne({ email: userData.email });
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Create new user
-    const newUser = new UserModel({
-      email: email.toLowerCase(),
-      password,
-      profileName,
-      avatar: 'avator1.jpeg',
-      exp: exp || 0
-    });
-
+    // Create new user with all fields from request body
+    const newUser = new UserModel(userData);
     await newUser.save();
-    
+
     // Return user without password
     const userResponse = newUser.toObject();
     delete userResponse.password;
-    
+
     res.status(201).json(userResponse);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create user' });
