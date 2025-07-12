@@ -4,11 +4,145 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+:root {
+    --primary-bg: rgb(247, 252, 250);
+    --primary-btn: rgb(41, 236, 139);
+    --primary-btn-hover: rgb(35, 201, 118);
+    --text-dark: #333;
+    --text-light: #666;
+    --card-bg: white;
+    --sidebar-bg: white;
+    --input-bg: white;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode {
+    --primary-bg: rgb(18, 24, 22);
+    --primary-btn: rgb(30, 200, 120);
+    --primary-btn-hover: rgb(25, 170, 100);
+    --text-dark: rgb(240, 255, 250);
+    --text-light: rgba(240, 255, 250, 0.7);
+    --card-bg: rgb(28, 36, 34);
+    --sidebar-bg: rgb(28, 36, 34);
+    --input-bg: rgb(28, 36, 34);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 body {
-    background-color: rgb(247,252,250);
-    color: #333;
+    background-color: var(--primary-bg);
+    color: var(--text-dark);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: rgb(18,24,22);
+    color: rgb(240,255,250);
+}
+
+body.dark-mode .sidebar {
+    background-color: rgb(28,36,34);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .settings-section {
+    background: rgb(28,36,34);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode h1,
+body.dark-mode h2 {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode label {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"] {
+    background: rgb(28,36,34);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgb(240,255,250);
+}
+
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="email"]:focus,
+body.dark-mode input[type="password"]:focus {
+    border-color: rgb(30,200,120);
+}
+
+body.dark-mode .update-btn {
+    background-color: rgb(30,200,120);
+    box-shadow: 0 2px 4px rgba(30,200,120, 0.2);
+}
+
+body.dark-mode .update-btn:hover {
+    background-color: rgb(25,170,100);
+    box-shadow: 0 4px 8px rgba(30,200,120, 0.3);
+}
+
+body.dark-mode .slider {
+    background-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.2);
+}
+
+body.dark-mode .slider:before {
+    background-color: rgb(240,255,250);
+}
+
+body.dark-mode input:checked + .slider {
+    background-color: rgb(30,200,120);
+    border-color: rgb(30,200,120);
+}
+
+body.dark-mode input:checked + .slider:before {
+    background-color: white;
+    transform: translateX(24px);
+}
+
+body.dark-mode .hint-text {
+    color: rgba(240,255,250,0.7);
+}
+
+body.dark-mode .nav-link {
+    color: rgb(240,255,250);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-mode .nav-link:hover {
+    background-color: rgba(30,200,120,0.1);
+}
+
+body.dark-mode .sidebar nav a {
+    color: rgb(240,255,250);
+}
+
+body.dark-mode .sidebar nav a:hover {
+    background-color: rgba(30,200,120, 0.1);
+}
+
+body.dark-mode .sidebar nav a.active {
+    background-color: rgb(30,200,120);
+    color: rgb(18,24,22);
+}
+
+/* Theme Feedback Animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .dashboard-container {
@@ -18,57 +152,79 @@ body {
 
 /* Sidebar Styles */
 .sidebar {
-    width: 250px;
-    background-color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--sidebar-bg);
     padding: 2rem;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
+    z-index: 1000;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 .user-profile {
-    display: flex;
-    align-items: center;
+    text-align: center;
     margin-bottom: 2rem;
-    gap: 1rem;
 }
 
 .avatar {
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
+    margin-bottom: 1rem;
     object-fit: cover;
 }
 
-.user-info h3 {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+.user-name {
+    font-size: 1.2rem;
+    color: var(--text-dark);
 }
 
-.user-info p {
-    font-size: 0.875rem;
-    color: #666;
-}
-
-.sidebar nav {
+.nav-menu {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.sidebar nav a {
-    padding: 0.75rem 1rem;
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
     text-decoration: none;
-    color: #333;
-    border-radius: 8px;
+    color: var(--text-dark);
+    border-radius: var(--border-radius);
     transition: all 0.3s ease;
 }
 
-.sidebar nav a:hover {
-    background-color: rgba(41,236,139, 0.1);
+.nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
 }
 
-.sidebar nav a.active {
-    background-color: rgb(41,236,139);
-    color: white;
+.nav-item.active {
+    background: var(--primary-btn);
+    color: rgb(18, 24, 22);
+}
+
+.nav-icon {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+body.dark-mode .sidebar {
+    background: var(--sidebar-bg);
+    box-shadow: var(--card-shadow);
+}
+body.dark-mode .nav-item {
+    color: var(--text-dark);
+}
+body.dark-mode .nav-item.active {
+    background: var(--primary-btn);
+    color: rgb(18, 24, 22);
 }
 
 /* Main Content Styles */
@@ -77,27 +233,28 @@ body {
     padding: 2rem;
     max-width: 800px;
     margin: 0 auto;
+    background-color: var(--primary-bg);
 }
 
 h1 {
     font-size: 1.75rem;
     margin-bottom: 2rem;
-    color: #333;
+    color: var(--text-dark);
 }
 
 /* Settings Section Styles */
 .settings-section {
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--card-shadow);
 }
 
 .settings-section h2 {
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: var(--text-dark);
 }
 
 /* Form Styles */
@@ -108,7 +265,7 @@ h1 {
 label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #555;
+    color: var(--text-dark);
     font-weight: 500;
 }
 
@@ -117,22 +274,23 @@ input[type="email"],
 input[type="password"] {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    background: white;
+    background: var(--input-bg);
+    color: var(--text-dark);
     transition: border-color 0.3s ease;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-    border-color: rgb(41,236,139);
+    border-color: var(--primary-btn);
     outline: none;
 }
 
 .update-btn {
-    background-color: rgb(41,236,139);
+    background-color: var(--primary-btn);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -145,7 +303,7 @@ input[type="password"]:focus {
 }
 
 .update-btn:hover {
-    background-color: rgb(37,212,125);
+    background-color: var(--primary-btn-hover);
     box-shadow: 0 4px 8px rgba(41,236,139, 0.3);
 }
 
@@ -168,17 +326,31 @@ input[type="password"]:focus {
     align-items: center;
 }
 
+.toggle-header label {
+    margin-bottom: 0;
+    cursor: pointer;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
 .toggle-switch {
     position: relative;
     display: inline-block;
     width: 50px;
     height: 26px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .toggle-switch input {
     opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
+    cursor: pointer;
 }
 
 .slider {
@@ -188,34 +360,71 @@ input[type="password"]:focus {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ddd;
-    transition: 0.4s;
+    background-color: #ccc;
+    transition: 0.4s ease;
     border-radius: 34px;
+    z-index: 1;
+    border: 2px solid #ccc;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
-    transition: 0.4s;
+    transition: 0.4s ease;
     border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 input:checked + .slider {
-    background-color: rgb(41,236,139);
+    background-color: var(--primary-btn);
+    border-color: var(--primary-btn);
 }
 
 input:checked + .slider:before {
     transform: translateX(24px);
+    background-color: white;
+}
+
+/* Dragging styles */
+.toggle-switch.dragging {
+    cursor: grabbing;
+}
+
+.toggle-switch.dragging .slider {
+    transition: none;
+}
+
+.toggle-switch.dragging .slider:before {
+    transition: none;
+}
+
+/* Make toggle more visible and interactive */
+.toggle-switch:hover .slider {
+    box-shadow: 0 0 5px rgba(41,236,139, 0.3);
+}
+
+.toggle-switch:active .slider:before {
+    transform: scale(0.9);
+}
+
+input:checked + .slider:active:before {
+    transform: translateX(24px) scale(0.9);
+}
+
+/* Focus styles for accessibility */
+.toggle-switch input:focus + .slider {
+    box-shadow: 0 0 0 2px rgba(41,236,139, 0.3);
 }
 
 .hint-text {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-light);
 }
 
 /* Link List Styles */
@@ -231,7 +440,7 @@ input:checked + .slider:before {
     align-items: center;
     padding: 0.75rem;
     text-decoration: none;
-    color: #333;
+    color: var(--text-dark);
     border-radius: 8px;
     transition: background-color 0.3s ease;
 }
@@ -241,7 +450,7 @@ input:checked + .slider:before {
 }
 
 .arrow {
-    color: #666;
+    color: var(--text-light);
     font-size: 1.25rem;
 }
 
@@ -263,4 +472,149 @@ input:checked + .slider:before {
     .settings-section {
         padding: 1rem;
     }
+}
+
+.logout-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2.5rem;
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+.logout-btn-gamified {
+    min-width: 220px;
+    margin: 0 auto;
+    margin-top: 0;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(90deg, var(--primary-btn), var(--primary-btn-hover));
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 16px rgba(41,236,139,0.15);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+    animation: bounce 1.5s infinite alternate;
+}
+.logout-btn-gamified:hover {
+    background: linear-gradient(90deg, var(--primary-btn-hover), var(--primary-btn));
+    transform: scale(1.05) rotate(-2deg);
+    box-shadow: 0 8px 24px rgba(41,236,139,0.25);
+}
+body.dark-mode .logout-btn-gamified {
+    background: linear-gradient(90deg, rgb(30,200,120), rgb(25,170,100));
+    color: rgb(18,24,22);
+    box-shadow: 0 4px 16px rgba(30,200,120,0.15);
+}
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+}
+
+.gamified-toast.logout-toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: linear-gradient(90deg, var(--primary-btn), var(--primary-btn-hover));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    box-shadow: 0 6px 24px rgba(41,236,139,0.25);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+    transition: opacity 0.4s, transform 0.4s;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    letter-spacing: 1px;
+    pointer-events: none;
+}
+.gamified-toast.logout-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+}
+.toast-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    animation: bounce 1s infinite alternate;
+}
+body.dark-mode .gamified-toast.logout-toast {
+    background: linear-gradient(90deg, rgb(30,200,120), rgb(25,170,100));
+    color: rgb(18,24,22);
+}
+
+/* Avatar Change Section Styles */
+#avatar-section {
+    margin-top: 2rem;
+}
+#change-avatar-btn, #confirm-avatar-btn {
+    background: var(--primary-btn);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    margin-right: 1rem;
+    transition: background 0.3s, box-shadow 0.3s;
+    margin-bottom: 1rem;
+}
+#change-avatar-btn:hover, #confirm-avatar-btn:hover {
+    background: var(--primary-btn-hover);
+    box-shadow: 0 4px 12px rgba(41,236,139,0.15);
+}
+#avatar-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+.avatar-choice {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    object-fit: cover;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.avatar-choice.selected, .avatar-choice:focus {
+    border: 3px solid var(--primary-btn);
+    box-shadow: 0 0 0 3px rgba(41,236,139,0.15);
+}
+#close-avatar-options {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+    align-self: flex-end;
+}
+
+body.dark-mode #change-avatar-btn, body.dark-mode #confirm-avatar-btn {
+    background: var(--primary-btn);
+    color: #121816;
+}
+body.dark-mode #change-avatar-btn:hover, body.dark-mode #confirm-avatar-btn:hover {
+    background: var(--primary-btn-hover);
+}
+body.dark-mode .avatar-choice.selected, body.dark-mode .avatar-choice:focus {
+    border: 3px solid var(--primary-btn);
+    box-shadow: 0 0 0 3px rgba(30,200,120,0.18);
 }

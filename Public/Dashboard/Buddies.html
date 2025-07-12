@@ -13,26 +13,35 @@
     <div class="container">
         <aside class="sidebar">
             <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
-                <h3 class="user-name">John Doe</h3>
-                <span class="user-level">Level 8</span>
+                <div id="sidebar-avatar-spinner" style="width:100px;height:100px;display:none;justify-content:center;align-items:center;"><div class="spinner"></div></div>
+                <img src="" alt="User Avatar" class="avatar" id="sidebar-avatar" style="display:none;">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item">
                     <span class="nav-icon">🏠</span>
                     Home
                 </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
                 <a href="FoodLog.html" class="nav-item">
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="Buddies.html" class="nav-item active">
-                    <span class="nav-icon">👥</span>
-                    Buddies
+                <a href="FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    Food Suggestion
+                </a>
+                <a href="Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="Insights.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    Insights
+                </a>
+                <a href="Notification.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    Notification
                 </a>
                 <a href="Settings.html" class="nav-item">
                     <span class="nav-icon">⚙️</span>
@@ -48,12 +57,18 @@
                 <input type="text" class="search-bar" placeholder="Search for friends...">
             </div>
 
+            <!-- Collapsible Friend Requests Section -->
             <section class="friend-requests">
-                <div class="requests-header">
+                <div class="requests-header" id="requests-header">
                     <h2>Friend Requests</h2>
-                    <button class="btn btn-danger reject-all-btn">Reject All</button>
+                    <div class="header-actions">
+                        <button class="btn btn-danger reject-all-btn">Reject All</button>
+                        <button class="toggle-btn" id="requests-toggle">
+                            <span class="toggle-arrow">▼</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="request-list">
+                <div class="request-list" id="request-list">
                     <div class="request-item">
                         <img src="../../assets/avator1.jpeg" alt="Sarah" class="request-avatar">
                         <div class="request-info">
@@ -75,6 +90,49 @@
                             <button class="btn btn-primary accept-btn">Accept</button>
                             <button class="btn btn-danger reject-btn">Reject</button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Friends Section -->
+            <section class="my-friends">
+                <h2>My Friends</h2>
+                <div class="friends-list">
+                    <div class="friend-item">
+                        <img src="../../assets/avator3.jpeg" alt="Emma" class="friend-avatar">
+                        <div class="friend-info">
+                            <h3>Emma Wilson</h3>
+                            <span class="friend-level">Level 12</span>
+                            <span class="friend-xp">2,450 XP</span>
+                        </div>
+                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
+                    </div>
+                    <div class="friend-item">
+                        <img src="../../assets/avator4.jpeg" alt="Alex" class="friend-avatar">
+                        <div class="friend-info">
+                            <h3>Alex Martinez</h3>
+                            <span class="friend-level">Level 10</span>
+                            <span class="friend-xp">2,120 XP</span>
+                        </div>
+                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
+                    </div>
+                    <div class="friend-item">
+                        <img src="../../assets/avator5.jpeg" alt="Lisa" class="friend-avatar">
+                        <div class="friend-info">
+                            <h3>Lisa Taylor</h3>
+                            <span class="friend-level">Level 9</span>
+                            <span class="friend-xp">1,890 XP</span>
+                        </div>
+                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
+                    </div>
+                    <div class="friend-item">
+                        <img src="../../assets/avator6.jpeg" alt="Liam" class="friend-avatar">
+                        <div class="friend-info">
+                            <h3>Liam Anderson</h3>
+                            <span class="friend-level">Level 7</span>
+                            <span class="friend-xp">1,650 XP</span>
+                        </div>
+                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
                     </div>
                 </div>
             </section>
@@ -155,5 +213,30 @@
             </section>
         </main>
     </div>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+    </script>
+    <script>
+    (function() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            const avatar = document.getElementById('sidebar-avatar');
+            const name = document.getElementById('sidebar-username');
+            const level = document.getElementById('sidebar-userlevel');
+            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+            if (name && userData.profileName) name.textContent = userData.profileName;
+            if (level && userData.level) level.textContent = 'Level ' + userData.level;
+        }
+    })();
+    </script>
 </body>
 </html>

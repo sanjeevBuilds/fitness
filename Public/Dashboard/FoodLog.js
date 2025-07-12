@@ -258,6 +258,11 @@ async function addFoodToLog() {
             updateSummary();
             saveMeals();
             resetForm();
+            
+            // Add XP for logging a meal
+            if (typeof addUserXP === 'function') {
+                addUserXP(20, 'Food logged');
+            }
         }
     } catch (error) {
         console.error('Error adding food:', error);

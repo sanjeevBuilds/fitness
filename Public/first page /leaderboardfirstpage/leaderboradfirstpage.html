@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthQuest - Leaderboard</title>
+  <link rel="stylesheet" href="leaderboardfirstpage.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body id="page" class="fade-in">
+
+  <div class="container">
+    <h1>Climb the Leaderboard</h1>
+    <p class="subtext">
+      Every step, scan, and healthy choice helps you rank higher.
+      Compete with buddies or global warriors. Ready to become a legend?
+    </p>
+
+    <div class="image-text-section">
+      <img src="https://i.ibb.co/MC6xbsh/leaderboard.png" alt="Leaderboard Image" />
+    </div>
+
+    <div class="benefits">
+      <h2>Leaderboard Benefits</h2>
+      <ul>
+        <li>
+          <span class="icon">🔥</span>
+          <div>
+            <strong>Track Streaks</strong><br />
+            <span class="desc">Keep your momentum going with daily and weekly streaks.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">👥</span>
+          <div>
+            <strong>Challenge Friends</strong><br />
+            <span class="desc">Challenge friends to step up their game and see who comes out on top.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">🏆</span>
+          <div>
+            <strong>Tier Rewards</strong><br />
+            <span class="desc">Unlock exclusive rewards and titles as you climb through the tiers.</span>
+          </div>
+        </li>
+        <li>
+          <span class="icon">📍</span>
+          <div>
+            <strong>Earned Titles</strong><br />
+            <span class="desc">Earn prestigious titles that showcase your dedication and achievements.</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="skip" onclick="window.history.back()">Skip</button>
+      <div class="dots">
+        <span class="dot active"></span>
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+      <button class="next" onclick="goToStep3()">Next</button>
+    </div>
+  </div>
+
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <script src="leaderboardfirstpage.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthQuest - Step 1</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.cdnfonts.com/css/hurme-geometric-sans-1" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <div class="logo">HealthQuest</div>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">Pricing</a>
+        <a href="#">Support</a>
+        <button class="login">Log In</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="form-wrapper">
+    <p class="step">Step 1 of 4</p>
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+
+    <h1>Welcome to HealthQuest!</h1>
+    <p class="subtext">Let's get you started on your journey to a healthier you. First, tell us a bit about yourself.</p>
+
+    <form id="onboarding-form">
+      <input type="text" placeholder="Your Full Name" required>
+      <input type="number" placeholder="Your Age" required>
+      <input type="text" placeholder="Your Gender" required>
+      <input type="number" placeholder="Your Height (cm)" required>
+      <input type="number" placeholder="Your Weight (kg)" required>
+      <select required>
+        <option value="" disabled selected>Primary Goal</option>
+        <option value="weight_loss">Lose Weight / Fat Loss</option>
+        <option value="muscle_gain">Muscle Gain / Strength</option>
+        <option value="control_diet">Control Diet / Health Maintenance</option>
+        <option value="fitness">General Fitness / Improve Endurance</option>
+      </select>
+      <button type="submit" class="next-btn">Next</button>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

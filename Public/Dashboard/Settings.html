@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - HealthQuest</title>
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Settings.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -12,26 +13,34 @@
         <!-- Sidebar (maintained from dashboard) -->
         <div class="sidebar">
             <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
-                <h3 class="user-name">John Doe</h3>
-                <span class="user-level">Level 24</span>
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item">
                     <span class="nav-icon">🏠</span>
                     Home
                 </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
                 <a href="FoodLog.html" class="nav-item">
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="Buddies.html" class="nav-item">
-                    <span class="nav-icon">👥</span>
-                    Buddies
+                <a href="FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    Food Suggestion
+                </a>
+                <a href="Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="../Insights/Insights.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    Insights
+                </a>
+                <a href="../Notifications/Notifications.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    Notification
                 </a>
                 <a href="Settings.html" class="nav-item active">
                     <span class="nav-icon">⚙️</span>
@@ -43,23 +52,33 @@
         <!-- Main Content -->
         <main class="main-content">
             <h1>Settings</h1>
-
+            
             <!-- Account Information Section -->
             <section class="settings-section">
                 <h2>Account Information</h2>
                 <div class="form-group">
                     <label for="profile-name">Profile Name</label>
-                    <input type="text" id="profile-name" value="John Doe">
+                    <input type="text" id="profile-name">
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" value="john.doe@example.com">
+                    <input type="email" id="email">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" value="••••••••">
-                    <button class="update-btn">Update Password</button>
+                    <button class="update-btn">Save Changes</button>
                 </div>
+            </section>
+
+            <!-- Avatar Change Section -->
+            <section class="settings-section" id="avatar-section">
+                <h2>Change Avatar</h2>
+                <button id="change-avatar-btn" class="btn btn-primary" type="button" style="margin-bottom:1rem;">Change Avatar</button>
+                <div id="avatar-options" style="display:none; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;" class="avatar-options">
+                  <button id="close-avatar-options" title="Close" style="display:none;">&times;</button>
+                </div>
+                <button id="confirm-avatar-btn" class="btn btn-success" style="display:none;">Confirm Avatar</button>
             </section>
 
             <!-- Notification Preferences Section -->
@@ -95,9 +114,9 @@
                 <div class="toggle-group">
                     <div class="toggle-item">
                         <div class="toggle-header">
-                            <label>Dark Mode</label>
+                            <label for="dark-mode">Dark Mode</label>
                             <div class="toggle-switch">
-                                <input type="checkbox" id="dark-mode">
+                                <input type="checkbox" id="dark-mode" name="dark-mode">
                                 <span class="slider"></span>
                             </div>
                         </div>
@@ -115,7 +134,7 @@
                         <span class="arrow">→</span>
                     </a>
                     <a href="#" class="nav-link">
-                        Terms of Service
+                        About Us
                         <span class="arrow">→</span>
                     </a>
                     <a href="#" class="nav-link">
@@ -135,7 +154,34 @@
                     </a>
                 </div>
             </section>
+
+            <!-- Logout Section -->
+            <section class="settings-section logout-section">
+                <button class="logout-btn-gamified" id="logout-btn">🚪 Log Out</button>
+            </section>
         </main>
     </div>
+
+    <script src="Settings.js"></script>
+    <script>
+    // Autofill profileName and email from localStorage if available
+    (function() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            // Sidebar user profile
+            const avatar = document.getElementById('sidebar-avatar');
+            const name = document.getElementById('sidebar-username');
+            const level = document.getElementById('sidebar-userlevel');
+            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+            if (name && userData.profileName) name.textContent = userData.profileName;
+            if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            // Form fields
+            const profileInput = document.getElementById('profile-name');
+            const emailInput = document.getElementById('email');
+            if (profileInput) profileInput.value = userData.profileName || '';
+            if (emailInput) emailInput.value = userData.email || '';
+        }
+    })();
+    </script>
 </body>
 </html>

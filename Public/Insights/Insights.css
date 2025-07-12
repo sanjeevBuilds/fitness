@@ -1,0 +1,201 @@
+/* Insights page custom styles */
+.insight-cards-section {
+    margin-bottom: 2.5rem;
+}
+.insight-cards-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.insight-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 2rem 2rem 1.5rem 2rem;
+    flex: 1 1 350px;
+    min-width: 320px;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.posture-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+.posture-score {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-btn);
+}
+.posture-score-label {
+    font-size: 1rem;
+    color: var(--text-light);
+}
+.posture-graph-container {
+    width: 100%;
+    height: 140px;
+    margin: 1rem 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#posture-graph {
+    width: 100%;
+    height: 100%;
+    background: none;
+}
+.posture-avg {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+.nutrition-card {
+    min-width: 320px;
+    max-width: 420px;
+}
+.nutrition-summary {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+.nutrition-bar-container {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+.nutrition-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin-bottom: 0.3rem;
+}
+.nutrition-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    height: 160px;
+}
+.nutrition-bar {
+    width: 36px;
+    border-radius: 8px 8px 0 0;
+    background: var(--primary-btn);
+    opacity: 0.85;
+    transition: height 0.4s;
+}
+.nutrition-bar.protein { background: #1ec878; }
+.nutrition-bar.carbs { background: #f7b500; }
+.nutrition-bar.fats { background: #e74c3c; }
+.detailed-reports-section {
+    margin-top: 2.5rem;
+}
+.insights-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+.insights-table th, .insights-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+.insights-table th {
+    background: var(--primary-bg);
+    color: var(--text-dark);
+    font-weight: 600;
+}
+.insights-table tr:last-child td {
+    border-bottom: none;
+}
+.future-addons-section {
+    margin-top: 2.5rem;
+}
+.future-addons-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.future-addon {
+    background: var(--primary-bg);
+    color: var(--text-light);
+    border-radius: var(--border-radius);
+    padding: 1.2rem 2rem;
+    font-size: 1.1rem;
+    box-shadow: var(--card-shadow);
+}
+@media (max-width: 900px) {
+    .insight-cards-grid {
+        flex-direction: column;
+    }
+}
+@media (max-width: 600px) {
+    .insight-card, .nutrition-card {
+        min-width: 0;
+        max-width: 100%;
+        padding: 1rem;
+    }
+    .posture-graph-container {
+        height: 100px;
+    }
+    .nutrition-bars {
+        height: 100px;
+    }
+}
+body.dark-mode .insight-card, body.dark-mode .nutrition-card {
+    background: var(--card-bg);
+    color: var(--text-dark);
+}
+body.dark-mode .insights-table th {
+    background: rgba(30,200,120,0.1);
+    color: var(--text-dark);
+}
+body.dark-mode .future-addon {
+    background: rgb(28,36,34);
+    color: var(--text-light);
+}
+#nutrition-pie {
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(30, 200, 120, 0.08);
+}
+.nutrition-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+.nutrition-legend span {
+  display: flex;
+  align-items: center;
+}
+.nutrition-legend span span {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+.nutrition-bars-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3rem;
+  height: 160px;
+}
+.nutrition-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nutrition-bar-label {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-light);
+}

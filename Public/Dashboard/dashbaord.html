@@ -13,23 +13,32 @@
             <div class="user-profile">
                 <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar">
                 <h3 class="user-name">John Doe</h3>
+                <span class="level-badge user-level">Level 1</span>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item active">
                     <span class="nav-icon">🏠</span>
                     Home
                 </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
                 <a href="FoodLog.html" class="nav-item">
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="Buddies.html" class="nav-item">
-                    <span class="nav-icon">👥</span>
-                    Buddies
+                <a href="FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    Food Suggestion
+                </a>
+                <a href="Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="../Insights/Insights.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    Insights
+                </a>
+                <a href="../Notifications/Notifications.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    Notification
                 </a>
                 <a href="Settings.html" class="nav-item">
                     <span class="nav-icon">⚙️</span>
@@ -44,7 +53,7 @@
             <!-- Coin Wallet -->
             <div class="coin-wallet">
                 <span class="coin-icon">💰</span>
-                <span class="coin-balance" id="coin-balance">1,250</span>
+                <span class="coin-balance">0</span>
                 <span class="coin-label">Coins</span>
             </div>
             
@@ -52,18 +61,28 @@
             <div class="gamified-header">
                 <div class="level-progress">
                     <div class="level-info">
-                        <h2>Level 8</h2>
-                        <span class="xp">750/1000 XP</span>
+                        <h2 class="current-level">Level 1</h2>
+                        <span class="xp">0/100 XP</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 75%"></div>
+                        <div class="progress-fill" style="width: 0%"></div>
                     </div>
                 </div>
                 <div class="user-stats">
                     <div class="stat-item">
                         <span class="stat-icon">🏆</span>
-                        <span class="stat-value">#42</span>
+                        <span class="stat-value" data-stat="rank">#42</span>
                         <span class="stat-label">Rank</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-value" data-stat="level">1</span>
+                        <span class="stat-label">Level</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">💎</span>
+                        <span class="stat-value" data-stat="xp">0</span>
+                        <span class="stat-label">XP</span>
                     </div>
                 </div>
             </div>
@@ -466,5 +485,17 @@
     </div>
 
     <script src="dashboard.js"></script>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+    </script>
 </body>
 </html>

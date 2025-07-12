@@ -1,3 +1,11 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
 .description {
     color: var(--text-light);
     font-size: 1.1rem;
@@ -125,4 +133,87 @@ tr:hover {
     td {
         padding: 0.8rem;
     }
+}
+
+@media (max-width: 480px) {
+    .webcam-area {
+        aspect-ratio: 3/4;
+    }
+
+    .scan-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+    }
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: rgb(18, 24, 22);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .sidebar {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .main-content {
+    background-color: rgb(18, 24, 22);
+}
+
+body.dark-mode .description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .tab-btn {
+    background: rgb(28, 36, 34);
+    color: rgb(240, 255, 250);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .tab-btn.active {
+    background: rgb(30, 200, 120);
+    color: rgb(18, 24, 22);
+}
+
+body.dark-mode .tab-btn:hover:not(.active) {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .webcam-area {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .scan-history {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode th {
+    background: rgba(30, 200, 120, 0.1);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode th,
+body.dark-mode td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode tr:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nav-item {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .nav-item:hover {
+    background: rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .nav-item.active {
+    background: rgb(30, 200, 120);
+    color: rgb(18, 24, 22);
 }

@@ -1,750 +1,555 @@
-// Dashboard Gamification System
-class DashboardManager {
+// Authentication and User Data Management
+class UserAuth {
     constructor() {
-        this.currentXP = 750;
-        this.totalXP = 1000;
-        this.coins = 1250;
-        this.rank = 42;
-        this.quests = {
-            water: { completed: false, xp: 25, target: 2, current: 0 },
-            steps: { completed: false, xp: 50, target: 5000, current: 0 },
-            sleep: { completed: false, xp: 30, target: 7, current: 0 },
-            posture: { completed: false, xp: 40, target: 1, current: 0 },
-            meal: { completed: false, xp: 20, target: 1, current: 0 },
-            exercise: { completed: false, xp: 60, target: 30, current: 0 }
-        };
-        this.stats = {
-            calories: 0,
-            protein: 0,
-            steps: 0,
-            water: 0,
-            sleep: 0,
-            posture: 88
-        };
-        this.activityLog = [];
-        
-        // Mini Challenges
-        this.miniChallenges = {
-            'night-walk': { unlocked: false, cost: 15, xp: 20, badge: 'Moonwalker' },
-            'fruit-day': { unlocked: false, cost: 20, xp: 30, badge: 'Avatar Hat' },
-            'hydration-hero': { unlocked: false, cost: 25, xp: 40, badge: 'Water Badge + 2x XP' }
-        };
-        
-        // Titles & Ranks
-        this.titles = {
-            'step-warrior': { unlocked: false, cost: 75, progress: 6, target: 10, equipped: false },
-            'protein-beast': { unlocked: false, cost: 100, progress: 80, target: 100, equipped: false },
-            'streak-legend': { unlocked: false, cost: 200, progress: 5, target: 14, equipped: false }
-        };
-        
-        // Smart Quest Scaling
-        this.smartQuests = {
-            steps: { current: 12000, goal: 10000, xp: 50, coins: 15, nextGoal: 20000 },
-            calories: { current: 1700, goal: 2000, xp: 30, coins: 0 },
-            protein: { current: 95, goal: 100, xp: 25, coins: 0 }
-        };
-        
+        this.userData = null;
+        this.checkAuth();
+    }
+
+    // Check if user is authenticated (now optional)
+    checkAuth() {
+        const storedUserData = localStorage.getItem('userData');
+        if (!storedUserData) {
+            // No authentication required - use default data
+            this.userData = {
+                profileName: 'Guest User',
+                avatar: 'avatar1.png',
+                email: 'guest@example.com',
+                xp: 1250,
+                level: 4,
+                createdAt: new Date().toISOString()
+            };
+            this.displayUserData();
+            return;
+        }
+
+        try {
+            this.userData = JSON.parse(storedUserData);
+            this.displayUserData();
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            localStorage.removeItem('userData');
+            // Use default data instead of redirecting
+            this.userData = {
+                profileName: 'Guest User',
+                avatar: 'avatar1.png',
+                email: 'guest@example.com',
+                xp: 1250,
+                level: 4,
+                createdAt: new Date().toISOString()
+            };
+            this.displayUserData();
+        }
+    }
+
+    // Display user data in the dashboard
+    displayUserData() {
+        if (!this.userData) return;
+
+        // Update sidebar user profile
+        const userAvatar = document.querySelector('.user-profile .avatar');
+        const userName = document.querySelector('.user-profile .user-name');
+        const userLevel = document.querySelector('.user-profile .user-level');
+
+        if (userAvatar) {
+            userAvatar.src = `../../assets/${this.userData.avatar}`;
+            userAvatar.alt = `${this.userData.profileName}'s Avatar`;
+        }
+
+        if (userName) {
+            userName.textContent = this.userData.profileName;
+        }
+
+        if (userLevel) {
+            userLevel.textContent = `Level ${this.userData.level}`;
+        }
+
+        // Update gamified header
+        this.updateGamifiedHeader();
+
+        // Update page title
+        document.title = `Dashboard - ${this.userData.profileName}`;
+    }
+
+    // Update gamified header with user data
+    updateGamifiedHeader() {
+        const currentLevel = document.querySelector('.current-level');
+        const xpDisplay = document.querySelector('.xp');
+        const levelStat = document.querySelector('[data-stat="level"]');
+        const xpStat = document.querySelector('[data-stat="xp"]');
+
+        if (currentLevel) {
+            currentLevel.textContent = `Level ${this.userData.level}`;
+        }
+
+        if (xpDisplay) {
+            const xpForCurrentLevel = this.getXPForLevel(this.userData.level);
+            const xpForNextLevel = this.getXPForLevel(this.userData.level + 1);
+            const currentXP = this.userData.xp - xpForCurrentLevel;
+            const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+            xpDisplay.textContent = `${currentXP}/${xpNeeded} XP`;
+        }
+
+        if (levelStat) {
+            levelStat.textContent = this.userData.level;
+        }
+
+        if (xpStat) {
+            xpStat.textContent = this.userData.xp.toLocaleString();
+        }
+
+        // Update progress bar
+        this.updateProgressBar();
+    }
+
+    // Calculate XP required for a level
+    getXPForLevel(level) {
+        if (level <= 1) return 0;
+        if (level <= 2) return 100;
+        if (level <= 3) return 300;
+        if (level <= 4) return 600;
+        if (level <= 5) return 1000;
+        if (level <= 6) return 1500;
+        if (level <= 7) return 2100;
+        if (level <= 8) return 2800;
+        if (level <= 9) return 3600;
+        return 4500 + (level - 10) * 1000;
+    }
+
+    // Update progress bar
+    updateProgressBar() {
+        const progressFill = document.querySelector('.progress-fill');
+        if (!progressFill) return;
+
+        const xpForCurrentLevel = this.getXPForLevel(this.userData.level);
+        const xpForNextLevel = this.getXPForLevel(this.userData.level + 1);
+        const currentXP = this.userData.xp - xpForCurrentLevel;
+        const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+        const percentage = Math.min((currentXP / xpNeeded) * 100, 100);
+
+        progressFill.style.width = `${percentage}%`;
+    }
+
+    // Logout function
+    logout() {
+        localStorage.removeItem('userData');
+        window.location.href = '/Public/test/login.html';
+    }
+
+    // Get current user data
+    getUserData() {
+        return this.userData;
+    }
+
+    // Update user data (for when user updates profile)
+    updateUserData(newData) {
+        this.userData = { ...this.userData, ...newData };
+        localStorage.setItem('userData', JSON.stringify(this.userData));
+        this.displayUserData();
+    }
+}
+
+// Dashboard Gamification System
+class DashboardGamification {
+    constructor() {
+        this.userData = this.loadUserData();
         this.init();
     }
 
     init() {
-        this.loadData();
+        this.updateLevelDisplay();
+        this.updateProgressBar();
+        this.updateStats();
         this.setupEventListeners();
-        this.updateDisplay();
-        this.checkFoodLog();
-        this.startPeriodicUpdates();
-        this.updateChallengeTimer();
     }
 
-    setupEventListeners() {
-        // Quest checkboxes
-        const questCheckboxes = document.querySelectorAll('.quest-checkbox');
-        questCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                this.handleQuestToggle(e.target);
-            });
-        });
-
-        // Mini challenge unlock buttons
-        const unlockButtons = document.querySelectorAll('.unlock-btn');
-        unlockButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                this.showUnlockModal(e.target);
-            });
-        });
-
-        // Title unlock buttons
-        const titleButtons = document.querySelectorAll('.unlock-title-btn');
-        titleButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                this.handleTitleUnlock(e.target);
-            });
-        });
-
-        // Modal event listeners
-        const modal = document.getElementById('unlock-modal');
-        const closeBtn = document.getElementById('close-modal');
-        const cancelBtn = document.getElementById('cancel-unlock');
-        const confirmBtn = document.getElementById('confirm-unlock');
-
-        if (closeBtn) closeBtn.addEventListener('click', () => this.hideUnlockModal());
-        if (cancelBtn) cancelBtn.addEventListener('click', () => this.hideUnlockModal());
-        if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmUnlock());
-
-        // Close modal when clicking outside
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) this.hideUnlockModal();
-            });
-        }
-
-        // Auto-complete meal quest when food is logged
-        this.checkMealQuest();
-    }
-
-    showUnlockModal(button) {
-        const challengeType = button.closest('.challenge-card').dataset.challenge;
-        const cost = parseInt(button.dataset.cost);
-        const challenge = this.miniChallenges[challengeType];
-        
-        if (!challenge) return;
-        
-        const modal = document.getElementById('unlock-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalCost = document.getElementById('modal-cost');
-        
-        if (this.coins < cost) {
-            this.showNotification('Insufficient Coins', 'You need more coins to unlock this challenge!');
-            return;
+    // Load user data from localStorage or use defaults
+    loadUserData() {
+        const savedData = localStorage.getItem('userData');
+        if (savedData) {
+            return JSON.parse(savedData);
         }
         
-        modalTitle.textContent = `Unlock ${this.getChallengeName(challengeType)}`;
-        modalMessage.textContent = `Are you sure you want to unlock this challenge for ${cost} coins?`;
-        modalCost.textContent = cost;
-        
-        // Store current challenge for confirmation
-        this.currentUnlockChallenge = challengeType;
-        
-        modal.style.display = 'block';
-    }
-
-    hideUnlockModal() {
-        const modal = document.getElementById('unlock-modal');
-        modal.style.display = 'none';
-        this.currentUnlockChallenge = null;
-    }
-
-    confirmUnlock() {
-        if (!this.currentUnlockChallenge) return;
-        
-        const challenge = this.miniChallenges[this.currentUnlockChallenge];
-        const cost = challenge.cost;
-        
-        if (this.coins >= cost) {
-            this.coins -= cost;
-            challenge.unlocked = true;
-            
-            this.addXP(challenge.xp);
-            this.addActivity(`Unlocked ${this.getChallengeName(this.currentUnlockChallenge)}`, challenge.xp);
-            
-            // Update UI
-            const challengeCard = document.querySelector(`[data-challenge="${this.currentUnlockChallenge}"]`);
-            const unlockBtn = challengeCard.querySelector('.unlock-btn');
-            unlockBtn.textContent = 'Challenge Unlocked!';
-            unlockBtn.disabled = true;
-            unlockBtn.classList.remove('btn-primary');
-            unlockBtn.classList.add('btn-success');
-            
-            this.showNotification('Challenge Unlocked!', `You've unlocked ${this.getChallengeName(this.currentUnlockChallenge)}!`);
-            this.saveData();
-        }
-        
-        this.hideUnlockModal();
-    }
-
-    handleTitleUnlock(button) {
-        const titleType = button.closest('.title-card').dataset.title;
-        const title = this.titles[titleType];
-        
-        if (this.coins >= title.cost) {
-            this.coins -= title.cost;
-            title.unlocked = true;
-            
-            this.addActivity(`Unlocked ${this.getTitleName(titleType)}`, 50);
-            this.showTitleUnlockModal(titleType);
-            this.updateTitleUI(titleType);
-            this.saveData();
-        } else {
-            this.showNotification('Insufficient Coins', 'You need more coins to unlock this title!');
-        }
-    }
-
-    showTitleUnlockModal(titleType) {
-        const titleName = this.getTitleName(titleType);
-        this.showNotification('Title Unlocked! 🎉', `You've unlocked '${titleName}'! Do you want to equip it now?`);
-        
-        // Add equip button to notification (simplified)
-        setTimeout(() => {
-            if (confirm(`Equip '${titleName}' now?`)) {
-                this.equipTitle(titleType);
-            }
-        }, 1000);
-    }
-
-    equipTitle(titleType) {
-        // Unequip all other titles
-        Object.keys(this.titles).forEach(key => {
-            this.titles[key].equipped = false;
-        });
-        
-        // Equip selected title
-        this.titles[titleType].equipped = true;
-        this.addActivity(`Equipped ${this.getTitleName(titleType)}`, 10);
-        this.saveData();
-    }
-
-    updateTitleUI(titleType) {
-        const titleCard = document.querySelector(`[data-title="${titleType}"]`);
-        const unlockBtn = titleCard.querySelector('.unlock-title-btn');
-        
-        if (this.titles[titleType].unlocked) {
-            titleCard.classList.add('unlocked');
-            unlockBtn.textContent = this.titles[titleType].equipped ? 'Equipped' : 'Equip';
-            unlockBtn.classList.remove('btn-secondary');
-            unlockBtn.classList.add('btn-primary');
-        }
-    }
-
-    getChallengeName(challengeType) {
-        const names = {
-            'night-walk': 'Night Walk',
-            'fruit-day': 'Fruit Day',
-            'hydration-hero': 'Hydration Hero'
+        // Default user data
+        return {
+            xp: 1250,
+            level: 1,
+            coins: 50,
+            totalSteps: 0,
+            totalWater: 0,
+            totalSleep: 0,
+            totalMeals: 0,
+            totalExercise: 0,
+            totalPostureScans: 0,
+            activityLog: []
         };
-        return names[challengeType] || challengeType;
     }
 
-    getTitleName(titleType) {
-        const names = {
-            'step-warrior': 'Step Warrior',
-            'protein-beast': 'Protein Beast',
-            'streak-legend': 'Streak Legend'
-        };
-        return names[titleType] || titleType;
+    // Save user data to localStorage
+    saveUserData() {
+        localStorage.setItem('userData', JSON.stringify(this.userData));
     }
 
-    updateChallengeTimer() {
-        // Simulate challenge rotation every 3 days
-        const now = new Date();
-        const lastRotation = new Date(localStorage.getItem('lastChallengeRotation') || now);
-        const daysSinceRotation = Math.floor((now - lastRotation) / (1000 * 60 * 60 * 24));
-        const daysUntilRotation = 3 - (daysSinceRotation % 3);
+    // Calculate level based on XP using the formula: XP_required = 100 * level^1.5
+    calculateLevel(xp) {
+        if (xp <= 0) return 1;
         
-        const timerElement = document.getElementById('challenge-timer');
-        if (timerElement) {
-            timerElement.textContent = `Refreshes in ${daysUntilRotation} days`;
-        }
-        
-        // Auto-rotate challenges every 3 days
-        if (daysSinceRotation >= 3) {
-            this.rotateChallenges();
-            localStorage.setItem('lastChallengeRotation', now.toISOString());
-        }
+        // Reverse the formula to find level: level = (XP / 100)^(2/3)
+        const level = Math.pow(xp / 100, 2/3);
+        return Math.floor(level) + 1;
     }
 
-    rotateChallenges() {
-        // Reset all challenges
-        Object.keys(this.miniChallenges).forEach(key => {
-            this.miniChallenges[key].unlocked = false;
-        });
+    // Calculate XP required for next level
+    calculateXPForLevel(level) {
+        return Math.floor(100 * Math.pow(level, 1.5));
+    }
+
+    // Calculate XP required for current level
+    calculateXPForCurrentLevel(level) {
+        return Math.floor(100 * Math.pow(level - 1, 1.5));
+    }
+
+    // Calculate progress percentage toward next level
+    calculateProgressPercentage() {
+        const currentLevel = this.userData.level;
+        const currentLevelXP = this.calculateXPForCurrentLevel(currentLevel);
+        const nextLevelXP = this.calculateXPForLevel(currentLevel);
+        const userXP = this.userData.xp;
+        
+        const xpInCurrentLevel = userXP - currentLevelXP;
+        const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
+        
+        return Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeededForNextLevel) * 100));
+    }
+
+    // Add XP and handle level ups
+    addXP(amount, reason = 'Activity completed') {
+        const oldLevel = this.userData.level;
+        const oldXP = this.userData.xp;
+        
+        // Add XP
+        this.userData.xp += amount;
+        
+        // Calculate new level
+        const newLevel = this.calculateLevel(this.userData.xp);
+        this.userData.level = newLevel;
+        
+        // Log activity
+        this.logActivity(amount, reason);
+        
+        // Save data
+        this.saveUserData();
         
         // Update UI
-        const challengeCards = document.querySelectorAll('.challenge-card');
-        challengeCards.forEach(card => {
-            const unlockBtn = card.querySelector('.unlock-btn');
-            unlockBtn.textContent = 'Unlock Challenge';
-            unlockBtn.disabled = false;
-            unlockBtn.classList.remove('btn-success');
-            unlockBtn.classList.add('btn-primary');
-        });
-        
-        this.addActivity('Challenges Refreshed!', 25);
-        this.showNotification('Challenges Refreshed!', 'New challenges are available!');
-    }
-
-    handleQuestToggle(checkbox) {
-        const questType = checkbox.id.replace('-quest', '');
-        const questItem = document.querySelector(`[data-quest="${questType}"]`);
-        
-        if (checkbox.checked) {
-            this.completeQuest(questType, questItem);
-        } else {
-            this.uncompleteQuest(questType, questItem);
-        }
-    }
-
-    completeQuest(questType, questItem) {
-        const quest = this.quests[questType];
-        if (!quest.completed) {
-            quest.completed = true;
-            quest.current = quest.target;
-            
-            // Add XP
-            this.addXP(quest.xp);
-            
-            // Update stats
-            this.updateStatsFromQuest(questType);
-            
-            // Visual feedback
-            questItem.classList.add('completed');
-            this.showXPAnimation(questItem, quest.xp);
-            
-            // Add to activity log
-            this.addActivity(`Completed ${this.getQuestName(questType)}`, quest.xp);
-            
-            // Save data
-            this.saveData();
-        }
-    }
-
-    uncompleteQuest(questType, questItem) {
-        const quest = this.quests[questType];
-        if (quest.completed) {
-            quest.completed = false;
-            quest.current = 0;
-            
-            // Remove XP
-            this.removeXP(quest.xp);
-            
-            // Update stats
-            this.updateStatsFromQuest(questType);
-            
-            // Visual feedback
-            questItem.classList.remove('completed');
-            
-            // Save data
-            this.saveData();
-        }
-    }
-
-    addXP(amount) {
-        this.currentXP += amount;
-        this.coins += Math.floor(amount / 10); // 1 coin per 10 XP
+        this.updateLevelDisplay();
+        this.updateProgressBar();
+        this.updateStats();
         
         // Check for level up
-        if (this.currentXP >= this.totalXP) {
-            this.levelUp();
+        if (newLevel > oldLevel) {
+            this.handleLevelUp(oldLevel, newLevel);
         }
         
-        this.updateDisplay();
+        // Show XP gain animation
+        this.showXPGainAnimation(amount);
     }
 
-    removeXP(amount) {
-        this.currentXP = Math.max(0, this.currentXP - amount);
-        this.coins = Math.max(0, this.coins - Math.floor(amount / 10));
-        this.updateDisplay();
-    }
-
-    levelUp() {
-        // Simple level up system
-        this.currentXP -= this.totalXP;
-        this.totalXP = Math.floor(this.totalXP * 1.2); // 20% increase per level
-        
-        // Add level up activity
-        this.addActivity('Level Up! 🎉', 100);
+    // Handle level up
+    handleLevelUp(oldLevel, newLevel) {
+        // Add coins for level up
+        const coinsEarned = 10;
+        this.userData.coins += coinsEarned;
+        this.saveUserData();
         
         // Show level up notification
-        this.showNotification('Level Up! 🎉', 'Congratulations! You\'ve reached a new level!');
-    }
-
-    updateStatsFromQuest(questType) {
-        switch (questType) {
-            case 'water':
-                this.stats.water = this.quests.water.completed ? 2 : 0;
-                break;
-            case 'steps':
-                this.stats.steps = this.quests.steps.completed ? 5000 : 0;
-                break;
-            case 'sleep':
-                this.stats.sleep = this.quests.sleep.completed ? 7 : 0;
-                break;
-            case 'posture':
-                this.stats.posture = this.quests.posture.completed ? 95 : 88;
-                break;
-            case 'meal':
-                // This will be handled by food log integration
-                break;
-            case 'exercise':
-                // This could be expanded for exercise tracking
-                break;
-        }
-        this.updateDisplay();
-    }
-
-    checkFoodLog() {
-        // Check if food has been logged today
-        const today = new Date().toDateString();
-        const foodLogData = localStorage.getItem('foodLogMeals');
+        this.showLevelUpNotification(newLevel, coinsEarned);
         
-        if (foodLogData) {
-            try {
-                const meals = JSON.parse(foodLogData);
-                const todayMeals = meals.filter(meal => {
-                    const mealDate = new Date(meal.timestamp).toDateString();
-                    return mealDate === today;
-                });
-                
-                if (todayMeals.length > 0) {
-                    // Calculate totals
-                    const totals = todayMeals.reduce((acc, meal) => {
-                        acc.calories += meal.calories;
-                        acc.protein += meal.protein;
-                        return acc;
-                    }, { calories: 0, protein: 0 });
-                    
-                    this.stats.calories = totals.calories;
-                    this.stats.protein = totals.protein;
-                    
-                    // Update smart quests
-                    this.smartQuests.calories.current = totals.calories;
-                    this.smartQuests.protein.current = totals.protein;
-                    
-                    // Auto-complete meal quest
-                    if (!this.quests.meal.completed) {
-                        this.quests.meal.completed = true;
-                        this.quests.meal.current = 1;
-                        this.addXP(this.quests.meal.xp);
-                        this.addActivity('Logged today\'s meal', this.quests.meal.xp);
-                        
-                        const mealQuestItem = document.querySelector('[data-quest="meal"]');
-                        const mealCheckbox = document.getElementById('meal-quest');
-                        mealCheckbox.checked = true;
-                        mealQuestItem.classList.add('completed');
-                    }
-                }
-            } catch (error) {
-                console.error('Error parsing food log data:', error);
-            }
-        }
-    }
-
-    checkMealQuest() {
-        // Check if meal quest should be auto-completed
-        const today = new Date().toDateString();
-        const foodLogData = localStorage.getItem('foodLogMeals');
+        // Update coin display
+        this.updateCoinDisplay();
         
-        if (foodLogData) {
-            try {
-                const meals = JSON.parse(foodLogData);
-                const todayMeals = meals.filter(meal => {
-                    const mealDate = new Date(meal.timestamp).toDateString();
-                    return mealDate === today;
-                });
-                
-                if (todayMeals.length > 0 && !this.quests.meal.completed) {
-                    this.quests.meal.completed = true;
-                    this.quests.meal.current = 1;
-                    this.addXP(this.quests.meal.xp);
-                    this.addActivity('Logged today\'s meal', this.quests.meal.xp);
-                    
-                    const mealQuestItem = document.querySelector('[data-quest="meal"]');
-                    const mealCheckbox = document.getElementById('meal-quest');
-                    mealCheckbox.checked = true;
-                    mealQuestItem.classList.add('completed');
-                }
-            } catch (error) {
-                console.error('Error checking meal quest:', error);
-            }
+        // Add to activity log
+        this.logActivity(0, `🎉 Level Up! Reached Level ${newLevel}`, 'levelup');
+    }
+
+    // Log activity
+    logActivity(xpGained, reason, type = 'xp') {
+        const activity = {
+            id: Date.now(),
+            type: type,
+            xpGained: xpGained,
+            reason: reason,
+            timestamp: new Date().toISOString(),
+            level: this.userData.level
+        };
+        
+        this.userData.activityLog.unshift(activity);
+        
+        // Keep only last 20 activities
+        if (this.userData.activityLog.length > 20) {
+            this.userData.activityLog = this.userData.activityLog.slice(0, 20);
         }
     }
 
-    updateDisplay() {
-        // Update XP progress
+    // Update level display
+    updateLevelDisplay() {
+        const levelElements = document.querySelectorAll('.user-level, .level-badge, .current-level');
+        levelElements.forEach(element => {
+            element.textContent = `Level ${this.userData.level}`;
+        });
+        
+        // Update level info in progress section
+        const levelInfo = document.querySelector('.level-info');
+        if (levelInfo) {
+            const currentLevelXP = this.calculateXPForCurrentLevel(this.userData.level);
+            const nextLevelXP = this.calculateXPForLevel(this.userData.level);
+            const userXP = this.userData.xp;
+            
+            levelInfo.innerHTML = `
+                <div>
+                    <span class="level-text">Level ${this.userData.level}</span>
+                    <span class="xp-text">${userXP} XP</span>
+                </div>
+                <div class="xp-details">
+                    <span class="xp-current">${userXP - currentLevelXP}</span>
+                    <span class="xp-separator">/</span>
+                    <span class="xp-needed">${nextLevelXP - currentLevelXP}</span>
+                    <span class="xp-label">XP to next level</span>
+                </div>
+            `;
+        }
+    }
+
+    // Update progress bar
+    updateProgressBar() {
         const progressFill = document.querySelector('.progress-fill');
-        const xpText = document.querySelector('.xp');
-        const percentage = (this.currentXP / this.totalXP) * 100;
-        
-        if (progressFill) progressFill.style.width = `${percentage}%`;
-        if (xpText) xpText.textContent = `${this.currentXP}/${this.totalXP} XP`;
-        
-        // Update coin balance in wallet
-        const coinBalance = document.getElementById('coin-balance');
-        if (coinBalance) coinBalance.textContent = this.coins.toLocaleString();
-        
-        // Update user stats (only rank now, coins removed)
-        const rankValue = document.querySelector('.user-stats .stat-value');
-        if (rankValue) rankValue.textContent = `#${this.rank}`;
-        
-        // Update live stats in daily summary
-        this.updateLiveStats();
-        
-        // Update quest checkboxes
-        this.updateQuestCheckboxes();
-        
-        // Update smart quests
-        this.updateSmartQuests();
-        
-        // Update titles
-        this.updateTitles();
-    }
-
-    updateLiveStats() {
-        const displays = {
-            calories: document.getElementById('calories-display'),
-            protein: document.getElementById('protein-display'),
-            steps: document.getElementById('steps-display'),
-            water: document.getElementById('water-display'),
-            sleep: document.getElementById('sleep-display'),
-            posture: document.getElementById('posture-display')
-        };
-        
-        const changes = {
-            calories: document.getElementById('calories-change'),
-            protein: document.getElementById('protein-change'),
-            steps: document.getElementById('steps-change'),
-            water: document.getElementById('water-change'),
-            sleep: document.getElementById('sleep-change')
-        };
-        
-        // Update values in daily summary
-        Object.keys(displays).forEach(key => {
-            if (displays[key]) {
-                displays[key].textContent = this.stats[key].toLocaleString();
-            }
-        });
-        
-        // Update change indicators (simplified)
-        Object.keys(changes).forEach(key => {
-            if (changes[key]) {
-                const change = this.stats[key] > 0 ? '+' : '';
-                changes[key].textContent = `${change}${this.stats[key]}%`;
-            }
-        });
-    }
-
-    updateSmartQuests() {
-        Object.keys(this.smartQuests).forEach(questType => {
-            const quest = this.smartQuests[questType];
-            const questElement = document.querySelector(`[data-quest="${questType}"]`);
+        if (progressFill) {
+            const percentage = this.calculateProgressPercentage();
+            progressFill.style.width = `${percentage}%`;
             
-            if (questElement) {
-                const progressFill = questElement.querySelector('.progress-fill');
-                const progressText = questElement.querySelector('.progress-text');
-                const rewardXp = questElement.querySelector('.reward-xp');
-                const rewardCoins = questElement.querySelector('.reward-coins');
-                const scalingNotice = questElement.querySelector('.scaling-notice');
-                
-                const percentage = Math.min((quest.current / quest.goal) * 100, 100);
-                
-                if (progressFill) progressFill.style.width = `${percentage}%`;
-                if (progressText) progressText.textContent = `${quest.current.toLocaleString()} / ${quest.goal.toLocaleString()}`;
-                if (rewardXp) rewardXp.textContent = `+${quest.xp} XP`;
-                if (rewardCoins) rewardCoins.textContent = `+${quest.coins} Coins`;
-                
-                // Show scaling notice if exceeded
-                if (quest.current > quest.goal && scalingNotice) {
-                    scalingNotice.style.display = 'inline-block';
-                    questElement.classList.add('exceeded');
-                } else if (scalingNotice) {
-                    scalingNotice.style.display = 'none';
-                    questElement.classList.remove('exceeded');
-                }
-            }
-        });
-    }
-
-    updateTitles() {
-        Object.keys(this.titles).forEach(titleType => {
-            const title = this.titles[titleType];
-            const titleCard = document.querySelector(`[data-title="${titleType}"]`);
-            
-            if (titleCard) {
-                const progressFill = titleCard.querySelector('.progress-fill');
-                const progressText = titleCard.querySelector('.progress-text');
-                const unlockBtn = titleCard.querySelector('.unlock-title-btn');
-                
-                const percentage = (title.progress / title.target) * 100;
-                
-                if (progressFill) progressFill.style.width = `${percentage}%`;
-                if (progressText) {
-                    if (titleType === 'protein-beast') {
-                        progressText.textContent = `${title.progress}/${title.target}g avg`;
-                    } else {
-                        progressText.textContent = `${title.progress}/${title.target} days`;
-                    }
-                }
-                
-                if (title.unlocked && unlockBtn) {
-                    unlockBtn.textContent = title.equipped ? 'Equipped' : 'Equip';
-                    unlockBtn.classList.remove('btn-secondary');
-                    unlockBtn.classList.add('btn-primary');
-                    titleCard.classList.add('unlocked');
-                }
-            }
-        });
-    }
-
-    updateQuestCheckboxes() {
-        Object.keys(this.quests).forEach(questType => {
-            const checkbox = document.getElementById(`${questType}-quest`);
-            const questItem = document.querySelector(`[data-quest="${questType}"]`);
-            
-            if (checkbox && questItem) {
-                checkbox.checked = this.quests[questType].completed;
-                if (this.quests[questType].completed) {
-                    questItem.classList.add('completed');
-                } else {
-                    questItem.classList.remove('completed');
-                }
-            }
-        });
-    }
-
-    showXPAnimation(element, xp) {
-        const xpElement = element.querySelector('.xp-reward');
-        if (xpElement) {
-            xpElement.classList.add('xp-gain-animation');
+            // Add animation class for smooth transitions
+            progressFill.classList.add('progress-animated');
             setTimeout(() => {
-                xpElement.classList.remove('xp-gain-animation');
+                progressFill.classList.remove('progress-animated');
             }, 500);
         }
     }
 
-    addActivity(description, xp) {
-        const activity = {
-            id: Date.now(),
-            description,
-            xp,
-            timestamp: new Date().toISOString()
-        };
-        
-        this.activityLog.unshift(activity);
-        
-        // Keep only last 10 activities
-        if (this.activityLog.length > 10) {
-            this.activityLog = this.activityLog.slice(0, 10);
+    // Update stats
+    updateStats() {
+        // Update XP stat
+        const xpStat = document.querySelector('.stat-value[data-stat="xp"]');
+        if (xpStat) {
+            xpStat.textContent = this.userData.xp.toLocaleString();
         }
         
-        this.updateActivityList();
-    }
-
-    updateActivityList() {
-        const activityList = document.getElementById('activity-list');
-        if (!activityList) return;
+        // Update level stat
+        const levelStat = document.querySelector('.stat-value[data-stat="level"]');
+        if (levelStat) {
+            levelStat.textContent = this.userData.level;
+        }
         
-        activityList.innerHTML = '';
+        // Update coin stat
+        const coinStat = document.querySelector('.stat-value[data-stat="coins"]');
+        if (coinStat) {
+            coinStat.textContent = this.userData.coins;
+        }
+    }
+
+    // Update coin display
+    updateCoinDisplay() {
+        const coinBalance = document.querySelector('.coin-balance');
+        if (coinBalance) {
+            coinBalance.textContent = this.userData.coins;
+        }
+    }
+
+    // Show XP gain animation
+    showXPGainAnimation(amount) {
+        const animation = document.createElement('div');
+        animation.className = 'xp-gain-animation';
+        animation.innerHTML = `+${amount} XP`;
         
-        this.activityLog.forEach(activity => {
-            const activityItem = document.createElement('div');
-            activityItem.className = 'activity-item';
-            activityItem.innerHTML = `
-                <span class="activity-icon">🎯</span>
-                <div class="activity-details">
-                    <span class="activity-xp">+${activity.xp} XP</span>
-                    ${activity.description}
-                </div>
-            `;
-            activityList.appendChild(activityItem);
-        });
+        // Position near the progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.appendChild(animation);
+            
+            // Remove after animation
+            setTimeout(() => {
+                animation.remove();
+            }, 2000);
+        }
     }
 
-    getQuestName(questType) {
-        const names = {
-            water: 'Hydration Master',
-            steps: 'Step Champion',
-            sleep: 'Sleep Warrior',
-            posture: 'Posture Pro',
-            meal: 'Nutrition Tracker',
-            exercise: 'Fitness Fanatic'
-        };
-        return names[questType] || questType;
-    }
-
-    showNotification(title, message) {
-        // Create notification element
+    // Show level up notification
+    showLevelUpNotification(newLevel, coinsEarned) {
         const notification = document.createElement('div');
-        notification.className = 'notification';
+        notification.className = 'level-up-notification';
         notification.innerHTML = `
-            <h3>${title}</h3>
-            <p>${message}</p>
-        `;
-        
-        // Add styles
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--primary-btn);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
+            <div class="level-up-content">
+                <div class="level-up-icon">🎉</div>
+                <div class="level-up-text">
+                    <h3>Level Up!</h3>
+                    <p>You're now Level ${newLevel}</p>
+                    <p class="coins-earned">+${coinsEarned} coins earned!</p>
+                </div>
+                <button class="close-notification">×</button>
+            </div>
         `;
         
         document.body.appendChild(notification);
         
-        // Remove after 3 seconds
+        // Add show class after a small delay
         setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-
-    startPeriodicUpdates() {
-        // Check for food log updates every 30 seconds
-        setInterval(() => {
-            this.checkFoodLog();
-        }, 30000);
+            notification.classList.add('show');
+        }, 100);
         
-        // Update challenge timer every hour
-        setInterval(() => {
-            this.updateChallengeTimer();
-        }, 3600000);
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 5000);
+        
+        // Close button functionality
+        const closeBtn = notification.querySelector('.close-notification');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
     }
 
-    saveData() {
-        const data = {
-            currentXP: this.currentXP,
-            totalXP: this.totalXP,
-            coins: this.coins,
-            rank: this.rank,
-            quests: this.quests,
-            stats: this.stats,
-            activityLog: this.activityLog,
-            miniChallenges: this.miniChallenges,
-            titles: this.titles,
-            smartQuests: this.smartQuests,
-            lastUpdated: new Date().toISOString()
+    // Setup event listeners for quest completion
+    setupEventListeners() {
+        // Listen for quest completion events
+        document.addEventListener('questCompleted', (e) => {
+            const { questType, xpReward } = e.detail;
+            this.addXP(xpReward, `${questType} completed`);
+        });
+        
+        // Listen for manual XP additions (for testing)
+        document.addEventListener('addXP', (e) => {
+            const { amount, reason } = e.detail;
+            this.addXP(amount, reason);
+        });
+        
+        // Setup quest checkboxes
+        this.setupQuestCheckboxes();
+    }
+
+    // Setup quest checkboxes with XP rewards
+    setupQuestCheckboxes() {
+        const questCheckboxes = document.querySelectorAll('.quest-checkbox');
+        
+        questCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    const questItem = e.target.closest('.checklist-item');
+                    const questType = questItem.dataset.quest;
+                    const xpReward = this.getQuestXPReward(questType);
+                    
+                    // Add XP reward
+                    this.addXP(xpReward, `${questType} quest completed`);
+                    
+                    // Disable checkbox to prevent multiple completions
+                    e.target.disabled = true;
+                    
+                    // Add completion styling
+                    questItem.classList.add('completed');
+                }
+            });
+        });
+    }
+
+    // Get XP reward for quest type
+    getQuestXPReward(questType) {
+        const rewards = {
+            water: 25,
+            steps: 50,
+            sleep: 30,
+            posture: 40,
+            meal: 20,
+            exercise: 60
         };
-        
-        localStorage.setItem('dashboardData', JSON.stringify(data));
+        return rewards[questType] || 10;
     }
 
-    loadData() {
-        const data = localStorage.getItem('dashboardData');
-        if (data) {
-            try {
-                const parsed = JSON.parse(data);
-                this.currentXP = parsed.currentXP || 750;
-                this.totalXP = parsed.totalXP || 1000;
-                this.coins = parsed.coins || 1250;
-                this.rank = parsed.rank || 42;
-                this.quests = parsed.quests || this.quests;
-                this.stats = parsed.stats || this.stats;
-                this.activityLog = parsed.activityLog || this.activityLog;
-                this.miniChallenges = parsed.miniChallenges || this.miniChallenges;
-                this.titles = parsed.titles || this.titles;
-                this.smartQuests = parsed.smartQuests || this.smartQuests;
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-            }
-        }
+    // Get user data for external use
+    getUserData() {
+        return this.userData;
+    }
+
+    // Reset user data (for testing)
+    resetUserData() {
+        this.userData = {
+            xp: 0,
+            level: 1,
+            coins: 0,
+            totalSteps: 0,
+            totalWater: 0,
+            totalSleep: 0,
+            totalMeals: 0,
+            totalExercise: 0,
+            totalPostureScans: 0,
+            activityLog: []
+        };
+        this.saveUserData();
+        this.init();
     }
 }
 
-// Initialize dashboard when DOM is loaded
+// Initialize systems when DOM is loaded
+let userAuth;
+let gamificationSystem;
+
 document.addEventListener('DOMContentLoaded', function() {
-    window.dashboardManager = new DashboardManager();
+    // Initialize authentication first
+    userAuth = new UserAuth();
+    
+    // Initialize gamification system with user data
+    if (userAuth.getUserData()) {
+        gamificationSystem = new DashboardGamification();
+    }
+});
+
+// Global function to add XP from other parts of the app
+function addUserXP(amount, reason) {
+    if (gamificationSystem) {
+        gamificationSystem.addXP(amount, reason);
+    }
+}
+
+// Global function to get user data
+function getUserData() {
+    if (userAuth) {
+        return userAuth.getUserData();
+    }
+    return null;
+}
+
+// Global function to update user data
+function updateUserData(newData) {
+    if (userAuth) {
+        userAuth.updateUserData(newData);
+    }
+}
+
+// Smooth scroll for sidebar anchor links (future-proof, in case sections are added)
+document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // Only handle anchor links (not page navigations)
+        if (this.getAttribute('href') && this.getAttribute('href').startsWith('#')) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const section = document.getElementById(targetId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Highlight active nav-item
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+            }
+        }
+    });
 });

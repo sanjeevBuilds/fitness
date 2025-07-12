@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification - HealthQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
+                <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashbaord.html" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    Home
+                </a>
+                <a href="FoodLog.html" class="nav-item">
+                    <span class="nav-icon">🍽️</span>
+                    Food Log
+                </a>
+                <a href="FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    Food Suggestion
+                </a>
+                <a href="Posture.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    Posture Scan
+                </a>
+                <a href="../Insights/Insights.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    Insights
+                </a>
+                <a href="Notification.html" class="nav-item active">
+                    <span class="nav-icon">🔔</span>
+                    Notification
+                </a>
+                <a href="Settings.html" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <!-- Coin Wallet Placeholder for spacing consistency -->
+            <div class="coin-wallet" style="visibility:hidden;">
+                <span class="coin-icon">💰</span>
+                <span class="coin-balance">0</span>
+                <span class="coin-label">Coins</span>
+            </div>
+            <h1>Notification</h1>
+            <!-- Add your notification content here -->
+        </main>
+    </div>
+    <script>
+    (function() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            const avatar = document.getElementById('sidebar-avatar');
+            const name = document.getElementById('sidebar-username');
+            const level = document.getElementById('sidebar-userlevel');
+            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+            if (name && userData.profileName) name.textContent = userData.profileName;
+            if (level && userData.level) level.textContent = 'Level ' + userData.level;
+        }
+    })();
+    </script>
+</body>
+</html> 
