@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Store user data in localStorage
                 localStorage.setItem('userData', JSON.stringify({
+                    _id: data._id,
                     profileName: data.profileName,
                     avatar: data.avatar,
                     email: data.email,

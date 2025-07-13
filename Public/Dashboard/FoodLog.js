@@ -263,12 +263,52 @@ async function addFoodToLog() {
             if (typeof addUserXP === 'function') {
                 addUserXP(20, 'Food logged');
             }
+
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            console.log('userData:', userData);  // Add this to debug
+            const userId = userData?._id;
+            console.log('userId:', userId);      // Add this to verify
+            
+            
+            if (userId) {
+                
+                
+                const foodLog = {
+                    date: new Date().toISOString().slice(0, 10),
+                    calories: dailyTotals.calories,
+                    protein: dailyTotals.protein,
+                    carbs: dailyTotals.carbs,
+                    fat: dailyTotals.fat,
+                    meals: currentMeals.map(meal => ({
+                        name: meal.name,
+                        items: [meal.name], // or meal.items if you have more details
+                        totalCalories: meal.calories
+                    }))
+                };
+                
+                syncFoodLogWithBackend(userId, foodLog);
+            }
         }
     } catch (error) {
         console.error('Error adding food:', error);
         showError('Failed to add food. Please try again.');
     }
 }
+
+// Function to sync food log with backend
+async function syncFoodLogWithBackend(userId, foodLog) {
+    try {
+        await fetch('http://localhost:8000/api/foodentry/add', {
+            
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, foodLog })
+        });
+    } catch (err) {
+        console.error('Failed to sync food log with backend:', err);
+    }
+}
+
 
 // Update daily totals
 function updateDailyTotals() {

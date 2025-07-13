@@ -138,35 +138,37 @@ router.patch('/addExp/:email', async (req, res) => {
 });
 
 // POST login route
+// POST login route
 router.post('/login', async (req, res) => {
   console.log('POST /api/login hit');
   try {
     const { email, password } = req.body;
-    
+
     // Find user by email
     const user = await UserModel.findOne({ email: email.toLowerCase() });
-    
+  
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
       });
     }
-    
+
     // Check password (simple comparison for now)
     if (user.password !== password) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
       });
     }
-    
+
     // Calculate level based on XP
     const level = calculateLevel(user.exp);
-    
-    // Return user data
+
+    // ✅ Return user data including _id
     res.json({
       success: true,
+      _id: user._id,
       profileName: user.profileName,
       avatar: user.avatar,
       email: user.email,
@@ -174,15 +176,16 @@ router.post('/login', async (req, res) => {
       level: level,
       createdAt: user.createdAt
     });
-    
+
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during login' 
+    res.status(500).json({
+      success: false,
+      message: 'Server error during login'
     });
   }
 });
+
 
 // Helper function to calculate level based on XP
 function calculateLevel(xp) {

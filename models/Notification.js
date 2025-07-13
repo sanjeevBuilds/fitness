@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const NotificationSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['friend_request', 'challenge_unlocked', 'badge_earned', 'reminder'],
+    required: true
+  },
   title: String,
   message: String,
   read: { type: Boolean, default: false },

@@ -1,10 +1,12 @@
 const express = require('express');
+const app = express(); // ✅ Declare app FIRST
+
 const mongoose = require('mongoose');
 const UserModel = require('./models/User');
+const foodEntryRoute = require('./Routes/FoodEntry');
 const userRoutes = require('./routes/UserRoute');
 require('dotenv').config();
 
-const app = express();
 app.use(express.json());
 
 // Add CORS middleware
@@ -40,6 +42,7 @@ mongoose.connect(MONGO_URL)
 
 // Use routes
 app.use('/api', userRoutes);
+app.use('/api/foodentry', foodEntryRoute);
 
 // Basic health check route
 app.get('/', (req, res) => {
