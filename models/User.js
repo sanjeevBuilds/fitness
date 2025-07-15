@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const NotificationSchema = require('./Notification');
 const FriendRequestSchema = require('./FriendRequest');
@@ -170,6 +171,19 @@ UserSchema.pre('save', function(next) {
   if (this.height && this.weight) {
     const heightInMeters = this.height / 100;
     this.bmi = Math.round((this.weight / (heightInMeters * heightInMeters)) * 10) / 10;
+  }
+  next();
+});
+
+// Hash password before saving
+UserSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
+    }
   }
   next();
 });

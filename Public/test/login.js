@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             console.log('Attempting login with:', { email, password: '***' });
                const response = await fetch('http://localhost:8000/api/login', {
+                
          
                 method: 'POST',
                 headers: {
@@ -54,9 +55,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     email: data.email,
                     xp: data.xp,
                     level: data.level,
-                    createdAt: data.createdAt
+                    createdAt: data.createdAt,
+                    token: data.token
                 }));
-                
+                console.log('User data stored in localStorage:', data.token);
+                // Store JWT token
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                }
                 if (errorDiv) {
                     errorDiv.style.display = 'none';
                     errorDiv.textContent = '';

@@ -6,6 +6,7 @@ const UserModel = require('./models/User');
 const foodEntryRoute = require('./Routes/FoodEntry');
 const userRoutes = require('./routes/UserRoute');
 require('dotenv').config();
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 
@@ -52,7 +53,7 @@ app.get('/', (req, res) => {
 // Catch-all route for unmatched requests
 app.use('*', (req, res) => {
   console.log(`❌ 404 - ${req.method} ${req.originalUrl} not found`);
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'Route not found',
     method: req.method,
     url: req.originalUrl,
@@ -64,9 +65,8 @@ app.use('*', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
 
-  // Insert sample user if SAMPLE_USER env variable is true
- 
+  
 });

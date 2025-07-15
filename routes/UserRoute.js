@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const UserModel = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // GET all users (excluding passwords)
 router.get('/getUser', async (req, res) => {
@@ -154,8 +156,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Check password (simple comparison for now)
-    if (user.password !== password) {
+    // Check password (use bcrypt for comparison)
+    const isMatch = await bcrypt.compare(password, user.password);
+   
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -165,7 +169,17 @@ router.post('/login', async (req, res) => {
     // Calculate level based on XP
     const level = calculateLevel(user.exp);
 
-    // ✅ Return user data including _id
+    // JWT token generation (expires in 2 days)
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        email: user.email,
+      },
+      'your_jwt_secret', // TODO: Use env variable in production
+      { expiresIn: '2d' }
+    );
+
+    // ✅ Return user data including _id and token
     res.json({
       success: true,
       _id: user._id,
@@ -174,7 +188,8 @@ router.post('/login', async (req, res) => {
       email: user.email,
       xp: user.exp,
       level: level,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      token: token
     });
 
   } catch (err) {
