@@ -39,16 +39,61 @@ router.post('/createUser', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Create new user with all fields from request body
-    const newUser = new UserModel(userData);
+    // Create a new user and explicitly assign all fields
+    const newUser = new UserModel();
+
+    // Basic fields from input
+    newUser.email = userData.email;
+    newUser.password = userData.password;
+    newUser.profileName = userData.profileName;
+
+    // Optional fields with safe defaults
+    newUser.fullName = userData.fullName || '';
+    newUser.age = userData.age ?? null;
+    newUser.gender = userData.gender || '';
+    newUser.height = userData.height ?? null;
+    newUser.weight = userData.weight ?? null;
+    newUser.primaryGoal = userData.primaryGoal || '';
+    newUser.activityLevel = userData.activityLevel || '';
+    newUser.averageSleep = userData.averageSleep ?? null;
+    newUser.waterIntake = userData.waterIntake ?? null;
+    newUser.mealFrequency = userData.mealFrequency || '';
+    newUser.dietType = userData.dietType || '';
+    newUser.allergies = Array.isArray(userData.allergies) ? userData.allergies : [];
+    newUser.dietaryNotes = userData.dietaryNotes || '';
+    newUser.username = userData.username || '';
+    newUser.notificationPreference = userData.notificationPreference || '';
+    newUser.bmi = userData.bmi ?? null;
+    newUser.targetWeight = userData.targetWeight ?? null;
+
+    // Optional fields with default logic
+    newUser.avatar = userData.avatar || 'avator1.jpeg';
+    newUser.theme = userData.theme || 'light';
+    newUser.exp = userData.exp ?? 0;
+    newUser.startDate = new Date();
+    newUser.lastLogin = new Date();
+
+    // Subdocuments as empty arrays or default structures
+    newUser.notifications = [];
+    newUser.friendRequests = [];
+    newUser.dailyQuests = [];
+    newUser.miniChallenges = [];
+    newUser.foodLogs = [];
+    newUser.mealPlan = undefined;
+    newUser.postureScans = [];
+    newUser.insights = [];
+    newUser.badges = [];
+
+    // Save to DB (hashing, BMI auto-calc handled in schema pre-save middleware)
     await newUser.save();
 
-    // Return user without password
+    // Prepare response without password
     const userResponse = newUser.toObject();
     delete userResponse.password;
 
     res.status(201).json(userResponse);
   } catch (err) {
+    console.error('User creation failed:', err);
     res.status(500).json({ error: 'Failed to create user' });
   }
 });

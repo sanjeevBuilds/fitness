@@ -30,6 +30,19 @@ console.log('Buddies.js loaded successfully');
     }
 })();
 
+// Load user data for sidebar (match dashboard)
+(function() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+        const avatar = document.getElementById('sidebar-avatar');
+        const name = document.getElementById('sidebar-username');
+        const level = document.getElementById('sidebar-userlevel');
+        if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+        if (name && userData.profileName) name.textContent = userData.profileName;
+        if (level && userData.level) level.textContent = 'Level ' + userData.level;
+    }
+})();
+
 // Friend request acceptance functionality
 function acceptRequest(button) {
     // Change button text to "Added"

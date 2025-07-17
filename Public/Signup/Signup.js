@@ -1,36 +1,6 @@
-// --- JWT Auth Check (Protected Page) ---
-(function() {
-    const redirectToLogin = () => {
-        window.location.href = '/Public/test/login.html';
-    };
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        redirectToLogin();
-        return;
-    }
-    // jwt-decode must be loaded via CDN in the HTML
-    try {
-        const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
-        if (!decoded || !decoded.exp) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-        // exp is in seconds since epoch
-        const now = Math.floor(Date.now() / 1000);
-        if (decoded.exp < now) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-        // Token is valid, allow access
-    } catch (e) {
-        localStorage.removeItem('authToken');
-        redirectToLogin();
-    }
-})();
 
-document.querySelector("form").addEventListener("submit", function (e) {
+
+document.querySelector("form").addEventListener("submit", async function (e) {
   e.preventDefault();
   const inputs = document.querySelectorAll("input");
   let valid = true;
@@ -43,14 +13,69 @@ document.querySelector("form").addEventListener("submit", function (e) {
     }
   });
 
-  const [password, confirmPassword] = [inputs[2].value, inputs[3].value];
+  const [profileName, email, password, confirmPassword] = [inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value];
   if (password !== confirmPassword) {
     alert("Passwords do not match.");
     valid = false;
   }
 
   if (valid) {
-    alert("Form submitted successfully!");
-    // Here you'd typically send data to a server
+    // All onboarding fields with defaults
+    const defaultUser = {
+      profileName,
+      email,
+      password,
+      fullName: '',
+      age: null,
+      gender: '',
+      height: null,
+      weight: null,
+      primaryGoal: 'fitness',
+      activityLevel: 'moderate',
+      averageSleep: null,
+      waterIntake: null,
+      mealFrequency: '3',
+      dietType: 'balanced',
+      allergies: ['none'],
+      dietaryNotes: '',
+      username: undefined,
+      notificationPreference: 'important',
+      bmi: null,
+      targetWeight: null
+    };
+    try {
+      const response = await fetch('http://localhost:8000/api/createUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(defaultUser)
+      });
+      if (response.ok) {
+        // User created successfully, redirect to onboarding
+        window.location.href = "../ongoing/ongoing1/ongoing.html";
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to create user.');
+      }
+    } catch (err) {
+      alert('Server error. Please try again.');
+    }
+  }
+});
+
+document.getElementById('random-fill-btn').addEventListener('click', function() {
+  const names = [
+    'Alex Johnson', 'Jamie Lee', 'Taylor Smith', 'Jordan Brown', 'Morgan Davis',
+    'Casey Wilson', 'Riley Clark', 'Avery Lewis', 'Peyton Walker', 'Quinn Hall'
+  ];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const email = `user${Math.floor(Math.random() * 10000)}@example.com`;
+  const formInputs = document.querySelectorAll('form input');
+  if (formInputs.length >= 4) {
+    formInputs[0].value = name;
+    formInputs[1].value = email;
+    formInputs[2].value = '12345678';
+    formInputs[3].value = '12345678';
   }
 });

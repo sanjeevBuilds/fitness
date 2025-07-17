@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Buddies.css">
     <script src="Buddies.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
             <div class="user-profile">
-                <div id="sidebar-avatar-spinner" style="width:100px;height:100px;display:none;justify-content:center;align-items:center;"><div class="spinner"></div></div>
-                <img src="" alt="User Avatar" class="avatar" id="sidebar-avatar" style="display:none;">
+                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
                 <h3 class="user-name" id="sidebar-username">John Doe</h3>
                 <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
             </div>
@@ -34,6 +34,10 @@
                 <a href="Posture.html" class="nav-item">
                     <span class="nav-icon">📊</span>
                     Posture Scan
+                </a>
+                <a href="Buddies.html" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    Buddies
                 </a>
                 <a href="Insights.html" class="nav-item">
                     <span class="nav-icon">📈</span>
