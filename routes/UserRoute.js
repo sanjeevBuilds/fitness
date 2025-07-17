@@ -101,24 +101,12 @@ router.post('/createUser', async (req, res) => {
 // PUT update user
 router.put('/updateUser/:email', async (req, res) => {
   try {
-    const { email, password, profileName, avatar } = req.body;
     const currentEmail = req.params.email.toLowerCase();
-    
-    // Build update object
-    const updateData = {};
-    if (profileName) updateData.profileName = profileName;
-    if (avatar) updateData.avatar = avatar;
-    if (password) updateData.password = password;
-    
-    // If email is being changed, check if new email already exists
-    if (email && email.toLowerCase() !== currentEmail) {
-      const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email already exists' });
-      }
-      updateData.email = email.toLowerCase();
-    }
-    
+    const updateData = { ...req.body }; // Update all fields from request body
+
+    // Optionally, prevent email change here if you want
+    // delete updateData.email;
+
     const updatedUser = await UserModel.findOneAndUpdate(
       { email: currentEmail },
       updateData,
@@ -129,13 +117,7 @@ router.put('/updateUser/:email', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Calculate level for response
-    const level = calculateLevel(updatedUser.exp);
-
-    res.json({
-      ...updatedUser.toObject(),
-      level: level
-    });
+    res.json(updatedUser);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user' });
   }

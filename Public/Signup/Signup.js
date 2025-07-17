@@ -52,7 +52,8 @@ document.querySelector("form").addEventListener("submit", async function (e) {
         body: JSON.stringify(defaultUser)
       });
       if (response.ok) {
-        // User created successfully, redirect to onboarding
+        const data = await response.json();
+        localStorage.setItem('userData', JSON.stringify(data));
         window.location.href = "../ongoing/ongoing1/ongoing.html";
       } else {
         const data = await response.json();
