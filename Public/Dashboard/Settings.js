@@ -12,6 +12,7 @@ class SettingsManager {
         
         // Apply current settings
         this.applySettings();
+        
     }
 
     setupEventListeners() {
@@ -176,8 +177,10 @@ class SettingsManager {
 
         if (confirmAvatarBtn) {
             confirmAvatarBtn.addEventListener('click', async () => {
+                console.log('Confirm Avatar clicked');
                 if (!selectedAvatar) return;
                 const userData = JSON.parse(localStorage.getItem('userData'));
+                console.log(userData);
                 if (!userData || !userData.email) return;
                 try {
                     const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
@@ -382,6 +385,12 @@ class SettingsManager {
 // Initialize settings when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     new SettingsManager();
+    // Set sidebar avatar on load
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData && userData.avatar) {
+        const sidebarAvatar = document.getElementById('sidebar-avatar');
+        if (sidebarAvatar) sidebarAvatar.src = `../../assets/${userData.avatar}`;
+    }
 });
 
 // Global function to apply dark mode (for other pages)

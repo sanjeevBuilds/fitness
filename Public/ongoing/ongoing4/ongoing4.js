@@ -1,3 +1,31 @@
+(function() {
+  const redirectToLogin = () => {
+      window.location.href = '/Public/test/login.html';
+  };
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+      redirectToLogin();
+      return;
+  }
+  try {
+      const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
+      if (!decoded || !decoded.exp) {
+          localStorage.removeItem('authToken');
+          redirectToLogin();
+          return;
+      }
+      const now = Math.floor(Date.now() / 1000);
+      if (decoded.exp < now) {
+          localStorage.removeItem('authToken');
+          redirectToLogin();
+          return;
+      }
+  } catch (e) {
+      localStorage.removeItem('authToken');
+      redirectToLogin();
+  }
+})();
+
 document.getElementById("account-form").addEventListener("submit", async function (e) {
   e.preventDefault();
 

@@ -61,7 +61,10 @@ router.post('/createUser', async (req, res) => {
     newUser.dietType = userData.dietType || '';
     newUser.allergies = Array.isArray(userData.allergies) ? userData.allergies : [];
     newUser.dietaryNotes = userData.dietaryNotes || '';
-    newUser.username = userData.username || '';
+    if (userData.username && userData.username.trim() !== '') {
+        newUser.username = userData.username.trim();
+    }
+    // Do not set username at all if not provided
     newUser.notificationPreference = userData.notificationPreference || '';
     newUser.bmi = userData.bmi ?? null;
     newUser.targetWeight = userData.targetWeight ?? null;
@@ -87,11 +90,27 @@ router.post('/createUser', async (req, res) => {
     // Save to DB (hashing, BMI auto-calc handled in schema pre-save middleware)
     await newUser.save();
 
-    // Prepare response without password
-    const userResponse = newUser.toObject();
-    delete userResponse.password;
+    // Prepare response in the same structure as login
+    const level = calculateLevel(newUser.exp);
+    const token = jwt.sign(
+      {
+        _id: newUser._id,
+        email: newUser.email,
+      },
+      'your_jwt_secret', // Use env variable in production
+      { expiresIn: '2d' }
+    );
 
-    res.status(201).json(userResponse);
+    res.status(201).json({
+      _id: newUser._id,
+      profileName: newUser.profileName,
+      avatar: newUser.avatar,
+      email: newUser.email,
+      xp: newUser.exp,
+      level: level,
+      createdAt: newUser.createdAt,
+      token: token
+    });
   } catch (err) {
     console.error('User creation failed:', err);
     res.status(500).json({ error: 'Failed to create user' });
@@ -102,10 +121,16 @@ router.post('/createUser', async (req, res) => {
 router.put('/updateUser/:email', async (req, res) => {
   try {
     const currentEmail = req.params.email.toLowerCase();
-    const updateData = { ...req.body }; // Update all fields from request body
+    const updateData = { ...req.body };
 
-    // Optionally, prevent email change here if you want
-    // delete updateData.email;
+    // Prevent removal of required fields
+    if (
+      (updateData.hasOwnProperty('email') && !updateData.email) ||
+      (updateData.hasOwnProperty('password') && !updateData.password) ||
+      (updateData.hasOwnProperty('profileName') && !updateData.profileName)
+    ) {
+      return res.status(400).json({ error: 'Cannot remove required fields: email, password, or profileName.' });
+    }
 
     const updatedUser = await UserModel.findOneAndUpdate(
       { email: currentEmail },

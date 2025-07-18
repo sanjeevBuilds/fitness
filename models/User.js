@@ -128,8 +128,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     unique: true,
-    sparse: true
-    // No default, so it will be undefined unless set
+    sparse: true // No default, so it will be undefined unless set
   },
   notificationPreference: {
     type: String,

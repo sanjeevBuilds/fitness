@@ -52,8 +52,21 @@ document.querySelector("form").addEventListener("submit", async function (e) {
         body: JSON.stringify(defaultUser)
       });
       if (response.ok) {
+        console.log('yessssss');
         const data = await response.json();
-        localStorage.setItem('userData', JSON.stringify(data));
+        localStorage.setItem('userData', JSON.stringify({
+            _id: data._id,
+            profileName: data.profileName,
+            avatar: data.avatar,
+            email: data.email,
+            xp: data.xp,
+            level: data.level,
+            createdAt: data.createdAt,
+            token: data.token // if present
+        }));
+        if (data.token) {
+            localStorage.setItem('authToken', data.token);
+        }
         window.location.href = "../ongoing/ongoing1/ongoing.html";
       } else {
         const data = await response.json();
