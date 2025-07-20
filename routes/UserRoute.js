@@ -253,6 +253,30 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// GET search users by username or profileName (word-based, partial, case-insensitive)
+router.get('/searchUsers', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query || !query.trim()) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    // Split query into words, ignore empty
+    const words = query.trim().split(/\s+/).filter(Boolean);
+    // Build regex for each word (case-insensitive, partial match)
+    const regexes = words.map(word => new RegExp(word, 'i'));
+    // Find users where any word matches username or profileName
+    const users = await UserModel.find({
+      $or: [
+        { username: { $in: regexes } },
+        { profileName: { $in: regexes } }
+      ]
+    }).select('-password');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to search users' });
+  }
+});
+
 
 // Helper function to calculate level based on XP
 function calculateLevel(xp) {
