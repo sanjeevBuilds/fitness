@@ -92,15 +92,25 @@ function rejectRequest(button) {
 
 // Reject all friend requests functionality
 function rejectAllRequests() {
-    const rejectButtons = document.querySelectorAll('.reject-btn');
-    rejectButtons.forEach(button => {
-        rejectRequest(button);
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || !userData.email) return;
+    fetch('http://localhost:8000/api/rejectAllFriendRequests', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toEmail: userData.email })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            // Remove all request items from UI
+            const requestList = document.getElementById('request-list');
+            if (requestList) requestList.innerHTML = '';
+            // Disable the reject all button
+            const rejectAllBtn = document.querySelector('.reject-all-btn');
+            if (rejectAllBtn) {
+                rejectAllBtn.disabled = true;
+                rejectAllBtn.textContent = 'All Rejected';
+            }
+        }
     });
-    
-    // Disable the reject all button
-    const rejectAllBtn = document.querySelector('.reject-all-btn');
-    rejectAllBtn.disabled = true;
-    rejectAllBtn.textContent = 'All Rejected';
 }
 
 // Toggle friend requests section
@@ -196,6 +206,20 @@ function showCopyFeedback(friendName) {
     setTimeout(() => {
         feedback.remove();
     }, 2000);
+}
+
+let myFriendEmails = new Set();
+
+// Fetch and cache current user's friends on page load
+async function fetchMyFriends() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || !userData.email) return;
+    try {
+        const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+        if (!res.ok) throw new Error('Failed to fetch user');
+        const user = await res.json();
+        myFriendEmails = new Set((user.friends || []).map(f => f.email));
+    } catch (err) {}
 }
 
 // Add event listeners when DOM is loaded
@@ -396,89 +420,107 @@ document.addEventListener('DOMContentLoaded', function() {
                     xpBar.appendChild(fill);
                     info.appendChild(xpBar);
                     // Add button
-                    const addBtn = document.createElement('button');
-                    addBtn.className = 'btn btn-primary add-friend-btn';
-                    addBtn.textContent = 'Add';
-                    addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
-                    addBtn.style.color = '#fff';
-                    addBtn.style.fontWeight = 'bold';
-                    addBtn.style.border = 'none';
-                    addBtn.style.borderRadius = '999px';
-                    addBtn.style.padding = '0.4rem 1.2rem';
-                    addBtn.style.marginLeft = '1rem';
-                    addBtn.style.fontSize = '0.98rem';
-                    addBtn.style.boxShadow = '0 2px 8px #1ec87822';
-                    addBtn.style.cursor = 'pointer';
-                    addBtn.style.transition = 'background 0.2s, transform 0.2s';
-                    addBtn.addEventListener('mouseenter', () => {
-                        if (!addBtn.disabled) {
-                            addBtn.style.background = 'linear-gradient(90deg, #39e6a0, #1ec878)';
-                            addBtn.style.transform = 'scale(1.07)';
-                        }
-                    });
-                    addBtn.addEventListener('mouseleave', () => {
-                        if (!addBtn.disabled) {
-                            addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
-                            addBtn.style.transform = 'scale(1)';
-                        }
-                    });
-                    addBtn.addEventListener('click', async () => {
-                        // Send friend request to backend
-                        addBtn.textContent = 'Sending...';
+                    let addBtn;
+                    if (myFriendEmails.has(user.email)) {
+                        addBtn = document.createElement('button');
+                        addBtn.className = 'btn btn-secondary add-friend-btn';
+                        addBtn.textContent = 'Added';
                         addBtn.disabled = true;
                         addBtn.style.background = '#ccc';
-                        addBtn.style.transform = 'scale(1)';
-                        let currentUser = null;
-                        try {
-                            currentUser = JSON.parse(localStorage.getItem('userData'));
-                        } catch (e) {}
-                        if (!currentUser || !user.email) {
-                            addBtn.textContent = 'Error';
-                            return;
-                        }
-                        try {
-                            const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    toEmail: user.email,
-                                    fromEmail: currentUser.email,
-                                    fromProfileName: currentUser.profileName,
-                                    fromAvatar: currentUser.avatar
-                                })
-                            });
-                            const data = await res.json();
-                            if (res.ok && data.success) {
-                                addBtn.textContent = 'Request Sent!';
-                                // Add to request-list visually (simulate as if you received it)
-                                const requestList = document.getElementById('request-list');
-                                if (requestList) {
-                                    const reqDiv = document.createElement('div');
-                                    reqDiv.className = 'request-item';
-                                    reqDiv.setAttribute('data-email', user.email);
-                                    reqDiv.innerHTML = `
-                                        <img src="../../assets/${currentUser.avatar || 'avator1.jpeg'}" alt="${currentUser.profileName}" class="request-avatar">
-                                        <div class="request-info">
-                                            <h3>${currentUser.profileName}</h3>
-                                            <span class="level-tag">Level ${currentUser.level || 1}</span>
-                                        </div>
-                                        <div class="request-actions">
-                                            <button class="btn btn-primary accept-btn">Accept</button>
-                                            <button class="btn btn-danger reject-btn">Reject</button>
-                                        </div>
-                                    `;
-                                    // Attach accept/reject logic
-                                    reqDiv.querySelector('.accept-btn').addEventListener('click', function() { acceptRequest(this); });
-                                    reqDiv.querySelector('.reject-btn').addEventListener('click', function() { rejectRequest(this); });
-                                    requestList.prepend(reqDiv);
-                                }
-                            } else {
-                                addBtn.textContent = data.error || 'Error';
+                        addBtn.style.color = '#666';
+                        addBtn.style.fontWeight = 'bold';
+                        addBtn.style.border = 'none';
+                        addBtn.style.borderRadius = '999px';
+                        addBtn.style.padding = '0.4rem 1.2rem';
+                        addBtn.style.marginLeft = '1rem';
+                        addBtn.style.fontSize = '0.98rem';
+                        addBtn.style.boxShadow = '0 2px 8px #1ec87822';
+                        addBtn.style.cursor = 'not-allowed';
+                    } else {
+                        addBtn = document.createElement('button');
+                        addBtn.className = 'btn btn-primary add-friend-btn';
+                        addBtn.textContent = 'Add';
+                        addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
+                        addBtn.style.color = '#fff';
+                        addBtn.style.fontWeight = 'bold';
+                        addBtn.style.border = 'none';
+                        addBtn.style.borderRadius = '999px';
+                        addBtn.style.padding = '0.4rem 1.2rem';
+                        addBtn.style.marginLeft = '1rem';
+                        addBtn.style.fontSize = '0.98rem';
+                        addBtn.style.boxShadow = '0 2px 8px #1ec87822';
+                        addBtn.style.cursor = 'pointer';
+                        addBtn.style.transition = 'background 0.2s, transform 0.2s';
+                        addBtn.addEventListener('mouseenter', () => {
+                            if (!addBtn.disabled) {
+                                addBtn.style.background = 'linear-gradient(90deg, #39e6a0, #1ec878)';
+                                addBtn.style.transform = 'scale(1.07)';
                             }
-                        } catch (err) {
-                            addBtn.textContent = 'Error';
-                        }
-                    });
+                        });
+                        addBtn.addEventListener('mouseleave', () => {
+                            if (!addBtn.disabled) {
+                                addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
+                                addBtn.style.transform = 'scale(1)';
+                            }
+                        });
+                        addBtn.addEventListener('click', async () => {
+                            // Send friend request to backend
+                            addBtn.textContent = 'Sending...';
+                            addBtn.disabled = true;
+                            addBtn.style.background = '#ccc';
+                            addBtn.style.transform = 'scale(1)';
+                            let currentUser = null;
+                            try {
+                                currentUser = JSON.parse(localStorage.getItem('userData'));
+                            } catch (e) {}
+                            if (!currentUser || !user.email) {
+                                addBtn.textContent = 'Error';
+                                return;
+                            }
+                            try {
+                                const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        toEmail: user.email,
+                                        fromEmail: currentUser.email,
+                                        fromProfileName: currentUser.profileName,
+                                        fromAvatar: currentUser.avatar
+                                    })
+                                });
+                                const data = await res.json();
+                                if (res.ok && data.success) {
+                                    addBtn.textContent = 'Request Sent!';
+                                    // Add to request-list visually (simulate as if you received it)
+                                    const requestList = document.getElementById('request-list');
+                                    if (requestList) {
+                                        const reqDiv = document.createElement('div');
+                                        reqDiv.className = 'request-item';
+                                        reqDiv.setAttribute('data-email', user.email);
+                                        reqDiv.innerHTML = `
+                                            <img src="../../assets/${currentUser.avatar || 'avator1.jpeg'}" alt="${currentUser.profileName}" class="request-avatar">
+                                            <div class="request-info">
+                                                <h3>${currentUser.profileName}</h3>
+                                                <span class="level-tag">Level ${currentUser.level || 1}</span>
+                                            </div>
+                                            <div class="request-actions">
+                                                <button class="btn btn-primary accept-btn">Accept</button>
+                                                <button class="btn btn-danger reject-btn">Reject</button>
+                                            </div>
+                                        `;
+                                        // Attach accept/reject logic
+                                        reqDiv.querySelector('.accept-btn').addEventListener('click', function() { acceptRequest(this); });
+                                        reqDiv.querySelector('.reject-btn').addEventListener('click', function() { rejectRequest(this); });
+                                        requestList.prepend(reqDiv);
+                                    }
+                                } else {
+                                    addBtn.textContent = data.error || 'Error';
+                                }
+                            } catch (err) {
+                                addBtn.textContent = 'Error';
+                            }
+                        });
+                    }
                     // Assemble
                     card.appendChild(avatarWrap);
                     card.appendChild(info);
@@ -558,4 +600,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     renderFriendRequests();
+
+    // Render leaderboard with pagination
+    let leaderboardUsers = [];
+    let leaderboardPage = 0;
+    const USERS_PER_PAGE = 8;
+    async function renderLeaderboard() {
+        try {
+            const res = await fetch('http://localhost:8000/api/getUser');
+            if (!res.ok) throw new Error('Failed to fetch users');
+            const users = await res.json();
+            // Sort by XP descending
+            leaderboardUsers = users.sort((a, b) => (b.exp || 0) - (a.exp || 0));
+            leaderboardPage = 0;
+            renderLeaderboardPage();
+        } catch (err) {
+            // Optionally show error
+        }
+    }
+    function renderLeaderboardPage() {
+        const tbody = document.getElementById('leaderboard-body');
+        const nextBtn = document.querySelector('.leaderboard-next-btn');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const start = leaderboardPage * USERS_PER_PAGE;
+        const end = start + USERS_PER_PAGE;
+        const pageUsers = leaderboardUsers.slice(start, end);
+        pageUsers.forEach((user, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${start + idx + 1}</td>
+                <td class="user-cell">
+                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${user.profileName || user.email}" class="small-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:8px;vertical-align:middle;">
+                    ${user.profileName || user.email}
+                </td>
+                <td>${user.level || 1}</td>
+                <td>${user.exp || 0}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        // Show/hide next button
+        if (leaderboardUsers.length > end) {
+            nextBtn.style.display = '';
+        } else {
+            nextBtn.style.display = 'none';
+        }
+    }
+    const nextBtn = document.querySelector('.leaderboard-next-btn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            leaderboardPage++;
+            renderLeaderboardPage();
+        });
+    }
+    renderLeaderboard();
+    fetchMyFriends();
 });

@@ -354,6 +354,22 @@ router.patch('/respondFriendRequest', async (req, res) => {
   }
 });
 
+// PATCH reject all friend requests
+router.patch('/rejectAllFriendRequests', async (req, res) => {
+  try {
+    const { toEmail } = req.body;
+    if (!toEmail) return res.status(400).json({ error: 'Invalid request' });
+    const user = await UserModel.findOne({ email: toEmail.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.friendRequests = user.friendRequests.filter(fr => fr.status !== 'pending');
+    await user.save();
+    res.json({ success: true, friendRequests: user.friendRequests });
+  } catch (err) {
+    console.error('Reject all friend requests error:', err);
+    res.status(500).json({ error: 'Failed to reject all friend requests' });
+  }
+});
+
 
 // Helper function to calculate level based on XP
 function calculateLevel(xp) {
