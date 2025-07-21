@@ -170,6 +170,12 @@ const UserSchema = new mongoose.Schema({
   postureScans: [PostureScanSchema],
   insights: [InsightSchema],
   badges: [BadgeSchema],
+  friends: [{
+    email: String,
+    profileName: String,
+    avatar: String,
+    level: Number
+  }],
   createdAt: {
     type: Date,
     default: Date.now

@@ -45,58 +45,49 @@ console.log('Buddies.js loaded successfully');
 
 // Friend request acceptance functionality
 function acceptRequest(button) {
-    // Change button text to "Added"
-    button.textContent = 'Added';
-    
-    // Change button style to success (green)
-    button.classList.remove('btn-primary');
-    button.classList.add('btn-success');
-    
-    // Disable both accept and reject buttons
-    const requestActions = button.closest('.request-actions');
-    const rejectBtn = requestActions.querySelector('.reject-btn');
-    rejectBtn.disabled = true;
-    button.disabled = true;
-    
-    // Optional: Remove the request item after a delay
-    setTimeout(() => {
-        const requestItem = button.closest('.request-item');
-        if (requestItem) {
+    const requestItem = button.closest('.request-item');
+    const email = requestItem && requestItem.getAttribute('data-email');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!email || !userData) return;
+    // Call backend to accept
+    fetch('http://localhost:8000/api/respondFriendRequest', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'accept' })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            // Remove from UI
             requestItem.style.opacity = '0';
             requestItem.style.transform = 'translateX(-100%)';
-            setTimeout(() => {
-                requestItem.remove();
-            }, 300);
+            setTimeout(() => { requestItem.remove(); }, 300);
+            // Optionally update friends list here
+        } else {
+            button.textContent = 'Error';
         }
-    }, 2000);
+    }).catch(() => { button.textContent = 'Error'; });
 }
 
 // Friend request rejection functionality
 function rejectRequest(button) {
-    // Change button text to "Rejected"
-    button.textContent = 'Rejected';
-    
-    // Change button style to secondary (gray)
-    button.classList.remove('btn-danger');
-    button.classList.add('btn-secondary');
-    
-    // Disable both accept and reject buttons
-    const requestActions = button.closest('.request-actions');
-    const acceptBtn = requestActions.querySelector('.accept-btn');
-    acceptBtn.disabled = true;
-    button.disabled = true;
-    
-    // Remove the request item after a delay
-    setTimeout(() => {
-        const requestItem = button.closest('.request-item');
-        if (requestItem) {
+    const requestItem = button.closest('.request-item');
+    const email = requestItem && requestItem.getAttribute('data-email');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!email || !userData) return;
+    // Call backend to reject
+    fetch('http://localhost:8000/api/respondFriendRequest', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'reject' })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            // Remove from UI
             requestItem.style.opacity = '0';
             requestItem.style.transform = 'translateX(-100%)';
-            setTimeout(() => {
-                requestItem.remove();
-            }, 300);
+            setTimeout(() => { requestItem.remove(); }, 300);
+        } else {
+            button.textContent = 'Error';
         }
-    }, 1500);
+    }).catch(() => { button.textContent = 'Error'; });
 }
 
 // Reject all friend requests functionality
@@ -431,11 +422,62 @@ document.addEventListener('DOMContentLoaded', function() {
                             addBtn.style.transform = 'scale(1)';
                         }
                     });
-                    addBtn.addEventListener('click', () => {
-                        addBtn.textContent = 'Request Sent!';
+                    addBtn.addEventListener('click', async () => {
+                        // Send friend request to backend
+                        addBtn.textContent = 'Sending...';
                         addBtn.disabled = true;
                         addBtn.style.background = '#ccc';
                         addBtn.style.transform = 'scale(1)';
+                        let currentUser = null;
+                        try {
+                            currentUser = JSON.parse(localStorage.getItem('userData'));
+                        } catch (e) {}
+                        if (!currentUser || !user.email) {
+                            addBtn.textContent = 'Error';
+                            return;
+                        }
+                        try {
+                            const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    toEmail: user.email,
+                                    fromEmail: currentUser.email,
+                                    fromProfileName: currentUser.profileName,
+                                    fromAvatar: currentUser.avatar
+                                })
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                                addBtn.textContent = 'Request Sent!';
+                                // Add to request-list visually (simulate as if you received it)
+                                const requestList = document.getElementById('request-list');
+                                if (requestList) {
+                                    const reqDiv = document.createElement('div');
+                                    reqDiv.className = 'request-item';
+                                    reqDiv.setAttribute('data-email', user.email);
+                                    reqDiv.innerHTML = `
+                                        <img src="../../assets/${currentUser.avatar || 'avator1.jpeg'}" alt="${currentUser.profileName}" class="request-avatar">
+                                        <div class="request-info">
+                                            <h3>${currentUser.profileName}</h3>
+                                            <span class="level-tag">Level ${currentUser.level || 1}</span>
+                                        </div>
+                                        <div class="request-actions">
+                                            <button class="btn btn-primary accept-btn">Accept</button>
+                                            <button class="btn btn-danger reject-btn">Reject</button>
+                                        </div>
+                                    `;
+                                    // Attach accept/reject logic
+                                    reqDiv.querySelector('.accept-btn').addEventListener('click', function() { acceptRequest(this); });
+                                    reqDiv.querySelector('.reject-btn').addEventListener('click', function() { rejectRequest(this); });
+                                    requestList.prepend(reqDiv);
+                                }
+                            } else {
+                                addBtn.textContent = data.error || 'Error';
+                            }
+                        } catch (err) {
+                            addBtn.textContent = 'Error';
+                        }
                     });
                     // Assemble
                     card.appendChild(avatarWrap);
@@ -448,4 +490,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Render real friends for the logged-in user
+    async function renderFriends() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData || !userData.email) return;
+        try {
+            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            if (!res.ok) throw new Error('Failed to fetch user');
+            const user = await res.json();
+            const friends = user.friends || [];
+            const friendsList = document.querySelector('.friends-list');
+            if (!friendsList) return;
+            friendsList.innerHTML = '';
+            friends.forEach(friend => {
+                const friendDiv = document.createElement('div');
+                friendDiv.className = 'friend-item';
+                friendDiv.innerHTML = `
+                    <img src="../../assets/${friend.avatar || 'avator1.jpeg'}" alt="${friend.profileName || friend.email}" class="friend-avatar">
+                    <div class="friend-info">
+                        <h3>${friend.profileName || friend.email}</h3>
+                        <span class="friend-level">Level ${friend.level || 1}</span>
+                        <span class="friend-xp">${friend.exp || 0} XP</span>
+                    </div>
+                `;
+                friendsList.appendChild(friendDiv);
+            });
+        } catch (err) {
+            // Optionally show error
+        }
+    }
+    renderFriends();
+
+    // Render real friend requests for the logged-in user
+    async function renderFriendRequests() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData || !userData.email) return;
+        try {
+            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            if (!res.ok) throw new Error('Failed to fetch user');
+            const user = await res.json();
+            const requests = user.friendRequests || [];
+            const requestList = document.getElementById('request-list');
+            if (!requestList) return;
+            requestList.innerHTML = '';
+            requests.filter(r => r.status === 'pending').forEach(req => {
+                const reqDiv = document.createElement('div');
+                reqDiv.className = 'request-item';
+                reqDiv.setAttribute('data-email', req.email);
+                reqDiv.innerHTML = `
+                    <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
+                    <div class="request-info">
+                        <h3>${req.profileName || req.email}</h3>
+                        <span class="level-tag">Friend Request</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn btn-primary accept-btn">Accept</button>
+                        <button class="btn btn-danger reject-btn">Reject</button>
+                    </div>
+                `;
+                reqDiv.querySelector('.accept-btn').addEventListener('click', function() { acceptRequest(this); });
+                reqDiv.querySelector('.reject-btn').addEventListener('click', function() { rejectRequest(this); });
+                requestList.appendChild(reqDiv);
+            });
+        } catch (err) {
+            // Optionally show error
+        }
+    }
+    renderFriendRequests();
 });

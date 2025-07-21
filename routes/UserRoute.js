@@ -277,6 +277,83 @@ router.get('/searchUsers', async (req, res) => {
   }
 });
 
+// POST send friend request
+router.post('/sendFriendRequest', async (req, res) => {
+  try {
+    const { toEmail, fromEmail, fromProfileName, fromAvatar } = req.body;
+    if (!toEmail || !fromEmail || toEmail === fromEmail) {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+    // Find recipient
+    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+    // Check for existing pending request from this sender
+    const alreadyRequested = recipient.friendRequests.some(
+      fr => fr.email === fromEmail && fr.status === 'pending'
+    );
+    if (alreadyRequested) {
+      return res.status(400).json({ error: 'Friend request already sent' });
+    }
+    // Add new friend request
+    recipient.friendRequests.push({
+      email: fromEmail,
+      profileName: fromProfileName,
+      avatar: fromAvatar,
+      status: 'pending',
+      sentAt: new Date()
+    });
+    await recipient.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Send friend request error:', err);
+    res.status(500).json({ error: 'Failed to send friend request' });
+  }
+});
+
+// PATCH respond to a friend request (accept/reject)
+router.patch('/respondFriendRequest', async (req, res) => {
+  try {
+    const { fromEmail, toEmail, action } = req.body;
+    if (!fromEmail || !toEmail || !['accept', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+    // Find recipient (the one responding)
+    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+    // Find the friend request
+    const reqIndex = recipient.friendRequests.findIndex(fr => fr.email === fromEmail && fr.status === 'pending');
+    if (reqIndex === -1) {
+      return res.status(404).json({ error: 'Friend request not found' });
+    }
+    // Accept or reject
+    if (action === 'accept') {
+      // Add to friends if not already
+      const alreadyFriend = recipient.friends && recipient.friends.some(f => f.email === fromEmail);
+      if (!alreadyFriend) {
+        // Try to get sender's info for profileName/avatar/level
+        const sender = await UserModel.findOne({ email: fromEmail.toLowerCase() });
+        recipient.friends.push({
+          email: fromEmail,
+          profileName: sender ? sender.profileName : recipient.friendRequests[reqIndex].profileName,
+          avatar: sender ? sender.avatar : recipient.friendRequests[reqIndex].avatar,
+          level: sender ? sender.level : 1
+        });
+      }
+    }
+    // Remove the friend request
+    recipient.friendRequests.splice(reqIndex, 1);
+    await recipient.save();
+    res.json({ success: true, friendRequests: recipient.friendRequests, friends: recipient.friends });
+  } catch (err) {
+    console.error('Respond friend request error:', err);
+    res.status(500).json({ error: 'Failed to respond to friend request' });
+  }
+});
+
 
 // Helper function to calculate level based on XP
 function calculateLevel(xp) {
