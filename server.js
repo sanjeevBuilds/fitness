@@ -4,7 +4,7 @@ const app = express(); // ✅ Declare app FIRST
 const mongoose = require('mongoose');
 const UserModel = require('./models/User');
 const foodEntryRoute = require('./Routes/FoodEntry');
-const userRoutes = require('./routes/UserRoute');
+const userRoutes = require('./Routes/UserRoute');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 

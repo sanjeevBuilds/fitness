@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Login response:', data);
             
             if (data.success) {
+           
                 // Store user data in localStorage
                 localStorage.setItem('userData', JSON.stringify({
                     _id: data._id,

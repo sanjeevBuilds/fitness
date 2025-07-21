@@ -49,70 +49,78 @@ const UserSchema = new mongoose.Schema({
   // Personal Details (from ongoing1)
   fullName: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   age: {
     type: Number,
     min: [13, 'Age must be at least 13'],
-    max: [120, 'Age cannot exceed 120']
+    max: [120, 'Age cannot exceed 120'],
+    default: null
   },
   gender: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   height: {
     type: Number, // in cm
     min: [100, 'Height must be at least 100cm'],
-    max: [250, 'Height cannot exceed 250cm']
+    max: [250, 'Height cannot exceed 250cm'],
+    default: null
   },
   weight: {
     type: Number, // in kg
     min: [30, 'Weight must be at least 30kg'],
-    max: [300, 'Weight cannot exceed 300kg']
+    max: [300, 'Weight cannot exceed 300kg'],
+    default: null
   },
   primaryGoal: {
     type: String,
     enum: ['weight_loss', 'muscle_gain', 'control_diet', 'fitness'],
-    default: 'fitness'
+    default: ''
   },
   
   // Lifestyle Habits (from ongoing2)
   activityLevel: {
     type: String,
     enum: ['sedentary', 'light', 'moderate', 'very'],
-    default: 'moderate'
+    default: ''
   },
   averageSleep: {
     type: Number, // hours per day
     min: [4, 'Sleep must be at least 4 hours'],
-    max: [16, 'Sleep cannot exceed 16 hours']
+    max: [16, 'Sleep cannot exceed 16 hours'],
+    default: null
   },
   waterIntake: {
     type: Number, // liters per day
     min: [0.5, 'Water intake must be at least 0.5L'],
-    max: [10, 'Water intake cannot exceed 10L']
+    max: [10, 'Water intake cannot exceed 10L'],
+    default: null
   },
   mealFrequency: {
     type: String,
     enum: ['2', '3', '4+'],
-    default: '3'
+    default: ''
   },
   
   // Dietary Preferences (from ongoing3)
   dietType: {
     type: String,
     enum: ['vegetarian', 'vegan', 'keto', 'balanced', 'paleo', 'other'],
-    default: 'balanced'
+    default: ''
   },
   allergies: {
     type: [String],
     enum: ['none', 'nuts', 'gluten', 'dairy', 'soy', 'seafood', 'multiple'],
-    default: ['none']
+    default: []
   },
   dietaryNotes: {
     type: String,
     trim: true,
-    maxlength: [500, 'Dietary notes cannot exceed 500 characters']
+    maxlength: [500, 'Dietary notes cannot exceed 500 characters'],
+    default: ''
   },
   
   // Account Preferences (from ongoing4)
@@ -120,24 +128,26 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     unique: true,
-    sparse: true
+    sparse: true // No default, so it will be undefined unless set
   },
   notificationPreference: {
     type: String,
     enum: ['all', 'important', 'none'],
-    default: 'important'
+    default: ''
   },
   
   // Health Metrics
   bmi: {
     type: Number,
     min: [10, 'BMI must be at least 10'],
-    max: [60, 'BMI cannot exceed 60']
+    max: [60, 'BMI cannot exceed 60'],
+    default: null
   },
   targetWeight: {
     type: Number,
     min: [30, 'Target weight must be at least 30kg'],
-    max: [300, 'Target weight cannot exceed 300kg']
+    max: [300, 'Target weight cannot exceed 300kg'],
+    default: null
   },
   
   // Progress Tracking

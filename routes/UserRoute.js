@@ -39,16 +39,80 @@ router.post('/createUser', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Create new user with all fields from request body
-    const newUser = new UserModel(userData);
+    // Create a new user and explicitly assign all fields
+    const newUser = new UserModel();
+
+    // Basic fields from input
+    newUser.email = userData.email;
+    newUser.password = userData.password;
+    newUser.profileName = userData.profileName;
+
+    // Optional fields with safe defaults
+    newUser.fullName = userData.fullName || '';
+    newUser.age = userData.age ?? null;
+    newUser.gender = userData.gender || '';
+    newUser.height = userData.height ?? null;
+    newUser.weight = userData.weight ?? null;
+    newUser.primaryGoal = userData.primaryGoal || '';
+    newUser.activityLevel = userData.activityLevel || '';
+    newUser.averageSleep = userData.averageSleep ?? null;
+    newUser.waterIntake = userData.waterIntake ?? null;
+    newUser.mealFrequency = userData.mealFrequency || '';
+    newUser.dietType = userData.dietType || '';
+    newUser.allergies = Array.isArray(userData.allergies) ? userData.allergies : [];
+    newUser.dietaryNotes = userData.dietaryNotes || '';
+    if (userData.username && userData.username.trim() !== '') {
+        newUser.username = userData.username.trim();
+    }
+    // Do not set username at all if not provided
+    newUser.notificationPreference = userData.notificationPreference || '';
+    newUser.bmi = userData.bmi ?? null;
+    newUser.targetWeight = userData.targetWeight ?? null;
+
+    // Optional fields with default logic
+    newUser.avatar = userData.avatar || 'avator1.jpeg';
+    newUser.theme = userData.theme || 'light';
+    newUser.exp = userData.exp ?? 0;
+    newUser.startDate = new Date();
+    newUser.lastLogin = new Date();
+
+    // Subdocuments as empty arrays or default structures
+    newUser.notifications = [];
+    newUser.friendRequests = [];
+    newUser.dailyQuests = [];
+    newUser.miniChallenges = [];
+    newUser.foodLogs = [];
+    newUser.mealPlan = undefined;
+    newUser.postureScans = [];
+    newUser.insights = [];
+    newUser.badges = [];
+
+    // Save to DB (hashing, BMI auto-calc handled in schema pre-save middleware)
     await newUser.save();
 
-    // Return user without password
-    const userResponse = newUser.toObject();
-    delete userResponse.password;
+    // Prepare response in the same structure as login
+    const level = calculateLevel(newUser.exp);
+    const token = jwt.sign(
+      {
+        _id: newUser._id,
+        email: newUser.email,
+      },
+      'your_jwt_secret', // Use env variable in production
+      { expiresIn: '2d' }
+    );
 
-    res.status(201).json(userResponse);
+    res.status(201).json({
+      _id: newUser._id,
+      profileName: newUser.profileName,
+      avatar: newUser.avatar,
+      email: newUser.email,
+      xp: newUser.exp,
+      level: level,
+      createdAt: newUser.createdAt,
+      token: token
+    });
   } catch (err) {
+    console.error('User creation failed:', err);
     res.status(500).json({ error: 'Failed to create user' });
   }
 });
@@ -56,24 +120,18 @@ router.post('/createUser', async (req, res) => {
 // PUT update user
 router.put('/updateUser/:email', async (req, res) => {
   try {
-    const { email, password, profileName, avatar } = req.body;
     const currentEmail = req.params.email.toLowerCase();
-    
-    // Build update object
-    const updateData = {};
-    if (profileName) updateData.profileName = profileName;
-    if (avatar) updateData.avatar = avatar;
-    if (password) updateData.password = password;
-    
-    // If email is being changed, check if new email already exists
-    if (email && email.toLowerCase() !== currentEmail) {
-      const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email already exists' });
-      }
-      updateData.email = email.toLowerCase();
+    const updateData = { ...req.body };
+
+    // Prevent removal of required fields
+    if (
+      (updateData.hasOwnProperty('email') && !updateData.email) ||
+      (updateData.hasOwnProperty('password') && !updateData.password) ||
+      (updateData.hasOwnProperty('profileName') && !updateData.profileName)
+    ) {
+      return res.status(400).json({ error: 'Cannot remove required fields: email, password, or profileName.' });
     }
-    
+
     const updatedUser = await UserModel.findOneAndUpdate(
       { email: currentEmail },
       updateData,
@@ -84,13 +142,7 @@ router.put('/updateUser/:email', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Calculate level for response
-    const level = calculateLevel(updatedUser.exp);
-
-    res.json({
-      ...updatedUser.toObject(),
-      level: level
-    });
+    res.json(updatedUser);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user' });
   }
@@ -198,6 +250,30 @@ router.post('/login', async (req, res) => {
       success: false,
       message: 'Server error during login'
     });
+  }
+});
+
+// GET search users by username or profileName (word-based, partial, case-insensitive)
+router.get('/searchUsers', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query || !query.trim()) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    // Split query into words, ignore empty
+    const words = query.trim().split(/\s+/).filter(Boolean);
+    // Build regex for each word (case-insensitive, partial match)
+    const regexes = words.map(word => new RegExp(word, 'i'));
+    // Find users where any word matches username or profileName
+    const users = await UserModel.find({
+      $or: [
+        { username: { $in: regexes } },
+        { profileName: { $in: regexes } }
+      ]
+    }).select('-password');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to search users' });
   }
 });
 
