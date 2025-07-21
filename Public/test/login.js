@@ -104,8 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handler to demo info to auto-fill
     const demoInfo = document.querySelector('.demo-info');
     demoInfo.addEventListener('click', function() {
-        emailInput.value = 'demo@example.com';
-        passwordInput.value = 'test1234';
+        emailInput.value = 'sampleuser6@example.com';
+        passwordInput.value = 'samplepass6';
     });
     
     // Add visual feedback that demo info is clickable
