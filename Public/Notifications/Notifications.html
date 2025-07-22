@@ -246,41 +246,6 @@
 
   <script src="Notifications.js"></script>
   <script>
-    // Friend Requests Data
-    const friendRequests = [
-      { name: 'Sophie Lee', avatar: '../../assets/avator1.jpeg', level: 3 },
-      { name: 'Max Turner', avatar: '../../assets/avator2.jpeg', level: 2 },
-      { name: 'Priya Singh', avatar: '../../assets/avator3.jpeg', level: 4 }
-    ];
-    function renderFriendRequests() {
-      const container = document.getElementById('friend-requests');
-      container.innerHTML = '';
-      friendRequests.forEach((req, idx) => {
-        const card = document.createElement('div');
-        card.className = 'friend-request-card';
-        card.innerHTML = `
-          <img src="${req.avatar}" alt="${req.name}" class="friend-avatar">
-          <div class="friend-info">
-            <div class="friend-name">${req.name}</div>
-            <div class="friend-level">Level ${req.level}</div>
-          </div>
-          <div class="friend-actions">
-            <button class="accept-btn" onclick="acceptRequest(${idx})">Accept</button>
-            <button class="decline-btn" onclick="declineRequest(${idx})">Decline</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-    function acceptRequest(idx) {
-      friendRequests.splice(idx, 1);
-      renderFriendRequests();
-    }
-    function declineRequest(idx) {
-      friendRequests.splice(idx, 1);
-      renderFriendRequests();
-    }
-    renderFriendRequests();
     // Mark as Read functionality
     document.querySelectorAll('.mark-read-btn').forEach(btn => {
       btn.addEventListener('click', function() {

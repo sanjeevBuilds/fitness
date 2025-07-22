@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const UserModel = require('./models/User');
 const foodEntryRoute = require('./Routes/FoodEntry');
 const userRoutes = require('./Routes/UserRoute');
+const notificationRoutes = require('./Routes/Notifications');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 
@@ -44,6 +45,7 @@ mongoose.connect(MONGO_URL)
 // Use routes
 app.use('/api', userRoutes);
 app.use('/api/foodentry', foodEntryRoute);
+app.use('/api/notifications', notificationRoutes);
 
 // Basic health check route
 app.get('/', (req, res) => {
