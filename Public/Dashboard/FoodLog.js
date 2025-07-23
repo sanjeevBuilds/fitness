@@ -464,3 +464,10 @@ document.addEventListener('change', function(e) {
         showNutritionalPreview();
     }
 });
+
+// After logging food and updating UI, sync steps quest
+if (typeof syncStepsQuestAfterFoodLog === 'function') {
+  // Replace with actual step count value if available
+  const newStepCount = 0; // TODO: get from UI or user input
+  syncStepsQuestAfterFoodLog(newStepCount);
+}

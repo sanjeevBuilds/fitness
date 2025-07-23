@@ -3,6 +3,7 @@ const router = express.Router();
 const UserModel = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const FoodLogModel = require('../models/FoodLog'); // Added for syncing steps quest
 
 // GET all users (excluding passwords)
 router.get('/getUser', async (req, res) => {
@@ -192,7 +193,6 @@ router.patch('/addExp/:email', async (req, res) => {
 });
 
 // POST login route
-// POST login route
 router.post('/login', async (req, res) => {
   console.log('POST /api/login hit');
   try {
@@ -217,6 +217,9 @@ router.post('/login', async (req, res) => {
         message: 'Invalid credentials'
       });
     }
+
+    // Reset daily quests on login
+    await resetDailyQuests(user);
 
     // Calculate level based on XP
     const level = calculateLevel(user.exp);
@@ -370,6 +373,132 @@ router.patch('/rejectAllFriendRequests', async (req, res) => {
   }
 });
 
+// PATCH toggle daily quest (except steps)
+router.patch('/quests/:questType', async (req, res) => {
+  try {
+    const { questType } = req.params;
+    const { completed, currentProgress } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const quest = user.dailyQuests.find(q => q.date === today && q.questType === questType);
+    if (!quest) return res.status(404).json({ error: 'Quest not found' });
+
+    // Steps quest: allow repeatable updates
+    if (questType === 'steps') {
+      if (typeof currentProgress === 'number') {
+        quest.currentProgress = currentProgress;
+        // Sync calories/protein from FoodLog
+        const foodLogs = await FoodLogModel.find({ userId: user._id, date: today });
+        quest.calories = foodLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
+        quest.protein = foodLogs.reduce((sum, log) => sum + (log.protein || 0), 0);
+      }
+    } else {
+      // Other quests: lock after completion
+      if (quest.completed) {
+        return res.status(400).json({ error: 'Quest already completed and locked for today' });
+      }
+      if (completed === true) {
+        quest.completed = true;
+        // Award XP and coins
+        const xpGained = calculateQuestXP(questType);
+        user.exp += xpGained;
+        user.coins = (user.coins || 0) + 5; // Example: 5 coins per quest
+        // Level up logic
+        const newLevel = calculateLevel(user.exp);
+        if (newLevel > user.level) {
+          user.level = newLevel;
+          user.activityLog = user.activityLog || [];
+          user.activityLog.unshift({
+            type: 'levelup',
+            date: new Date(),
+            details: `Leveled up to ${newLevel}`
+          });
+        }
+        // Log activity
+        user.activityLog = user.activityLog || [];
+        user.activityLog.unshift({
+          type: 'quest',
+          questType,
+          date: new Date(),
+          details: `Completed ${quest.questName}`
+        });
+        // Keep only last 20 activities
+        user.activityLog = user.activityLog.slice(0, 20);
+      }
+    }
+
+    await user.save();
+    res.json({ success: true, quest, xp: user.exp, level: user.level, coins: user.coins });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update quest', details: err.message });
+  }
+});
+
+// PATCH set active badge
+router.patch('/setActiveBadge', async (req, res) => {
+  try {
+    const { email, badge } = req.body;
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user.badges || !user.badges.includes(badge)) {
+      return res.status(400).json({ error: 'Badge not unlocked' });
+    }
+    user.activeBadge = badge;
+    await user.save();
+    res.json({ success: true, activeBadge: user.activeBadge });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to set active badge', details: err.message });
+  }
+});
+
+// PATCH set active title
+router.patch('/setActiveTitle', async (req, res) => {
+  try {
+    const { email, title } = req.body;
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user.titles || !user.titles.includes(title)) {
+      return res.status(400).json({ error: 'Title not unlocked' });
+    }
+    user.activeTitle = title;
+    await user.save();
+    res.json({ success: true, activeTitle: user.activeTitle });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to set active title', details: err.message });
+  }
+});
+
+// PATCH unlock badge (for demo/testing, or call from quest logic)
+router.patch('/unlockBadge', async (req, res) => {
+  try {
+    const { email, badge } = req.body;
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.badges = user.badges || [];
+    if (!user.badges.includes(badge)) user.badges.push(badge);
+    await user.save();
+    res.json({ success: true, badges: user.badges });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlock badge', details: err.message });
+  }
+});
+
+// PATCH unlock title (for demo/testing, or call from quest logic)
+router.patch('/unlockTitle', async (req, res) => {
+  try {
+    const { email, title } = req.body;
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.titles = user.titles || [];
+    if (!user.titles.includes(title)) user.titles.push(title);
+    await user.save();
+    res.json({ success: true, titles: user.titles });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlock title', details: err.message });
+  }
+});
 
 // Helper function to calculate level based on XP
 function calculateLevel(xp) {
@@ -383,6 +512,43 @@ function calculateLevel(xp) {
   if (xp < 3600) return 8;
   if (xp < 4500) return 9;
   return Math.floor((xp - 4500) / 1000) + 10;
+}
+
+// Helper function to calculate XP for quests
+function calculateQuestXP(questType) {
+  switch (questType) {
+    case 'water':
+      return 10;
+    case 'exercise':
+      return 15;
+    case 'sleep':
+      return 20;
+    case 'steps':
+      return 5; // Steps quest is handled by food log sync
+    default:
+      return 0;
+  }
+}
+
+// Helper function to reset daily quests (call on login or at midnight)
+async function resetDailyQuests(user) {
+  const today = new Date().toISOString().slice(0, 10);
+  // Keep only today's steps quest
+  user.dailyQuests = user.dailyQuests.filter(q => q.date === today && q.questType === 'steps');
+  // Add default quests for today (except steps)
+  const defaultQuests = [
+    { date: today, questType: 'water', questName: 'Hydration Master', target: 8, currentProgress: 0, completed: false },
+    { date: today, questType: 'sleep', questName: 'Sleep Warrior', target: user.averageSleep || 8, currentProgress: 0, completed: false },
+    { date: today, questType: 'posture', questName: 'Posture Pro', target: 1, currentProgress: 0, completed: false },
+    { date: today, questType: 'meal', questName: 'Nutrition Tracker', target: 1, currentProgress: 0, completed: false },
+    { date: today, questType: 'exercise', questName: 'Fitness Fanatic', target: 30, currentProgress: 0, completed: false }
+  ];
+  for (const quest of defaultQuests) {
+    if (!user.dailyQuests.some(q => q.date === today && q.questType === quest.questType)) {
+      user.dailyQuests.push(quest);
+    }
+  }
+  await user.save();
 }
 
 module.exports = router;

@@ -1,587 +1,559 @@
-// Authentication and User Data Management
-class UserAuth {
-    constructor() {
-        this.userData = null;
-        this.checkAuth();
+// Auth Check - Don't modify this section
+(function () {
+    const redirectToLogin = () => {
+        window.location.href = '/Public/test/login.html';
+    };
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        redirectToLogin();
+        return;
     }
-
-    // Check if user is authenticated (now optional)
-    checkAuth() {
-        const storedUserData = localStorage.getItem('userData');
-        if (!storedUserData) {
-            // No authentication required - use default data
-            this.userData = {
-                profileName: 'Guest User',
-                avatar: 'avatar1.png',
-                email: 'guest@example.com',
-                xp: 1250,
-                level: 4,
-                createdAt: new Date().toISOString()
-            };
-            this.displayUserData();
+    try {
+        const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
+        if (!decoded || !decoded.exp) {
+            localStorage.removeItem('authToken');
+            redirectToLogin();
             return;
         }
-
-        try {
-            this.userData = JSON.parse(storedUserData);
-            this.displayUserData();
-        } catch (error) {
-            console.error('Error parsing user data:', error);
-            localStorage.removeItem('userData');
-            // Use default data instead of redirecting
-            this.userData = {
-                profileName: 'Guest User',
-                avatar: 'avatar1.png',
-                email: 'guest@example.com',
-                xp: 1250,
-                level: 4,
-                createdAt: new Date().toISOString()
-            };
-            this.displayUserData();
+        const now = Math.floor(Date.now() / 1000);
+        if (decoded.exp < now) {
+            localStorage.removeItem('authToken');
+            redirectToLogin();
+            return;
         }
+    } catch (e) {
+        localStorage.removeItem('authToken');
+        redirectToLogin();
     }
+})();
 
-    // Display user data in the dashboard
-    displayUserData() {
-        if (!this.userData) return;
-
-        // Update sidebar user profile
-        const userAvatar = document.querySelector('.user-profile .avatar');
-        const userName = document.querySelector('.user-profile .user-name');
-        const userLevel = document.querySelector('.user-profile .user-level');
-
-        if (userAvatar) {
-            userAvatar.src = `../../assets/${this.userData.avatar}`;
-            userAvatar.alt = `${this.userData.profileName}'s Avatar`;
-        }
-
-        if (userName) {
-            userName.textContent = this.userData.profileName;
-        }
-
-        if (userLevel) {
-            userLevel.textContent = `Level ${this.userData.level}`;
-        }
-
-        // Update gamified header
-        this.updateGamifiedHeader();
-
-        // Update page title
-        document.title = `Dashboard - ${this.userData.profileName}`;
-    }
-
-    // Update gamified header with user data
-    updateGamifiedHeader() {
-        const currentLevel = document.querySelector('.current-level');
-        const xpDisplay = document.querySelector('.xp');
-        const levelStat = document.querySelector('[data-stat="level"]');
-        const xpStat = document.querySelector('[data-stat="xp"]');
-
-        if (currentLevel) {
-            currentLevel.textContent = `Level ${this.userData.level}`;
-        }
-
-        if (xpDisplay) {
-            const xpForCurrentLevel = this.getXPForLevel(this.userData.level);
-            const xpForNextLevel = this.getXPForLevel(this.userData.level + 1);
-            const currentXP = this.userData.xp - xpForCurrentLevel;
-            const xpNeeded = xpForNextLevel - xpForCurrentLevel;
-            xpDisplay.textContent = `${currentXP}/${xpNeeded} XP`;
-        }
-
-        if (levelStat) {
-            levelStat.textContent = this.userData.level;
-        }
-
-        if (xpStat) {
-            xpStat.textContent = this.userData.xp.toLocaleString();
-        }
-
-        // Update progress bar
-        this.updateProgressBar();
-    }
-
-    // Calculate XP required for a level
-    getXPForLevel(level) {
-        if (level <= 1) return 0;
-        if (level <= 2) return 100;
-        if (level <= 3) return 300;
-        if (level <= 4) return 600;
-        if (level <= 5) return 1000;
-        if (level <= 6) return 1500;
-        if (level <= 7) return 2100;
-        if (level <= 8) return 2800;
-        if (level <= 9) return 3600;
-        return 4500 + (level - 10) * 1000;
-    }
-
-    // Update progress bar
-    updateProgressBar() {
-        const progressFill = document.querySelector('.progress-fill');
-        if (!progressFill) return;
-
-        const xpForCurrentLevel = this.getXPForLevel(this.userData.level);
-        const xpForNextLevel = this.getXPForLevel(this.userData.level + 1);
-        const currentXP = this.userData.xp - xpForCurrentLevel;
-        const xpNeeded = xpForNextLevel - xpForCurrentLevel;
-        const percentage = Math.min((currentXP / xpNeeded) * 100, 100);
-
-        progressFill.style.width = `${percentage}%`;
-    }
-
-    // Logout function
-    logout() {
-        localStorage.removeItem('userData');
-        window.location.href = '/Public/test/login.html';
-    }
-
-    // Get current user data
-    getUserData() {
-        return this.userData;
-    }
-
-    // Update user data (for when user updates profile)
-    updateUserData(newData) {
-        this.userData = { ...this.userData, ...newData };
-        localStorage.setItem('userData', JSON.stringify(this.userData));
-        this.displayUserData();
-    }
-}
-
-// Dashboard Gamification System
+// Dashboard Gamification Class
 class DashboardGamification {
     constructor() {
-        this.userData = this.loadUserData();
+        this.currentUser = null;
+        this.questStates = {};
+        this.activityLog = [];
+        
+        // DOM Elements
+        this.coinBalance = document.querySelector('.coin-balance');
+        this.currentLevelEl = document.querySelector('.current-level');
+        this.xpDisplay = document.querySelector('.xp');
+        this.progressFill = document.querySelector('.progress-fill');
+        this.levelStatValue = document.querySelector('[data-stat="level"]');
+        this.xpStatValue = document.querySelector('[data-stat="xp"]');
+        this.activityList = document.getElementById('activity-list');
+
         this.init();
     }
 
-    init() {
-        this.updateLevelDisplay();
-        this.updateProgressBar();
-        this.updateStats();
+    async init() {
+        await this.loadUserData();
         this.setupEventListeners();
+        this.updateUI();
+        this.loadQuestStates();
     }
 
-    // Load user data from localStorage or use defaults
-    loadUserData() {
-        const savedData = localStorage.getItem('userData');
-        if (savedData) {
-            return JSON.parse(savedData);
+    async loadUserData() {
+        try {
+            const token = localStorage.getItem('authToken');
+            const decoded = window.jwt_decode(token);
+            const email = decoded.email;
+            
+            const response = await fetch(`http://localhost:8000/api/getUser/${email}`);
+            if (!response.ok) throw new Error('Failed to fetch user data');
+            
+            this.currentUser = await response.json();
+            
+            // Initialize defaults if missing
+            this.currentUser.exp = this.currentUser.exp || 0;
+            this.currentUser.coins = this.currentUser.coins || 0;
+            this.currentUser.level = this.calculateLevel(this.currentUser.exp);
+            this.currentUser.activityLog = this.currentUser.activityLog || [];
+            
+        } catch (error) {
+            console.error('Error loading user data:', error);
         }
-        
-        // Default user data
-        return {
-            xp: 1250,
-            level: 1,
-            coins: 50,
-            totalSteps: 0,
-            totalWater: 0,
-            totalSleep: 0,
-            totalMeals: 0,
-            totalExercise: 0,
-            totalPostureScans: 0,
-            activityLog: []
-        };
     }
 
-    // Save user data to localStorage
-    saveUserData() {
-        localStorage.setItem('userData', JSON.stringify(this.userData));
-    }
-
-    // Calculate level based on XP using the formula: XP_required = 100 * level^1.5
     calculateLevel(xp) {
-        if (xp <= 0) return 1;
-        
-        // Reverse the formula to find level: level = (XP / 100)^(2/3)
-        const level = Math.pow(xp / 100, 2/3);
-        return Math.floor(level) + 1;
+        if (xp < 100) return 1;
+        if (xp < 300) return 2;
+        if (xp < 600) return 3;
+        if (xp < 1000) return 4;
+        if (xp < 1500) return 5;
+        if (xp < 2100) return 6;
+        if (xp < 2800) return 7;
+        if (xp < 3600) return 8;
+        if (xp < 4500) return 9;
+        return Math.floor((xp - 4500) / 1000) + 10;
     }
 
-    // Calculate XP required for next level
-    calculateXPForLevel(level) {
-        return Math.floor(100 * Math.pow(level, 1.5));
+    getXPForLevel(level) {
+        const thresholds = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500];
+        if (level <= 9) return thresholds[level];
+        return 4500 + (level - 9) * 1000;
     }
 
-    // Calculate XP required for current level
-    calculateXPForCurrentLevel(level) {
-        return Math.floor(100 * Math.pow(level - 1, 1.5));
+    getQuestXP(questType) {
+        const xpRewards = {
+            'water': 25,
+            'steps': 50,
+            'sleep': 30,
+            'posture': 40,
+            'meal': 20,
+            'exercise': 60
+        };
+        return xpRewards[questType] || 10;
     }
 
-    // Calculate progress percentage toward next level
-    calculateProgressPercentage() {
-        const currentLevel = this.userData.level;
-        const currentLevelXP = this.calculateXPForCurrentLevel(currentLevel);
-        const nextLevelXP = this.calculateXPForLevel(currentLevel);
-        const userXP = this.userData.xp;
-        
-        const xpInCurrentLevel = userXP - currentLevelXP;
-        const xpNeededForNextLevel = nextLevelXP - currentLevelXP;
-        
-        return Math.min(100, Math.max(0, (xpInCurrentLevel / xpNeededForNextLevel) * 100));
+    setupEventListeners() {
+        // Daily Quest toggles
+        document.querySelectorAll('.quest-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const questItem = e.target.closest('.checklist-item');
+                const questType = questItem.dataset.quest;
+                this.handleQuestToggle(questType, e.target.checked);
+            });
+        });
+
+        // Unlock challenge buttons
+        document.querySelectorAll('.unlock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cost = parseInt(e.target.dataset.cost);
+                this.showUnlockModal(cost, () => {
+                    this.unlockChallenge(e.target.closest('.challenge-card'));
+                });
+            });
+        });
+
+        // Unlock title buttons
+        document.querySelectorAll('.unlock-title-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cost = parseInt(e.target.dataset.cost);
+                this.showUnlockModal(cost, () => {
+                    this.unlockTitle(e.target.closest('.title-card'));
+                });
+            });
+        });
+
+        // Modal handlers
+        this.setupModalHandlers();
     }
 
-    // Add XP and handle level ups
-    addXP(amount, reason = 'Activity completed') {
-        const oldLevel = this.userData.level;
-        const oldXP = this.userData.xp;
+    async handleQuestToggle(questType, isCompleted) {
+        const today = new Date().toISOString().slice(0, 10);
+        const questKey = `${questType}_${today}`;
         
-        // Add XP
-        this.userData.xp += amount;
-        
-        // Calculate new level
-        const newLevel = this.calculateLevel(this.userData.xp);
-        this.userData.level = newLevel;
-        
-        // Log activity
-        this.logActivity(amount, reason);
-        
-        // Save data
-        this.saveUserData();
-        
-        // Update UI
-        this.updateLevelDisplay();
-        this.updateProgressBar();
-        this.updateStats();
+        // Check if quest is already completed and locked (except steps)
+        if (questType !== 'steps' && this.questStates[questKey]) {
+            this.showNotification('Quest already completed today!', 'warning');
+            // Reset checkbox to checked state
+            const checkbox = document.getElementById(`${questType}-quest`);
+            if (checkbox) checkbox.checked = true;
+            return;
+        }
+
+        if (isCompleted) {
+            // Award XP and coins
+            const xpGained = this.getQuestXP(questType);
+            const coinsGained = questType === 'steps' ? 15 : 5;
+            
+            await this.addXP(xpGained, questType);
+            await this.addCoins(coinsGained);
+            
+            // Lock quest (except steps)
+            if (questType !== 'steps') {
+                this.questStates[questKey] = true;
+                this.saveQuestStates();
+            }
+            
+            // Add to activity log
+            this.addActivity(questType, xpGained);
+            
+            // Show success notification
+            this.showNotification(`Quest completed! +${xpGained} XP, +${coinsGained} coins`, 'success');
+            
+            // Update UI
+            this.updateUI();
+            
+        } else if (questType === 'steps') {
+            // Steps can be unchecked (only steps quest allows this)
+            this.showNotification('Steps quest progress updated', 'info');
+        }
+    }
+
+    async addXP(amount, source = 'quest') {
+        const oldLevel = this.currentUser.level;
+        this.currentUser.exp += amount;
+        this.currentUser.level = this.calculateLevel(this.currentUser.exp);
         
         // Check for level up
-        if (newLevel > oldLevel) {
-            this.handleLevelUp(oldLevel, newLevel);
+        if (this.currentUser.level > oldLevel) {
+            this.showLevelUpNotification(this.currentUser.level);
+            this.addActivity('levelup', 0, `Reached Level ${this.currentUser.level}!`);
         }
         
-        // Show XP gain animation
-        this.showXPGainAnimation(amount);
+        // Sync with backend
+        try {
+            await fetch(`http://localhost:8000/api/addExp/${this.currentUser.email}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expToAdd: amount })
+            });
+        } catch (error) {
+            console.error('Failed to sync XP:', error);
+        }
     }
 
-    // Handle level up
-    handleLevelUp(oldLevel, newLevel) {
-        // Add coins for level up
-        const coinsEarned = 10;
-        this.userData.coins += coinsEarned;
-        this.saveUserData();
+    async addCoins(amount) {
+        this.currentUser.coins = (this.currentUser.coins || 0) + amount;
         
-        // Show level up notification
-        this.showLevelUpNotification(newLevel, coinsEarned);
-        
-        // Update coin display
-        this.updateCoinDisplay();
-        
-        // Add to activity log
-        this.logActivity(0, `🎉 Level Up! Reached Level ${newLevel}`, 'levelup');
+        // Sync with backend (you may need to add this endpoint)
+        try {
+            await fetch(`http://localhost:8000/api/updateUser/${this.currentUser.email}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coins: this.currentUser.coins })
+            });
+        } catch (error) {
+            console.error('Failed to sync coins:', error);
+        }
     }
 
-    // Log activity
-    logActivity(xpGained, reason, type = 'xp') {
-        const activity = {
-            id: Date.now(),
-            type: type,
-            xpGained: xpGained,
-            reason: reason,
-            timestamp: new Date().toISOString(),
-            level: this.userData.level
+    addActivity(type, xp, customMessage = null) {
+        const activityMessages = {
+            'water': 'Completed hydration quest',
+            'steps': 'Reached step goal',
+            'sleep': 'Completed sleep quest',
+            'posture': 'Completed posture scan',
+            'meal': 'Logged daily meal',
+            'exercise': 'Completed workout',
+            'levelup': customMessage || 'Leveled up!'
         };
-        
-        this.userData.activityLog.unshift(activity);
-        
-        // Keep only last 20 activities
-        if (this.userData.activityLog.length > 20) {
-            this.userData.activityLog = this.userData.activityLog.slice(0, 20);
+
+        const activity = {
+            icon: this.getActivityIcon(type),
+            xp: xp,
+            message: customMessage || activityMessages[type] || 'Completed activity',
+            timestamp: new Date()
+        };
+
+        this.activityLog.unshift(activity);
+        if (this.activityLog.length > 10) {
+            this.activityLog = this.activityLog.slice(0, 10);
         }
+
+        this.updateActivityList();
     }
 
-    // Update level display
-    updateLevelDisplay() {
-        const levelElements = document.querySelectorAll('.user-level, .level-badge, .current-level');
-        levelElements.forEach(element => {
-            element.textContent = `Level ${this.userData.level}`;
-        });
+    getActivityIcon(type) {
+        const icons = {
+            'water': '💧',
+            'steps': '👣',
+            'sleep': '😴',
+            'posture': '📊',
+            'meal': '🍽️',
+            'exercise': '💪',
+            'levelup': '⭐'
+        };
+        return icons[type] || '🎯';
+    }
+
+    updateUI() {
+        // Update coin balance
+        if (this.coinBalance) {
+            this.coinBalance.textContent = this.currentUser.coins || 0;
+        }
+
+        // Update level and XP
+        const currentLevel = this.currentUser.level;
+        const currentXP = this.currentUser.exp;
+        const currentLevelXP = this.getXPForLevel(currentLevel - 1);
+        const nextLevelXP = this.getXPForLevel(currentLevel);
+        const progressXP = currentXP - currentLevelXP;
+        const neededXP = nextLevelXP - currentLevelXP;
+        const progressPercent = Math.min((progressXP / neededXP) * 100, 100);
+
+        if (this.currentLevelEl) {
+            this.currentLevelEl.textContent = `Level ${currentLevel}`;
+        }
+
+        if (this.xpDisplay) {
+            this.xpDisplay.textContent = `${progressXP}/${neededXP} XP`;
+        }
+
+        if (this.progressFill) {
+            this.progressFill.style.width = `${progressPercent}%`;
+        }
+
+        if (this.levelStatValue) {
+            this.levelStatValue.textContent = currentLevel;
+        }
+
+        if (this.xpStatValue) {
+            this.xpStatValue.textContent = currentXP;
+        }
+
+        // Update quest states
+        this.updateQuestUI();
+    }
+
+    updateQuestUI() {
+        const today = new Date().toISOString().slice(0, 10);
         
-        // Update level info in progress section
-        const levelInfo = document.querySelector('.level-info');
-        if (levelInfo) {
-            const currentLevelXP = this.calculateXPForCurrentLevel(this.userData.level);
-            const nextLevelXP = this.calculateXPForLevel(this.userData.level);
-            const userXP = this.userData.xp;
+        document.querySelectorAll('.checklist-item').forEach(item => {
+            const questType = item.dataset.quest;
+            const checkbox = item.querySelector('.quest-checkbox');
+            const questKey = `${questType}_${today}`;
             
-            levelInfo.innerHTML = `
-                <div>
-                    <span class="level-text">Level ${this.userData.level}</span>
-                    <span class="xp-text">${userXP} XP</span>
-                </div>
-                <div class="xp-details">
-                    <span class="xp-current">${userXP - currentLevelXP}</span>
-                    <span class="xp-separator">/</span>
-                    <span class="xp-needed">${nextLevelXP - currentLevelXP}</span>
-                    <span class="xp-label">XP to next level</span>
+            if (this.questStates[questKey] && questType !== 'steps') {
+                // Quest is completed and locked
+                checkbox.checked = true;
+                checkbox.disabled = true;
+                item.classList.add('completed');
+            } else {
+                checkbox.disabled = false;
+                item.classList.remove('completed');
+            }
+        });
+    }
+
+    updateActivityList() {
+        if (!this.activityList) return;
+
+        this.activityList.innerHTML = '';
+        this.activityLog.forEach(activity => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <span class="activity-icon">${activity.icon}</span>
+                <div class="activity-details">
+                    ${activity.xp > 0 ? `<span class="activity-xp">+${activity.xp} XP</span>` : ''}
+                    ${activity.message}
                 </div>
             `;
-        }
+            this.activityList.appendChild(activityItem);
+        });
     }
 
-    // Update progress bar
-    updateProgressBar() {
-        const progressFill = document.querySelector('.progress-fill');
-        if (progressFill) {
-            const percentage = this.calculateProgressPercentage();
-            progressFill.style.width = `${percentage}%`;
-            
-            // Add animation class for smooth transitions
-            progressFill.classList.add('progress-animated');
+    loadQuestStates() {
+        const saved = localStorage.getItem('questStates');
+        if (saved) {
+            this.questStates = JSON.parse(saved);
+        }
+        this.updateQuestUI();
+    }
+
+    saveQuestStates() {
+        localStorage.setItem('questStates', JSON.stringify(this.questStates));
+    }
+
+    showNotification(message, type = 'info') {
+        // Create and show notification
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#4CAF50' : type === 'warning' ? '#FF9800' : '#2196F3'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                progressFill.classList.remove('progress-animated');
-            }, 500);
-        }
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 
-    // Update stats
-    updateStats() {
-        // Update XP stat
-        const xpStat = document.querySelector('.stat-value[data-stat="xp"]');
-        if (xpStat) {
-            xpStat.textContent = this.userData.xp.toLocaleString();
-        }
-        
-        // Update level stat
-        const levelStat = document.querySelector('.stat-value[data-stat="level"]');
-        if (levelStat) {
-            levelStat.textContent = this.userData.level;
-        }
-        
-        // Update coin stat
-        const coinStat = document.querySelector('.stat-value[data-stat="coins"]');
-        if (coinStat) {
-            coinStat.textContent = this.userData.coins;
-        }
-    }
-
-    // Update coin display
-    updateCoinDisplay() {
-        const coinBalance = document.querySelector('.coin-balance');
-        if (coinBalance) {
-            coinBalance.textContent = this.userData.coins;
-        }
-    }
-
-    // Show XP gain animation
-    showXPGainAnimation(amount) {
-        const animation = document.createElement('div');
-        animation.className = 'xp-gain-animation';
-        animation.innerHTML = `+${amount} XP`;
-        
-        // Position near the progress bar
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) {
-            progressBar.appendChild(animation);
-            
-            // Remove after animation
-            setTimeout(() => {
-                animation.remove();
-            }, 2000);
-        }
-    }
-
-    // Show level up notification
-    showLevelUpNotification(newLevel, coinsEarned) {
+    showLevelUpNotification(newLevel) {
         const notification = document.createElement('div');
         notification.className = 'level-up-notification';
         notification.innerHTML = `
-            <div class="level-up-content">
-                <div class="level-up-icon">🎉</div>
-                <div class="level-up-text">
-                    <h3>Level Up!</h3>
-                    <p>You're now Level ${newLevel}</p>
-                    <p class="coins-earned">+${coinsEarned} coins earned!</p>
-                </div>
-                <button class="close-notification">×</button>
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px;">🎉</div>
+                <h2 style="color: #FFD700; margin: 10px 0;">LEVEL UP!</h2>
+                <p style="color: white; font-size: 18px;">You've reached Level ${newLevel}!</p>
             </div>
         `;
-        
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 1001;
+            animation: levelUpPulse 0.6s ease;
+        `;
+
         document.body.appendChild(notification);
-        
-        // Add show class after a small delay
+
         setTimeout(() => {
-            notification.classList.add('show');
-        }, 100);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 5000);
-        
-        // Close button functionality
-        const closeBtn = notification.querySelector('.close-notification');
-        closeBtn.addEventListener('click', () => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        });
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 4000);
     }
 
-    // Setup event listeners for quest completion
-    setupEventListeners() {
-        // Listen for quest completion events
-        document.addEventListener('questCompleted', (e) => {
-            const { questType, xpReward } = e.detail;
-            this.addXP(xpReward, `${questType} completed`);
-        });
+    showUnlockModal(cost, onConfirm) {
+        const modal = document.getElementById('unlock-modal');
+        const modalCost = document.getElementById('modal-cost');
+        const confirmBtn = document.getElementById('confirm-unlock');
         
-        // Listen for manual XP additions (for testing)
-        document.addEventListener('addXP', (e) => {
-            const { amount, reason } = e.detail;
-            this.addXP(amount, reason);
-        });
+        if (modalCost) modalCost.textContent = cost;
+        if (modal) modal.style.display = 'flex';
         
-        // Setup quest checkboxes
-        this.setupQuestCheckboxes();
-    }
-
-    // Setup quest checkboxes with XP rewards
-    setupQuestCheckboxes() {
-        const questCheckboxes = document.querySelectorAll('.quest-checkbox');
-        
-        questCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    const questItem = e.target.closest('.checklist-item');
-                    const questType = questItem.dataset.quest;
-                    const xpReward = this.getQuestXPReward(questType);
-                    
-                    // Add XP reward
-                    this.addXP(xpReward, `${questType} quest completed`);
-                    
-                    // Disable checkbox to prevent multiple completions
-                    e.target.disabled = true;
-                    
-                    // Add completion styling
-                    questItem.classList.add('completed');
-                }
-            });
-        });
-    }
-
-    // Get XP reward for quest type
-    getQuestXPReward(questType) {
-        const rewards = {
-            water: 25,
-            steps: 50,
-            sleep: 30,
-            posture: 40,
-            meal: 20,
-            exercise: 60
+        confirmBtn.onclick = () => {
+            if (this.currentUser.coins >= cost) {
+                this.currentUser.coins -= cost;
+                this.updateUI();
+                onConfirm();
+                modal.style.display = 'none';
+                this.showNotification(`Successfully unlocked! -${cost} coins`, 'success');
+            } else {
+                this.showNotification('Not enough coins!', 'warning');
+            }
         };
-        return rewards[questType] || 10;
     }
 
-    // Get user data for external use
-    getUserData() {
-        return this.userData;
+    setupModalHandlers() {
+        const modal = document.getElementById('unlock-modal');
+        const closeBtn = document.getElementById('close-modal');
+        const cancelBtn = document.getElementById('cancel-unlock');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => modal.style.display = 'none';
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.onclick = () => modal.style.display = 'none';
+        }
+        
+        if (modal) {
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            };
+        }
     }
 
-    // Reset user data (for testing)
-    resetUserData() {
-        this.userData = {
-            xp: 0,
-            level: 1,
-            coins: 0,
-            totalSteps: 0,
-            totalWater: 0,
-            totalSleep: 0,
-            totalMeals: 0,
-            totalExercise: 0,
-            totalPostureScans: 0,
-            activityLog: []
-        };
-        this.saveUserData();
-        this.init();
+    unlockChallenge(challengeCard) {
+        challengeCard.classList.add('unlocked');
+        const unlockBtn = challengeCard.querySelector('.unlock-btn');
+        if (unlockBtn) {
+            unlockBtn.textContent = 'Challenge Active';
+            unlockBtn.disabled = true;
+        }
+    }
+
+    unlockTitle(titleCard) {
+        titleCard.classList.add('unlocked');
+        const unlockBtn = titleCard.querySelector('.unlock-title-btn');
+        if (unlockBtn) {
+            unlockBtn.textContent = 'Unlocked';
+            unlockBtn.disabled = true;
+        }
+    }
+
+    // Reset daily quests at midnight
+    resetDailyQuests() {
+        const today = new Date().toISOString().slice(0, 10);
+        const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        
+        // Remove yesterday's quest states (except steps which can be toggled)
+        Object.keys(this.questStates).forEach(key => {
+            if (key.includes(yesterday) && !key.startsWith('steps_')) {
+                delete this.questStates[key];
+            }
+        });
+        
+        this.saveQuestStates();
+        this.updateQuestUI();
     }
 }
 
-// Initialize systems when DOM is loaded
-let userAuth;
-let gamificationSystem;
-
-document.addEventListener('DOMContentLoaded', function() {
-    // --- JWT Auth Check (Protected Page) ---
-    (function() {
-        const redirectToLogin = () => {
-            window.location.href = '/Public/test/login.html';
-        };
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            redirectToLogin();
-            return;
-        }
-        // jwt-decode must be loaded via CDN in the HTML
-        try {
-            const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
-            if (!decoded || !decoded.exp) {
-                localStorage.removeItem('authToken');
-                redirectToLogin();
-                return;
-            }
-            // exp is in seconds since epoch
-            const now = Math.floor(Date.now() / 1000);
-            if (decoded.exp < now) {
-                localStorage.removeItem('authToken');
-                redirectToLogin();
-                return;
-            }
-            // Token is valid, allow access
-        } catch (e) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-        }
-    })();
-
-    // Initialize authentication first
-    userAuth = new UserAuth();
+// CSS Animations (inject into page)
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
     
-    // Initialize gamification system with user data
-    if (userAuth.getUserData()) {
-        gamificationSystem = new DashboardGamification();
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
     }
+    
+    @keyframes levelUpPulse {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.1); }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    
+    .checklist-item.completed {
+        opacity: 0.7;
+        background: #f0f9ff;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .checklist-item.completed .quest-checkbox {
+        cursor: not-allowed;
+    }
+    
+    .notification {
+        font-weight: 500;
+        font-size: 14px;
+    }
+    
+    .level-up-notification {
+        font-family: 'Inter', sans-serif;
+    }
+`;
+document.head.appendChild(style);
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.dashboardGamification = new DashboardGamification();
+    
+    // Reset quests at midnight
+    const now = new Date();
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = midnight.getTime() - now.getTime();
+    
+    setTimeout(() => {
+        window.dashboardGamification.resetDailyQuests();
+        // Set up daily reset
+        setInterval(() => {
+            window.dashboardGamification.resetDailyQuests();
+        }, 24 * 60 * 60 * 1000);
+    }, msUntilMidnight);
 });
 
-// Global function to add XP from other parts of the app
-function addUserXP(amount, reason) {
-    if (gamificationSystem) {
-        gamificationSystem.addXP(amount, reason);
+// Load user profile data from localStorage
+
+
+// Global Dark Mode Application
+function applyGlobalDarkMode() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
     }
 }
 
-// Global function to get user data
-function getUserData() {
-    if (userAuth) {
-        return userAuth.getUserData();
-    }
-    return null;
-}
-
-// Global function to update user data
-function updateUserData(newData) {
-    if (userAuth) {
-        userAuth.updateUserData(newData);
-    }
-}
-
-// Smooth scroll for sidebar anchor links (future-proof, in case sections are added)
-document.querySelectorAll('.nav-menu .nav-item').forEach(link => {
-    link.addEventListener('click', function(e) {
-        // Only handle anchor links (not page navigations)
-        if (this.getAttribute('href') && this.getAttribute('href').startsWith('#')) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href').substring(1);
-            const section = document.getElementById(targetId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Highlight active nav-item
-                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-                this.classList.add('active');
-            }
-        }
-    });
-});
+// Apply dark mode immediately for faster loading
+applyGlobalDarkMode();

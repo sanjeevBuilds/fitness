@@ -491,6 +491,19 @@
 
     <script src="dashboard.js"></script>
     <script>
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                const avatar = document.querySelector('.avatar');
+                const name = document.querySelector('.user-name');
+                const level = document.querySelector('.user-level');
+        
+                if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+                if (name && userData.profileName) name.textContent = userData.profileName;
+                if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            }
+        })();
+        
         // Global Dark Mode Application
         function applyGlobalDarkMode() {
             const isDark = localStorage.getItem('darkMode') === 'true';

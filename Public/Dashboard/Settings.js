@@ -391,6 +391,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const sidebarAvatar = document.getElementById('sidebar-avatar');
         if (sidebarAvatar) sidebarAvatar.src = `../../assets/${userData.avatar}`;
     }
+    // Populate gamification UI (badges, titles, XP, coins, activity log)
+    if (typeof fetchUserDataAndRenderProfile === 'function') {
+        fetchUserDataAndRenderProfile();
+    }
 });
 
 // Global function to apply dark mode (for other pages)

@@ -40,6 +40,37 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Experience cannot be negative']
   },
+  coins: {
+    type: Number,
+    default: 0
+  },
+  badges: {
+    type: [String],
+    default: []
+  },
+  activeBadge: {
+    type: String,
+    default: ''
+  },
+  titles: {
+    type: [String],
+    default: []
+  },
+  activeTitle: {
+    type: String,
+    default: ''
+  },
+  activityLog: {
+    type: [
+      {
+        type: { type: String },
+        questType: String,
+        date: Date,
+        details: String
+      }
+    ],
+    default: []
+  },
   theme: {
     type: String,
     enum: ['light', 'dark'],
