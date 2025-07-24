@@ -3,12 +3,28 @@ const router = express.Router();
 const UserModel = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const FoodLogModel = require('../models/FoodLog'); // Added for syncing steps quest
+const FoodLogModel = require('../models/FoodLog');
+
+// Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, 'your_jwt_secret', (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
 
 // GET all users (excluding passwords)
 router.get('/getUser', async (req, res) => {
   try {
-    const users = await UserModel.find().select('-password'); // Exclude password from response
+    const users = await UserModel.find().select('-password');
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -34,21 +50,15 @@ router.post('/createUser', async (req, res) => {
     const userData = req.body;
     userData.email = userData.email.toLowerCase();
 
-    // Check if user already exists
     const existingUser = await UserModel.findOne({ email: userData.email });
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Create a new user and explicitly assign all fields
     const newUser = new UserModel();
-
-    // Basic fields from input
     newUser.email = userData.email;
     newUser.password = userData.password;
     newUser.profileName = userData.profileName;
-
-    // Optional fields with safe defaults
     newUser.fullName = userData.fullName || '';
     newUser.age = userData.age ?? null;
     newUser.gender = userData.gender || '';
@@ -62,22 +72,23 @@ router.post('/createUser', async (req, res) => {
     newUser.dietType = userData.dietType || '';
     newUser.allergies = Array.isArray(userData.allergies) ? userData.allergies : [];
     newUser.dietaryNotes = userData.dietaryNotes || '';
+    
     if (userData.username && userData.username.trim() !== '') {
         newUser.username = userData.username.trim();
     }
-    // Do not set username at all if not provided
+    
     newUser.notificationPreference = userData.notificationPreference || '';
     newUser.bmi = userData.bmi ?? null;
     newUser.targetWeight = userData.targetWeight ?? null;
-
-    // Optional fields with default logic
     newUser.avatar = userData.avatar || 'avator1.jpeg';
     newUser.theme = userData.theme || 'light';
     newUser.exp = userData.exp ?? 0;
+    newUser.coins = 0; // Initialize coins
+    newUser.level = 1; // Initialize level
     newUser.startDate = new Date();
     newUser.lastLogin = new Date();
 
-    // Subdocuments as empty arrays or default structures
+    // Initialize gamification arrays
     newUser.notifications = [];
     newUser.friendRequests = [];
     newUser.dailyQuests = [];
@@ -87,18 +98,15 @@ router.post('/createUser', async (req, res) => {
     newUser.postureScans = [];
     newUser.insights = [];
     newUser.badges = [];
+    newUser.titles = [];
+    newUser.activityLog = [];
 
-    // Save to DB (hashing, BMI auto-calc handled in schema pre-save middleware)
     await newUser.save();
 
-    // Prepare response in the same structure as login
     const level = calculateLevel(newUser.exp);
     const token = jwt.sign(
-      {
-        _id: newUser._id,
-        email: newUser.email,
-      },
-      'your_jwt_secret', // Use env variable in production
+      { _id: newUser._id, email: newUser.email },
+      'your_jwt_secret',
       { expiresIn: '2d' }
     );
 
@@ -109,6 +117,7 @@ router.post('/createUser', async (req, res) => {
       email: newUser.email,
       xp: newUser.exp,
       level: level,
+      coins: newUser.coins,
       createdAt: newUser.createdAt,
       token: token
     });
@@ -118,13 +127,392 @@ router.post('/createUser', async (req, res) => {
   }
 });
 
+// POST login route
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Reset daily quests on login
+    await resetDailyQuests(user);
+    
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    const level = calculateLevel(user.exp);
+    const token = jwt.sign(
+      { _id: user._id, email: user.email },
+      'your_jwt_secret',
+      { expiresIn: '2d' }
+    );
+
+    res.json({
+      success: true,
+      _id: user._id,
+      profileName: user.profileName,
+      avatar: user.avatar,
+      email: user.email,
+      xp: user.exp,
+      level: level,
+      coins: user.coins || 0,
+      createdAt: user.createdAt,
+      token: token
+    });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during login'
+    });
+  }
+});
+
+// PATCH update daily quest progress
+router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
+  try {
+    const { questType, progress, completed } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    let quest = user.dailyQuests.find(q => q.date === today && q.questType === questType);
+
+    if (!quest) {
+      // Create new quest if it doesn't exist
+      quest = {
+        date: today,
+        questType: questType,
+        questName: getQuestName(questType),
+        target: getQuestTarget(questType, user),
+        currentProgress: 0,
+        completed: false
+      };
+      user.dailyQuests.push(quest);
+    }
+
+    // Update quest progress
+    if (progress !== undefined) {
+      quest.currentProgress = progress;
+    }
+
+    // Check if quest should be completed
+    if (quest.currentProgress >= quest.target && !quest.completed) {
+      quest.completed = true;
+      
+      // Award XP and coins
+      const xpGained = calculateQuestXP(questType);
+      const coinsGained = calculateQuestCoins(questType);
+      
+      user.exp = (user.exp || 0) + xpGained;
+      user.coins = (user.coins || 0) + coinsGained;
+      
+      // Check for level up
+      const oldLevel = user.level || 1;
+      const newLevel = calculateLevel(user.exp);
+      user.level = newLevel;
+      
+      if (newLevel > oldLevel) {
+        // Add level up to activity log
+        user.activityLog = user.activityLog || [];
+        user.activityLog.unshift({
+          type: 'levelup',
+          date: new Date(),
+          details: `Leveled up to ${newLevel}!`,
+          xpGained: 0
+        });
+      }
+      
+      // Add quest completion to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'quest',
+        questType: questType,
+        date: new Date(),
+        details: `Completed ${quest.questName}`,
+        xpGained: xpGained
+      });
+      
+      // Keep only last 20 activities
+      user.activityLog = user.activityLog.slice(0, 20);
+      
+      // Check for badge unlocks
+      await checkAndUnlockBadges(user, questType, quest);
+    }
+
+    await user.save();
+    
+    res.json({
+      success: true,
+      quest: quest,
+      xp: user.exp,
+      level: user.level,
+      coins: user.coins,
+      leveledUp: quest.completed
+    });
+
+  } catch (err) {
+    console.error('Update daily quest error:', err);
+    res.status(500).json({ error: 'Failed to update daily quest' });
+  }
+});
+
+// GET smart daily quest data (from food logs and user data)
+router.get('/getSmartQuestData/:email', async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ email: req.params.email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // Get food logs for today
+    const foodLogs = await FoodLogModel.find({
+      userId: user._id,
+      date: today
+    });
+
+    // Calculate totals from food logs
+    const todayTotals = foodLogs.reduce((totals, log) => {
+      totals.calories += log.calories || 0;
+      totals.protein += log.protein || 0;
+      return totals;
+    }, { calories: 0, protein: 0 });
+
+    // Get daily quests for today
+    const todayQuests = user.dailyQuests.filter(q => q.date === today);
+
+    // Calculate dynamic goals based on user profile and recent performance
+    const stepsGoal = calculateDynamicStepsGoal(user, todayQuests);
+    const caloriesGoal = calculateCaloriesGoal(user);
+    const proteinGoal = calculateProteinGoal(user);
+
+    // Find or create quests
+    let stepsQuest = todayQuests.find(q => q.questType === 'steps');
+    if (!stepsQuest) {
+      stepsQuest = {
+        date: today,
+        questType: 'steps',
+        questName: 'Step Challenge',
+        target: stepsGoal,
+        currentProgress: 0,
+        completed: false
+      };
+    }
+
+    res.json({
+      quests: {
+        steps: {
+          ...stepsQuest,
+          target: stepsGoal,
+          scaling: stepsQuest.currentProgress > stepsQuest.target
+        },
+        calories: {
+          date: today,
+          questType: 'calories',
+          questName: 'Calorie Target',
+          target: caloriesGoal,
+          currentProgress: todayTotals.calories,
+          completed: todayTotals.calories >= caloriesGoal
+        },
+        protein: {
+          date: today,
+          questType: 'protein',
+          questName: 'Protein Power',
+          target: proteinGoal,
+          currentProgress: todayTotals.protein,
+          completed: todayTotals.protein >= proteinGoal
+        }
+      },
+      totals: todayTotals,
+      user: {
+        level: user.level || 1,
+        xp: user.exp || 0,
+        coins: user.coins || 0
+      }
+    });
+
+  } catch (err) {
+    console.error('Get smart quest data error:', err);
+    res.status(500).json({ error: 'Failed to get smart quest data' });
+  }
+});
+
+// POST unlock badge with coins
+router.post('/unlockBadge', authenticateToken, async (req, res) => {
+  try {
+    const { badgeId, cost } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if ((user.coins || 0) < cost) {
+      return res.status(400).json({ error: 'Insufficient coins' });
+    }
+
+    // Check if badge already unlocked
+    if (user.badges && user.badges.some(b => b.badgeId === badgeId)) {
+      return res.status(400).json({ error: 'Badge already unlocked' });
+    }
+
+    // Deduct coins and add badge
+    user.coins = (user.coins || 0) - cost;
+    user.badges = user.badges || [];
+    user.badges.push({
+      badgeId: badgeId,
+      title: getBadgeTitle(badgeId),
+      unlockedAt: new Date(),
+      earnedBy: 'purchase'
+    });
+
+    // Add to activity log
+    user.activityLog = user.activityLog || [];
+    user.activityLog.unshift({
+      type: 'badge',
+      date: new Date(),
+      details: `Unlocked ${getBadgeTitle(badgeId)} badge`,
+      coinsSpent: cost
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      coins: user.coins,
+      badges: user.badges
+    });
+
+  } catch (err) {
+    console.error('Unlock badge error:', err);
+    res.status(500).json({ error: 'Failed to unlock badge' });
+  }
+});
+
+// POST unlock title with coins
+router.post('/unlockTitle', authenticateToken, async (req, res) => {
+  try {
+    const { titleId, cost } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if ((user.coins || 0) < cost) {
+      return res.status(400).json({ error: 'Insufficient coins' });
+    }
+
+    // Check if title already unlocked
+    if (user.titles && user.titles.some(t => t.titleId === titleId)) {
+      return res.status(400).json({ error: 'Title already unlocked' });
+    }
+
+    // Deduct coins and add title
+    user.coins = (user.coins || 0) - cost;
+    user.titles = user.titles || [];
+    user.titles.push({
+      titleId: titleId,
+      title: getTitleName(titleId),
+      unlockedAt: new Date()
+    });
+
+    // Add to activity log
+    user.activityLog = user.activityLog || [];
+    user.activityLog.unshift({
+      type: 'title',
+      date: new Date(),
+      details: `Unlocked "${getTitleName(titleId)}" title`,
+      coinsSpent: cost
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      coins: user.coins,
+      titles: user.titles
+    });
+
+  } catch (err) {
+    console.error('Unlock title error:', err);
+    res.status(500).json({ error: 'Failed to unlock title' });
+  }
+});
+
+// PATCH set active badge
+router.patch('/setActiveBadge', authenticateToken, async (req, res) => {
+  try {
+    const { badgeId } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!user.badges || !user.badges.some(b => b.badgeId === badgeId)) {
+      return res.status(400).json({ error: 'Badge not unlocked' });
+    }
+
+    user.activeBadge = badgeId;
+    await user.save();
+
+    res.json({ success: true, activeBadge: user.activeBadge });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to set active badge' });
+  }
+});
+
+// PATCH set active title
+router.patch('/setActiveTitle', authenticateToken, async (req, res) => {
+  try {
+    const { titleId } = req.body;
+    const user = await UserModel.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!user.titles || !user.titles.some(t => t.titleId === titleId)) {
+      return res.status(400).json({ error: 'Title not unlocked' });
+    }
+
+    user.activeTitle = titleId;
+    await user.save();
+
+    res.json({ success: true, activeTitle: user.activeTitle });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to set active title' });
+  }
+});
+
 // PUT update user
 router.put('/updateUser/:email', async (req, res) => {
   try {
     const currentEmail = req.params.email.toLowerCase();
     const updateData = { ...req.body };
 
-    // Prevent removal of required fields
     if (
       (updateData.hasOwnProperty('email') && !updateData.email) ||
       (updateData.hasOwnProperty('password') && !updateData.password) ||
@@ -149,358 +537,7 @@ router.put('/updateUser/:email', async (req, res) => {
   }
 });
 
-// DELETE user
-router.delete('/deleteUser/:email', async (req, res) => {
-  try {
-    const deletedUser = await UserModel.findOneAndDelete({ 
-      email: req.params.email.toLowerCase() 
-    });
-
-    if (!deletedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ message: 'User deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete user' });
-  }
-});
-
-// PATCH add experience points
-router.patch('/addExp/:email', async (req, res) => {
-  try {
-    const { expToAdd } = req.body;
-    
-    if (!expToAdd || expToAdd <= 0) {
-      return res.status(400).json({ error: 'Experience points must be a positive number' });
-    }
-
-    const user = await UserModel.findOne({ email: req.params.email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    user.exp += expToAdd;
-    await user.save();
-
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    res.json(userResponse);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to add experience points' });
-  }
-});
-
-// POST login route
-router.post('/login', async (req, res) => {
-  console.log('POST /api/login hit');
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-  
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    // Check password (use bcrypt for comparison)
-    const isMatch = await bcrypt.compare(password, user.password);
-   
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    // Reset daily quests on login
-    await resetDailyQuests(user);
-
-    // Calculate level based on XP
-    const level = calculateLevel(user.exp);
-
-    // JWT token generation (expires in 2 days)
-    const token = jwt.sign(
-      {
-        _id: user._id,
-        email: user.email,
-      },
-      'your_jwt_secret', // TODO: Use env variable in production
-      { expiresIn: '2d' }
-    );
-
-    // ✅ Return user data including _id and token
-    res.json({
-      success: true,
-      _id: user._id,
-      profileName: user.profileName,
-      avatar: user.avatar,
-      email: user.email,
-      xp: user.exp,
-      level: level,
-      createdAt: user.createdAt,
-      token: token
-    });
-
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during login'
-    });
-  }
-});
-
-// GET search users by username or profileName (word-based, partial, case-insensitive)
-router.get('/searchUsers', async (req, res) => {
-  try {
-    const { query } = req.query;
-    if (!query || !query.trim()) {
-      return res.status(400).json({ error: 'Query parameter is required' });
-    }
-    // Split query into words, ignore empty
-    const words = query.trim().split(/\s+/).filter(Boolean);
-    // Build regex for each word (case-insensitive, partial match)
-    const regexes = words.map(word => new RegExp(word, 'i'));
-    // Find users where any word matches username or profileName
-    const users = await UserModel.find({
-      $or: [
-        { username: { $in: regexes } },
-        { profileName: { $in: regexes } }
-      ]
-    }).select('-password');
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to search users' });
-  }
-});
-
-// POST send friend request
-router.post('/sendFriendRequest', async (req, res) => {
-  try {
-    const { toEmail, fromEmail, fromProfileName, fromAvatar } = req.body;
-    if (!toEmail || !fromEmail || toEmail === fromEmail) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    // Find recipient
-    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
-    if (!recipient) {
-      return res.status(404).json({ error: 'Recipient not found' });
-    }
-    // Check for existing pending request from this sender
-    const alreadyRequested = recipient.friendRequests.some(
-      fr => fr.email === fromEmail && fr.status === 'pending'
-    );
-    if (alreadyRequested) {
-      return res.status(400).json({ error: 'Friend request already sent' });
-    }
-    // Add new friend request
-    recipient.friendRequests.push({
-      email: fromEmail,
-      profileName: fromProfileName,
-      avatar: fromAvatar,
-      status: 'pending',
-      sentAt: new Date()
-    });
-    await recipient.save();
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Send friend request error:', err);
-    res.status(500).json({ error: 'Failed to send friend request' });
-  }
-});
-
-// PATCH respond to a friend request (accept/reject)
-router.patch('/respondFriendRequest', async (req, res) => {
-  try {
-    const { fromEmail, toEmail, action } = req.body;
-    if (!fromEmail || !toEmail || !['accept', 'reject'].includes(action)) {
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-    // Find recipient (the one responding)
-    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
-    if (!recipient) {
-      return res.status(404).json({ error: 'Recipient not found' });
-    }
-    // Find the friend request
-    const reqIndex = recipient.friendRequests.findIndex(fr => fr.email === fromEmail && fr.status === 'pending');
-    if (reqIndex === -1) {
-      return res.status(404).json({ error: 'Friend request not found' });
-    }
-    // Accept or reject
-    if (action === 'accept') {
-      // Add to friends if not already
-      const alreadyFriend = recipient.friends && recipient.friends.some(f => f.email === fromEmail);
-      if (!alreadyFriend) {
-        // Try to get sender's info for profileName/avatar/level
-        const sender = await UserModel.findOne({ email: fromEmail.toLowerCase() });
-        recipient.friends.push({
-          email: fromEmail,
-          profileName: sender ? sender.profileName : recipient.friendRequests[reqIndex].profileName,
-          avatar: sender ? sender.avatar : recipient.friendRequests[reqIndex].avatar,
-          level: sender ? sender.level : 1
-        });
-      }
-    }
-    // Remove the friend request
-    recipient.friendRequests.splice(reqIndex, 1);
-    await recipient.save();
-    res.json({ success: true, friendRequests: recipient.friendRequests, friends: recipient.friends });
-  } catch (err) {
-    console.error('Respond friend request error:', err);
-    res.status(500).json({ error: 'Failed to respond to friend request' });
-  }
-});
-
-// PATCH reject all friend requests
-router.patch('/rejectAllFriendRequests', async (req, res) => {
-  try {
-    const { toEmail } = req.body;
-    if (!toEmail) return res.status(400).json({ error: 'Invalid request' });
-    const user = await UserModel.findOne({ email: toEmail.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    user.friendRequests = user.friendRequests.filter(fr => fr.status !== 'pending');
-    await user.save();
-    res.json({ success: true, friendRequests: user.friendRequests });
-  } catch (err) {
-    console.error('Reject all friend requests error:', err);
-    res.status(500).json({ error: 'Failed to reject all friend requests' });
-  }
-});
-
-// PATCH toggle daily quest (except steps)
-router.patch('/quests/:questType', async (req, res) => {
-  try {
-    const { questType } = req.params;
-    const { completed, currentProgress } = req.body;
-    const user = await UserModel.findById(req.user._id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const today = new Date().toISOString().slice(0, 10);
-    const quest = user.dailyQuests.find(q => q.date === today && q.questType === questType);
-    if (!quest) return res.status(404).json({ error: 'Quest not found' });
-
-    // Steps quest: allow repeatable updates
-    if (questType === 'steps') {
-      if (typeof currentProgress === 'number') {
-        quest.currentProgress = currentProgress;
-        // Sync calories/protein from FoodLog
-        const foodLogs = await FoodLogModel.find({ userId: user._id, date: today });
-        quest.calories = foodLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
-        quest.protein = foodLogs.reduce((sum, log) => sum + (log.protein || 0), 0);
-      }
-    } else {
-      // Other quests: lock after completion
-      if (quest.completed) {
-        return res.status(400).json({ error: 'Quest already completed and locked for today' });
-      }
-      if (completed === true) {
-        quest.completed = true;
-        // Award XP and coins
-        const xpGained = calculateQuestXP(questType);
-        user.exp += xpGained;
-        user.coins = (user.coins || 0) + 5; // Example: 5 coins per quest
-        // Level up logic
-        const newLevel = calculateLevel(user.exp);
-        if (newLevel > user.level) {
-          user.level = newLevel;
-          user.activityLog = user.activityLog || [];
-          user.activityLog.unshift({
-            type: 'levelup',
-            date: new Date(),
-            details: `Leveled up to ${newLevel}`
-          });
-        }
-        // Log activity
-        user.activityLog = user.activityLog || [];
-        user.activityLog.unshift({
-          type: 'quest',
-          questType,
-          date: new Date(),
-          details: `Completed ${quest.questName}`
-        });
-        // Keep only last 20 activities
-        user.activityLog = user.activityLog.slice(0, 20);
-      }
-    }
-
-    await user.save();
-    res.json({ success: true, quest, xp: user.exp, level: user.level, coins: user.coins });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update quest', details: err.message });
-  }
-});
-
-// PATCH set active badge
-router.patch('/setActiveBadge', async (req, res) => {
-  try {
-    const { email, badge } = req.body;
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    if (!user.badges || !user.badges.includes(badge)) {
-      return res.status(400).json({ error: 'Badge not unlocked' });
-    }
-    user.activeBadge = badge;
-    await user.save();
-    res.json({ success: true, activeBadge: user.activeBadge });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to set active badge', details: err.message });
-  }
-});
-
-// PATCH set active title
-router.patch('/setActiveTitle', async (req, res) => {
-  try {
-    const { email, title } = req.body;
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    if (!user.titles || !user.titles.includes(title)) {
-      return res.status(400).json({ error: 'Title not unlocked' });
-    }
-    user.activeTitle = title;
-    await user.save();
-    res.json({ success: true, activeTitle: user.activeTitle });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to set active title', details: err.message });
-  }
-});
-
-// PATCH unlock badge (for demo/testing, or call from quest logic)
-router.patch('/unlockBadge', async (req, res) => {
-  try {
-    const { email, badge } = req.body;
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    user.badges = user.badges || [];
-    if (!user.badges.includes(badge)) user.badges.push(badge);
-    await user.save();
-    res.json({ success: true, badges: user.badges });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to unlock badge', details: err.message });
-  }
-});
-
-// PATCH unlock title (for demo/testing, or call from quest logic)
-router.patch('/unlockTitle', async (req, res) => {
-  try {
-    const { email, title } = req.body;
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    user.titles = user.titles || [];
-    if (!user.titles.includes(title)) user.titles.push(title);
-    await user.save();
-    res.json({ success: true, titles: user.titles });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to unlock title', details: err.message });
-  }
-});
-
-// Helper function to calculate level based on XP
+// Helper Functions
 function calculateLevel(xp) {
   if (xp < 100) return 1;
   if (xp < 300) return 2;
@@ -514,41 +551,193 @@ function calculateLevel(xp) {
   return Math.floor((xp - 4500) / 1000) + 10;
 }
 
-// Helper function to calculate XP for quests
 function calculateQuestXP(questType) {
+  const xpRewards = {
+    'steps': 50,
+    'calories': 30,
+    'protein': 25,
+    'water': 20,
+    'sleep': 35,
+    'exercise': 40,
+    'posture': 30
+  };
+  return xpRewards[questType] || 10;
+}
+
+function calculateQuestCoins(questType) {
+  const coinRewards = {
+    'steps': 15,
+    'calories': 10,
+    'protein': 8,
+    'water': 5,
+    'sleep': 12,
+    'exercise': 18,
+    'posture': 10
+  };
+  return coinRewards[questType] || 5;
+}
+
+function getQuestName(questType) {
+  const names = {
+    'steps': 'Step Challenge',
+    'calories': 'Calorie Target',
+    'protein': 'Protein Power',
+    'water': 'Hydration Hero',
+    'sleep': 'Sleep Master',
+    'exercise': 'Fitness Champion',
+    'posture': 'Posture Pro'
+  };
+  return names[questType] || 'Daily Quest';
+}
+
+function getQuestTarget(questType, user) {
   switch (questType) {
-    case 'water':
-      return 10;
-    case 'exercise':
-      return 15;
-    case 'sleep':
-      return 20;
     case 'steps':
-      return 5; // Steps quest is handled by food log sync
+      return 10000; // Default, will be calculated dynamically
+    case 'calories':
+      return calculateCaloriesGoal(user);
+    case 'protein':
+      return calculateProteinGoal(user);
+    case 'water':
+      return user.waterIntake || 8;
+    case 'sleep':
+      return user.averageSleep || 8;
+    case 'exercise':
+      return 30; // 30 minutes
     default:
-      return 0;
+      return 1;
   }
 }
 
-// Helper function to reset daily quests (call on login or at midnight)
-async function resetDailyQuests(user) {
-  const today = new Date().toISOString().slice(0, 10);
-  // Keep only today's steps quest
-  user.dailyQuests = user.dailyQuests.filter(q => q.date === today && q.questType === 'steps');
-  // Add default quests for today (except steps)
-  const defaultQuests = [
-    { date: today, questType: 'water', questName: 'Hydration Master', target: 8, currentProgress: 0, completed: false },
-    { date: today, questType: 'sleep', questName: 'Sleep Warrior', target: user.averageSleep || 8, currentProgress: 0, completed: false },
-    { date: today, questType: 'posture', questName: 'Posture Pro', target: 1, currentProgress: 0, completed: false },
-    { date: today, questType: 'meal', questName: 'Nutrition Tracker', target: 1, currentProgress: 0, completed: false },
-    { date: today, questType: 'exercise', questName: 'Fitness Fanatic', target: 30, currentProgress: 0, completed: false }
-  ];
-  for (const quest of defaultQuests) {
-    if (!user.dailyQuests.some(q => q.date === today && q.questType === quest.questType)) {
-      user.dailyQuests.push(quest);
+function calculateDynamicStepsGoal(user, todayQuests) {
+  const baseGoal = 10000;
+  const previousStepsQuest = todayQuests.find(q => q.questType === 'steps');
+  
+  if (previousStepsQuest && previousStepsQuest.completed && previousStepsQuest.currentProgress > previousStepsQuest.target) {
+    // If user exceeded previous goal, increase by 10%
+    return Math.floor(previousStepsQuest.currentProgress * 1.1);
+  }
+  
+  return baseGoal;
+}
+
+function calculateCaloriesGoal(user) {
+  // Basic calculation based on user profile
+  let bmr = 1800; // Default BMR
+  
+  if (user.gender === 'male') {
+    bmr = 88.362 + (13.397 * (user.weight || 70)) + (4.799 * (user.height || 170)) - (5.677 * (user.age || 25));
+  } else if (user.gender === 'female') {
+    bmr = 447.593 + (9.247 * (user.weight || 60)) + (3.098 * (user.height || 160)) - (4.330 * (user.age || 25));
+  }
+  
+  // Activity level multiplier
+  const activityMultipliers = {
+    'sedentary': 1.2,
+    'light': 1.375,
+    'moderate': 1.55,
+    'active': 1.725,
+    'very_active': 1.9
+  };
+  
+  const multiplier = activityMultipliers[user.activityLevel] || 1.4;
+  return Math.round(bmr * multiplier);
+}
+
+function calculateProteinGoal(user) {
+  const weight = user.weight || 70;
+  // 1.2-2.2g per kg depending on activity level and goals
+  if (user.primaryGoal === 'muscle_gain') {
+    return Math.round(weight * 2.0);
+  } else if (user.primaryGoal === 'weight_loss') {
+    return Math.round(weight * 1.6);
+  }
+  return Math.round(weight * 1.2);
+}
+
+function getBadgeTitle(badgeId) {
+  const badges = {
+    'step-warrior': 'Step Warrior',
+    'calorie-master': 'Calorie Master',
+    'protein-beast': 'Protein Beast',
+    'hydration-hero': 'Hydration Hero',
+    'sleep-champion': 'Sleep Champion',
+    'fitness-guru': 'Fitness Guru',
+    'consistency-king': 'Consistency King'
+  };
+  return badges[badgeId] || 'Unknown Badge';
+}
+
+function getTitleName(titleId) {
+  const titles = {
+    'step-warrior': 'Step Warrior',
+    'protein-beast': 'Protein Beast',
+    'streak-legend': 'Streak Legend',
+    'fitness-master': 'Fitness Master',
+    'nutrition-guru': 'Nutrition Guru'
+  };
+  return titles[titleId] || 'Unknown Title';
+}
+
+async function checkAndUnlockBadges(user, questType, quest) {
+  // Auto-unlock badges based on quest completion patterns
+  const badges = user.badges || [];
+  
+  // Step Warrior badge - complete steps quest 10 times
+  if (questType === 'steps') {
+    const stepQuestCompletions = user.dailyQuests.filter(q => 
+      q.questType === 'steps' && q.completed
+    ).length;
+    
+    if (stepQuestCompletions >= 10 && !badges.some(b => b.badgeId === 'step-warrior')) {
+      user.badges.push({
+        badgeId: 'step-warrior',
+        title: 'Step Warrior',
+        unlockedAt: new Date(),
+        earnedBy: 'achievement'
+      });
     }
   }
-  await user.save();
+  
+  // Add more badge unlock conditions here...
+}
+
+async function resetDailyQuests(user) {
+  const today = new Date().toISOString().slice(0, 10);
+  const existingQuests = user.dailyQuests.filter(q => q.date === today);
+  
+  // If no quests exist for today, create default ones
+  if (existingQuests.length === 0) {
+    const defaultQuests = [
+      {
+        date: today,
+        questType: 'water',
+        questName: 'Hydration Hero',
+        target: user.waterIntake || 8,
+        currentProgress: 0,
+        completed: false
+      },
+      {
+        date: today,
+        questType: 'sleep',
+        questName: 'Sleep Master',
+        target: user.averageSleep || 8,
+        currentProgress: 0,
+        completed: false
+      },
+      {
+        date: today,
+        questType: 'exercise',
+        questName: 'Fitness Champion',
+        target: 30,
+        currentProgress: 0,
+        completed: false
+      }
+    ];
+    
+    user.dailyQuests.push(...defaultQuests);
+    await user.save();
+  }
 }
 
 module.exports = router;
