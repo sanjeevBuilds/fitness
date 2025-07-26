@@ -3,7 +3,7 @@ const router = express.Router();
 const UserModel = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const FoodLogModel = require('../models/FoodLog');
+const FoodLogModel = require('../models/FoodLogModel');
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -188,6 +188,8 @@ router.post('/login', async (req, res) => {
 router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
   try {
     const { questType, progress, completed } = req.body;
+    console.log(`[updateDailyQuest] Request received: questType=${questType}, progress=${progress}, completed=${completed}`);
+    
     const user = await UserModel.findById(req.user._id);
     
     if (!user) {
@@ -222,6 +224,10 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       // Award XP and coins
       const xpGained = calculateQuestXP(questType);
       const coinsGained = calculateQuestCoins(questType);
+      
+      console.log(`[updateDailyQuest] Quest ${questType} completed! Progress: ${quest.currentProgress}, Target: ${quest.target}`);
+      console.log(`[updateDailyQuest] Awarding XP: ${xpGained}, Coins: ${coinsGained}`);
+      console.log(`[updateDailyQuest] User coins before: ${user.coins}, after: ${(user.coins || 0) + coinsGained}`);
       
       user.exp = (user.exp || 0) + xpGained;
       user.coins = (user.coins || 0) + coinsGained;
@@ -261,6 +267,8 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
 
     await user.save();
     
+    console.log(`[updateDailyQuest] Quest saved. Final state: questType=${quest.questType}, progress=${quest.currentProgress}, completed=${quest.completed}, userCoins=${user.coins}`);
+    
     res.json({
       success: true,
       quest: quest,
@@ -277,7 +285,7 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
 });
 
 // GET smart daily quest data (from food logs and user data)
-router.get('/getSmartQuestData/:email', async (req, res) => {
+router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
   try {
     const user = await UserModel.findOne({ email: req.params.email.toLowerCase() });
     if (!user) {
@@ -537,6 +545,73 @@ router.put('/updateUser/:email', async (req, res) => {
   }
 });
 
+// PATCH claim smart quest reward
+router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
+  try {
+    const { questType } = req.body; // 'steps', 'calories', or 'protein'
+    const user = await UserModel.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Find or create a record for claimed smart quest rewards
+    if (!user.smartQuestClaims) user.smartQuestClaims = {};
+    if (!user.smartQuestClaims[today]) user.smartQuestClaims[today] = {};
+
+    // Prevent double-claiming
+    if (user.smartQuestClaims[today][questType]) {
+      return res.status(400).json({ error: 'Reward already claimed for this smart quest today.' });
+    }
+
+    // Get today's smart quest progress
+    let progress = 0, target = 0;
+    if (questType === 'steps') {
+      const stepsQuest = user.dailyQuests.find(q => q.date === today && q.questType === 'steps');
+      progress = stepsQuest ? stepsQuest.currentProgress : 0;
+      target = stepsQuest ? stepsQuest.target : 10000;
+      console.log(`[claimSmartQuestReward] Total steps for today: ${progress}`);
+    } else if (questType === 'calories' || questType === 'protein') {
+      // Aggregate from food logs
+      const FoodLogModel = require('../models/FoodLogModel');
+      const foodLogs = await FoodLogModel.find({ userId: user._id, date: today });
+      if (questType === 'calories') {
+        progress = foodLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
+        target = calculateCaloriesGoal(user);
+      } else {
+        progress = foodLogs.reduce((sum, log) => sum + (log.protein || 0), 0);
+        target = calculateProteinGoal(user);
+      }
+    } else {
+      return res.status(400).json({ error: 'Invalid smart quest type.' });
+    }
+
+    if (progress < target) {
+      return res.status(400).json({ error: 'Smart quest not completed yet.' });
+    }
+
+    // Award coins/XP
+    const xpGained = calculateQuestXP(questType);
+    const coinsGained = calculateQuestCoins(questType);
+    user.exp = (user.exp || 0) + xpGained;
+    user.coins = (user.coins || 0) + coinsGained;
+    user.smartQuestClaims[today][questType] = true;
+
+    // Save and respond
+    await user.save();
+    res.json({
+      success: true,
+      xp: user.exp,
+      coins: user.coins,
+      questType,
+      xpGained,
+      coinsGained
+    });
+  } catch (err) {
+    console.error('Claim smart quest reward error:', err);
+    res.status(500).json({ error: 'Failed to claim smart quest reward' });
+  }
+});
+
 // Helper Functions
 function calculateLevel(xp) {
   if (xp < 100) return 1;
@@ -572,9 +647,12 @@ function calculateQuestCoins(questType) {
     'water': 5,
     'sleep': 12,
     'exercise': 18,
-    'posture': 10
+    'posture': 10,
+    'meal': 5
   };
-  return coinRewards[questType] || 5;
+  const coins = coinRewards[questType] || 5;
+  console.log(`[calculateQuestCoins] Quest: ${questType}, Coins: ${coins}`);
+  return coins;
 }
 
 function getQuestName(questType) {

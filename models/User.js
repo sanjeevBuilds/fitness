@@ -67,6 +67,11 @@ const UserSchema = new mongoose.Schema({
   },
   activityLog: [ActivityLogSchema], // Enhanced activity log
   
+  // Smart Quest Reward Claims (per day, per questType)
+  smartQuestClaims: {
+    type: mongoose.Schema.Types.Mixed, // { 'YYYY-MM-DD': { steps: true, calories: true, protein: true } }
+    default: {}
+  },
   // Quest Progress Tracking
   questStats: {
     totalQuestsCompleted: { type: Number, default: 0 },
@@ -258,6 +263,45 @@ UserSchema.pre('save', function(next) {
     this.level = level;
   }
   next();
+});
+
+// Add userId to food logs that don't have it
+UserSchema.pre('save', function(next) {
+  if (this.isModified('foodLogs')) {
+    // Ensure foodLogs is an array
+    if (!Array.isArray(this.foodLogs)) {
+      this.foodLogs = [];
+    }
+    
+    // Filter out null or non-object entries
+    this.foodLogs = this.foodLogs.filter(log => log && typeof log === 'object');
+    
+    // Add userId to food logs that don't have it
+    this.foodLogs.forEach(log => {
+      if (!log.userId) {
+        log.userId = this._id;
+      }
+    });
+    
+    // Mark the foodLogs array as modified
+    this.markModified('foodLogs');
+  }
+  next();
+});
+
+// Clean and populate userId after loading from database
+UserSchema.post('init', function() {
+  if (this.foodLogs && Array.isArray(this.foodLogs)) {
+    // Filter out null or non-object entries
+    this.foodLogs = this.foodLogs.filter(log => log && typeof log === 'object');
+    
+    // Add userId to food logs that don't have it
+    this.foodLogs.forEach(log => {
+      if (!log.userId) {
+        log.userId = this._id;
+      }
+    });
+  }
 });
 
 // Update quest stats when daily quests are modified

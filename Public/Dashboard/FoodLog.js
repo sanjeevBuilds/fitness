@@ -51,7 +51,72 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStoredMeals();
     updateSummary();
     setupModal();
+    
+    // Debug: Check authentication state
+    checkAuthState();
+    
+    // Run migration to clean up old food logs
+    migrateFoodLogs();
 });
+
+// Debug function to check authentication state
+function checkAuthState() {
+    console.log('=== Authentication Debug ===');
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('userData');
+    
+    console.log('Auth token exists:', !!token);
+    console.log('User data exists:', !!userData);
+    
+    if (userData) {
+        try {
+            const parsed = JSON.parse(userData);
+            console.log('User data structure:', parsed);
+            console.log('User ID in userData:', parsed._id);
+        } catch (e) {
+            console.error('Error parsing userData:', e);
+        }
+    }
+    
+    if (token) {
+        try {
+            const decoded = window.jwt_decode(token);
+            console.log('JWT decoded:', decoded);
+            console.log('User ID in JWT:', decoded._id);
+        } catch (e) {
+            console.error('Error decoding JWT:', e);
+        }
+    }
+    console.log('=== End Debug ===');
+}
+
+// Migrate old food logs to add userId
+async function migrateFoodLogs() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.log('No auth token found for migration');
+            return;
+        }
+        
+        const response = await fetch('http://localhost:8000/api/foodentry/migrate-foodlogs', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Food logs migration completed:', result);
+        } else {
+            console.log('Food logs migration not needed or failed');
+        }
+    } catch (error) {
+        console.log('Migration error (non-critical):', error);
+    }
+}
 
 function initializeElements() {
     searchInput = document.getElementById('food-search');
@@ -85,6 +150,22 @@ function setupEventListeners() {
 
     // Add food button
     addButton.addEventListener('click', addFoodToLog);
+    
+    // Clear all meals button
+    const clearAllBtn = document.getElementById('clear-all-meals-btn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', async () => {
+            if (currentMeals.length === 0) {
+                showError('No meals to clear');
+                return;
+            }
+            
+            const confirmed = confirm('Are you sure you want to clear all meals? This action cannot be undone.');
+            if (confirmed) {
+                await clearAllMeals();
+            }
+        });
+    }
 }
 
 // Setup modal functionality
@@ -293,30 +374,48 @@ async function addFoodToLog() {
                 addUserXP(20, 'Food logged');
             }
 
+            // Try to get userId from userData first, then from JWT token
+            let userId = null;
             const userData = JSON.parse(localStorage.getItem('userData'));
-            console.log('userData:', userData);  // Add this to debug
-            const userId = userData?._id;
-            console.log('userId:', userId);      // Add this to verify
+            console.log('userData:', userData);
             
-            
-            if (userId) {
-                
-                
-                const foodLog = {
-                    date: new Date().toISOString().slice(0, 10),
-                    calories: dailyTotals.calories,
-                    protein: dailyTotals.protein,
-                    carbs: dailyTotals.carbs,
-                    fat: dailyTotals.fat,
-                    meals: currentMeals.map(meal => ({
-                        name: meal.name,
-                        items: [meal.name], // or meal.items if you have more details
-                        totalCalories: meal.calories
-                    }))
-                };
-                
-                syncFoodLogWithBackend(userId, foodLog);
+            if (userData && userData._id) {
+                userId = userData._id;
+                console.log('userId from userData:', userId);
+            } else {
+                // Fallback: extract userId from JWT token
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    try {
+                        const decoded = window.jwt_decode(token);
+                        userId = decoded._id;
+                        console.log('userId from JWT:', userId);
+                    } catch (error) {
+                        console.error('Error decoding JWT:', error);
+                    }
+                }
             }
+            
+            if (!userId) {
+                console.error('No userId found in userData or JWT token');
+                showError('User authentication error. Please log in again.');
+                return;
+            }
+            
+            const foodLog = {
+                date: new Date().toISOString().slice(0, 10),
+                calories: dailyTotals.calories,
+                protein: dailyTotals.protein,
+                carbs: dailyTotals.carbs,
+                fat: dailyTotals.fat,
+                meals: currentMeals.map(meal => ({
+                    name: meal.name,
+                    items: [meal.name], // or meal.items if you have more details
+                    totalCalories: meal.calories
+                }))
+            };
+            
+            syncFoodLogWithBackend(foodLog);
         }
     } catch (error) {
         console.error('Error adding food:', error);
@@ -324,15 +423,95 @@ async function addFoodToLog() {
     }
 }
 
-// Function to sync food log with backend
-async function syncFoodLogWithBackend(userId, foodLog) {
+// Function to delete food log from backend
+async function deleteFoodLogFromBackend(foodLogId) {
     try {
-        await fetch('http://localhost:8000/api/foodentry/add', {
-            
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, foodLog })
+        console.log('Deleting food log from backend:', foodLogId);
+        
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.error('No auth token found');
+            return false;
+        }
+        
+        const response = await fetch(`http://localhost:8000/api/foodentry/delete/${foodLogId}`, {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            console.log('Food log deleted successfully:', result);
+            // Remove the stored foodLogId
+            localStorage.removeItem('currentFoodLogId');
+            
+            // Refresh smart quest UI if dashboard is available
+            if (window.dashboard && window.dashboard.refreshSmartQuestData) {
+                await window.dashboard.refreshSmartQuestData();
+                window.dashboard.updateSmartQuestUI();
+            }
+            return true;
+        } else {
+            console.error('Failed to delete food log:', result.error);
+            return false;
+        }
+    } catch (err) {
+        console.error('Failed to delete food log from backend:', err);
+        return false;
+    }
+}
+
+// Function to sync food log with backend
+async function syncFoodLogWithBackend(foodLog) {
+    try {
+        console.log('Syncing food log with backend:', { foodLog });
+        
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.error('No auth token found');
+            return;
+        }
+        
+        const response = await fetch('http://localhost:8000/api/foodentry/add', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ foodLog })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            console.log('Food log synced successfully:', result);
+            
+            // Store the backend foodLogId for later deletion
+            if (result.foodLogId) {
+                localStorage.setItem('currentFoodLogId', result.foodLogId);
+                console.log('Stored foodLogId for deletion:', result.foodLogId);
+            }
+            
+            // Show success message
+            showSuccess('Food logged successfully!');
+            
+            // Refresh dashboard data if available
+            if (window.refreshDashboardData) {
+                window.refreshDashboardData();
+            }
+            // Refresh smart quest UI if dashboard is available
+            if (window.dashboard && window.dashboard.refreshSmartQuestData) {
+                await window.dashboard.refreshSmartQuestData();
+                window.dashboard.updateSmartQuestUI();
+            }
+        } else {
+            console.error('Failed to sync food log:', result.error);
+            showError(`Failed to sync food log: ${result.error}`);
+        }
     } catch (err) {
         console.error('Failed to sync food log with backend:', err);
     }
@@ -366,19 +545,38 @@ function addMealToUI(meal) {
                 <span class="macro">F: ${meal.fat}g</span>
             </div>
         </div>
-        <button class="btn btn-danger delete-meal-btn" onclick="deleteMeal(${meal.id})">×</button>
+        <button class="btn btn-danger delete-meal-btn" onclick="deleteMealAsync(${meal.id})">×</button>
     `;
     
     mealsList.appendChild(mealItem);
 }
 
 // Delete meal
-function deleteMeal(mealId) {
+async function deleteMeal(mealId) {
     currentMeals = currentMeals.filter(meal => meal.id !== mealId);
     updateDailyTotals();
     updateSummary();
     saveMeals();
     refreshMealsUI();
+    
+    // If no meals left, delete the food log from backend
+    if (currentMeals.length === 0) {
+        const foodLogId = localStorage.getItem('currentFoodLogId');
+        if (foodLogId) {
+            console.log('No meals left, deleting food log from backend');
+            const deleted = await deleteFoodLogFromBackend(foodLogId);
+            if (deleted) {
+                console.log('Food log deleted from backend successfully');
+            } else {
+                console.error('Failed to delete food log from backend');
+            }
+        }
+    }
+}
+
+// Async wrapper for deleteMeal
+async function deleteMealAsync(mealId) {
+    await deleteMeal(mealId);
 }
 
 // Refresh meals UI
@@ -430,6 +628,24 @@ function resetForm() {
     if (preview) preview.style.display = 'none';
 }
 
+// Clear all meals and delete from backend
+async function clearAllMeals() {
+    const foodLogId = localStorage.getItem('currentFoodLogId');
+    if (foodLogId) {
+        console.log('Clearing all meals, deleting food log from backend');
+        const deleted = await deleteFoodLogFromBackend(foodLogId);
+        if (deleted) {
+            console.log('Food log deleted from backend successfully');
+        }
+    }
+    
+    currentMeals = [];
+    updateDailyTotals();
+    updateSummary();
+    saveMeals();
+    refreshMealsUI();
+}
+
 // Save meals to localStorage
 function saveMeals() {
     localStorage.setItem('foodLogMeals', JSON.stringify(currentMeals));
@@ -451,10 +667,62 @@ function showError(message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = message;
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+        font-weight: 500;
+    `;
+
     document.body.appendChild(errorDiv);
-    
+
     setTimeout(() => {
-        errorDiv.remove();
+        errorDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 300);
+    }, 4000);
+}
+
+// Show success message
+function showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+        font-weight: 500;
+    `;
+
+    document.body.appendChild(successDiv);
+
+    setTimeout(() => {
+        successDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.parentNode.removeChild(successDiv);
+            }
+        }, 300);
     }, 3000);
 }
 

@@ -35,10 +35,42 @@ class EnhancedDashboardGamification {
             this.updateUI();
             this.loadQuestStates();
             this.startDataSync();
+            
+            // Test quest item detection
+            setTimeout(() => {
+                this.testQuestItemDetection();
+            }, 200);
         } catch (error) {
             console.error('Failed to initialize dashboard:', error);
             this.showNotification('Failed to load dashboard data', 'error');
         }
+    }
+
+    testQuestItemDetection() {
+        console.log('Testing quest item detection...');
+        const questItems = document.querySelectorAll('.smart-quests-section [data-quest]');
+        console.log('Found quest items:', questItems.length);
+        questItems.forEach(item => {
+            const questType = item.getAttribute('data-quest');
+            console.log(`Quest item found: ${questType}`);
+            
+            // Test element selection
+            const goalEl = item.querySelector('.current-goal');
+            const progressFill = item.querySelector('.progress-fill');
+            const progressText = item.querySelector('.progress-text');
+            const rewardXp = item.querySelector('.reward-xp');
+            const rewardCoins = item.querySelector('.reward-coins');
+            const collectButton = item.querySelector('.collect-reward-btn');
+            
+            console.log(`Elements for ${questType}:`, {
+                goalEl: !!goalEl,
+                progressFill: !!progressFill,
+                progressText: !!progressText,
+                rewardXp: !!rewardXp,
+                rewardCoins: !!rewardCoins,
+                collectButton: !!collectButton
+            });
+        });
     }
 
     async loadUserData() {
@@ -77,7 +109,16 @@ class EnhancedDashboardGamification {
                 stepGoalHistory: []
             };
 
+            // Load smart quest data from backend
+            await this.loadSmartQuestData(email, token);
+
             console.log('User data loaded:', this.currentUser);
+            
+            // Force update smart quest UI to ensure it displays
+            setTimeout(() => {
+                this.updateSmartQuestUI();
+                console.log('Forced smart quest UI update completed');
+            }, 100);
             
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -85,52 +126,193 @@ class EnhancedDashboardGamification {
         }
     }
 
+    async loadSmartQuestData(email, token) {
+        try {
+            const response = await fetch(`${this.API_BASE}/getSmartQuestData/${email}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const questData = await response.json();
+                console.log('Raw smart quest data from backend:', questData);
+                
+                // Map the backend data to our expected format
+                if (questData.quests) {
+                    this.smartQuests = {
+                        steps: {
+                            ...questData.quests.steps,
+                            xpReward: 50,
+                            coinReward: 15,
+                            scaling: true,
+                            scalingFactor: 1.1
+                        },
+                        calories: {
+                            ...questData.quests.calories,
+                            xpReward: 30,
+                            coinReward: 10,
+                            scaling: false
+                        },
+                        protein: {
+                            ...questData.quests.protein,
+                            xpReward: 25,
+                            coinReward: 8,
+                            scaling: false
+                        }
+                    };
+                    console.log('Mapped smart quest data:', this.smartQuests);
+                } else {
+                    console.warn('No quests data in response, using defaults');
+                    this.initializeDefaultQuests();
+                }
+            } else {
+                console.warn('Failed to load smart quest data, using defaults');
+                this.initializeDefaultQuests();
+            }
+        } catch (error) {
+            console.error('Error loading smart quest data:', error);
+            this.initializeDefaultQuests();
+        }
+    }
+
+    initializeDefaultQuests() {
+        this.smartQuests = {
+            steps: {
+                questType: 'steps',
+                questName: 'Daily Steps',
+                target: 10000,
+                currentProgress: 0,
+                completed: false,
+                xpReward: 50,
+                coinReward: 15,
+                scaling: true,
+                scalingFactor: 1.1
+            },
+            calories: {
+                questType: 'calories',
+                questName: 'Calorie Target',
+                target: 2000,
+                currentProgress: 0,
+                completed: false,
+                xpReward: 30,
+                coinReward: 10,
+                scaling: false
+            },
+            protein: {
+                questType: 'protein',
+                questName: 'Protein Power',
+                target: 100,
+                currentProgress: 0,
+                completed: false,
+                xpReward: 25,
+                coinReward: 8,
+                scaling: false
+            }
+        };
+    }
+
     initializeQuests() {
-        // Initialize smart quests based on user data and food logs
+        // Initialize smart quests with default values first
         this.smartQuests = {
             steps: {
                 questType: 'steps',
                 questName: 'Daily Steps',
                 target: this.calculateStepGoal(),
-                currentProgress: this.getTodaySteps(),
+                currentProgress: 0, // Will be updated by loadSmartQuestData
                 completed: false,
                 xpReward: 50,
-                coinReward: 15
+                coinReward: 15,
+                scaling: true,
+                scalingFactor: 1.1
             },
             calories: {
                 questType: 'calories',
-                questName: 'Calorie Goal',
+                questName: 'Calorie Target',
                 target: this.calculateCalorieGoal(),
-                currentProgress: this.getTodayCalories(),
+                currentProgress: 0, // Will be updated by loadSmartQuestData
                 completed: false,
                 xpReward: 30,
-                coinReward: 10
+                coinReward: 10,
+                scaling: false
             },
             protein: {
                 questType: 'protein',
-                questName: 'Protein Target',
+                questName: 'Protein Power',
                 target: this.calculateProteinGoal(),
-                currentProgress: this.getTodayProtein(),
+                currentProgress: 0, // Will be updated by loadSmartQuestData
                 completed: false,
                 xpReward: 25,
-                coinReward: 8
-            },
-            water: {
-                questType: 'water',
-                questName: 'Hydration Goal',
-                target: this.currentUser.waterIntake || 2,
-                currentProgress: 0,
-                completed: false,
-                xpReward: 20,
-                coinReward: 5
+                coinReward: 8,
+                scaling: false
             }
         };
 
-        // Check completion status
-        Object.keys(this.smartQuests).forEach(questType => {
-            const quest = this.smartQuests[questType];
-            quest.completed = quest.currentProgress >= quest.target;
-        });
+        // Initialize mini challenges
+        this.miniChallenges = {
+            'night-walk': {
+                name: 'Night Walk',
+                description: 'Walk after 7 PM',
+                cost: 15,
+                xpReward: 20,
+                badgeReward: 'Moonwalker',
+                icon: '🌙',
+                unlocked: false,
+                completed: false
+            },
+            'fruit-day': {
+                name: 'Fruit Day',
+                description: 'Log 3 fruits today',
+                cost: 20,
+                xpReward: 30,
+                badgeReward: 'Avatar Hat',
+                icon: '🍎',
+                unlocked: false,
+                completed: false
+            },
+            'hydration-hero': {
+                name: 'Hydration Hero',
+                description: 'Drink 3L water',
+                cost: 25,
+                xpReward: 40,
+                badgeReward: 'Water Badge + 2x XP',
+                icon: '🚿',
+                unlocked: false,
+                completed: false
+            }
+        };
+
+        // Initialize titles
+        this.availableTitles = {
+            'step-warrior': {
+                name: 'Step Warrior',
+                description: '10 days of 10k+ steps',
+                cost: 75,
+                icon: '🥾',
+                progress: 0,
+                target: 10,
+                unlocked: false
+            },
+            'protein-beast': {
+                name: 'Protein Beast',
+                description: 'Avg. 100g protein/day',
+                cost: 100,
+                icon: '💪',
+                progress: 0,
+                target: 100,
+                unlocked: false
+            },
+            'streak-legend': {
+                name: 'Streak Legend',
+                description: '14-day perfect activity streak',
+                cost: 200,
+                icon: '🔥',
+                progress: 0,
+                target: 14,
+                unlocked: false
+            }
+        };
+
     }
 
     calculateStepGoal() {
@@ -173,19 +355,82 @@ class EnhancedDashboardGamification {
         return Math.round(weight * 1.6); // Standard 1.6g per kg
     }
 
-    getTodaySteps() {
-        // This would normally come from a fitness tracker API or manual input
-        // For now, return from localStorage or default
+    async getTodaySteps() {
+        try {
+            // Get steps from user's daily quests (from backend)
+            const todayQuest = this.currentUser.dailyQuests?.find(q => q.date === this.todayDate && q.questType === 'steps');
+            if (todayQuest) {
+                return todayQuest.currentProgress || 0;
+            }
+        } catch (error) {
+            console.error('Error getting steps:', error);
+        }
+        
+        // Fallback to local storage
         const stored = localStorage.getItem(`steps_${this.todayDate}`);
         return stored ? parseInt(stored) : 0;
     }
 
-    getTodayCalories() {
+    async getTodayCalories() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for calories fetch');
+                return 0;
+            }
+            
+            const decoded = window.jwt_decode(token);
+            const userId = decoded._id;
+            
+            const response = await fetch(`${this.API_BASE}/foodentry/daily-totals/${userId}?date=${this.todayDate}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const totals = await response.json();
+                return totals.calories || 0;
+            } else {
+                console.warn(`Failed to fetch calories: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error fetching calories:', error);
+        }
+        
+        // Fallback to local data
         const todayLog = this.currentUser.foodLogs?.find(log => log.date === this.todayDate);
         return todayLog ? todayLog.calories || 0 : 0;
     }
 
-    getTodayProtein() {
+    async getTodayProtein() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for protein fetch');
+                return 0;
+            }
+            
+            const decoded = window.jwt_decode(token);
+            const userId = decoded._id;
+            
+            const response = await fetch(`${this.API_BASE}/foodentry/daily-totals/${userId}?date=${this.todayDate}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const totals = await response.json();
+                return totals.protein || 0;
+            } else {
+                console.warn(`Failed to fetch protein: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error fetching protein:', error);
+        }
+        
+        // Fallback to local data
         const todayLog = this.currentUser.foodLogs?.find(log => log.date === this.todayDate);
         return todayLog ? todayLog.protein || 0 : 0;
     }
@@ -238,6 +483,15 @@ class EnhancedDashboardGamification {
 
         // Manual step input
         this.setupStepInput();
+        
+        // Refresh dashboard button
+        const refreshBtn = document.getElementById('refresh-dashboard-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                console.log('Refresh button clicked');
+                this.refreshDashboardData();
+            });
+        }
     }
 
     setupStepInput() {
@@ -256,10 +510,48 @@ class EnhancedDashboardGamification {
         }
     }
 
-    updateSteps(steps) {
-        localStorage.setItem(`steps_${this.todayDate}`, steps.toString());
-        this.smartQuests.steps.currentProgress = steps;
-        this.smartQuests.steps.completed = steps >= this.smartQuests.steps.target;
+    async updateSteps(steps) {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for steps update');
+                return;
+            }
+            
+            // Update steps in localStorage
+            localStorage.setItem(`steps_${this.todayDate}`, steps.toString());
+            
+            // Update steps quest in backend
+            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    questType: 'steps',
+                    progress: steps,
+                    completed: steps >= (this.smartQuests.steps?.target || 10000)
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Steps updated in backend:', result);
+                
+                // Update user data with new XP/coins/level
+                if (result.xp !== undefined) this.currentUser.exp = result.xp;
+                if (result.coins !== undefined) this.currentUser.coins = result.coins;
+                if (result.level !== undefined) this.currentUser.level = result.level;
+            } else {
+                console.warn('Failed to update steps in backend');
+            }
+        } catch (error) {
+            console.error('Error updating steps:', error);
+        }
+        
+        // Refresh smart quest data to get updated progress
+        await this.refreshSmartQuestData();
         
         // Update display
         const stepsDisplay = document.getElementById('steps-display');
@@ -296,24 +588,72 @@ class EnhancedDashboardGamification {
     }
 
     async handleRegularQuestToggle(questType, isCompleted) {
-        if (isCompleted) {
-            await this.completeQuest(questType, true);
-        } else {
-            // Uncheck - remove completion status
-            this.questCompletionStatus[questType] = false;
-            this.saveQuestStates();
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for quest toggle');
+                return;
+            }
+            
+            // Update quest in backend
+            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    questType: questType,
+                    progress: isCompleted ? 1 : 0,
+                    completed: isCompleted
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Quest updated in backend:', result);
+                
+                // Update user data with new XP/coins/level
+                if (result.xp !== undefined) this.currentUser.exp = result.xp;
+                if (result.coins !== undefined) this.currentUser.coins = result.coins;
+                if (result.level !== undefined) this.currentUser.level = result.level;
+                
+                if (isCompleted) {
+                    await this.completeQuest(questType, true);
+                } else {
+                    // Uncheck - remove completion status (only for steps quest)
+                    if (questType === 'steps') {
+                        this.questCompletionStatus[questType] = false;
+                        this.saveQuestStates();
+                    }
+                }
+                
+                // Refresh smart quest data to get updated progress
+                await this.refreshSmartQuestData();
+                this.updateSmartQuestUI();
+            } else {
+                console.warn('Failed to update quest in backend');
+            }
+        } catch (error) {
+            console.error('Error updating quest:', error);
         }
     }
 
     async completeQuest(questType, isRegularQuest = false) {
         try {
-            // Prevent double completion
-            if (this.questCompletionStatus[questType]) {
+            // For smart quests, prevent double completion
+            // For regular quests, allow multiple toggles for steps, lock others after completion
+            if (!isRegularQuest && this.questCompletionStatus[questType]) {
+                console.log('Quest already completed:', questType);
                 return;
             }
 
             const quest = isRegularQuest ? this.getRegularQuestData(questType) : this.smartQuests[questType];
-            if (!quest) return;
+            if (!quest) {
+                console.error('Quest data not found for:', questType);
+                this.showNotification(`Quest data not found for ${questType}`, 'error');
+                return;
+            }
 
             const xpGained = quest.xpReward || this.getQuestXP(questType);
             const coinsGained = quest.coinReward || this.getQuestCoins(questType);
@@ -363,6 +703,9 @@ class EnhancedDashboardGamification {
                 `Quest completed! +${xpGained} XP, +${coinsGained} coins`, 
                 'success'
             );
+            
+            // Log coin balance update for debugging
+            console.log(`Quest ${questType} completed. Coins gained: ${coinsGained}. New balance: ${this.currentUser.coins}`);
 
             if (leveledUp) {
                 this.showLevelUpNotification(this.currentUser.level);
@@ -373,30 +716,43 @@ class EnhancedDashboardGamification {
 
         } catch (error) {
             console.error('Error completing quest:', error);
-            this.showNotification('Failed to complete quest', 'error');
+            this.showNotification(`Failed to complete quest: ${error.message}`, 'error');
         }
     }
 
     async syncQuestWithBackend(questType, quest) {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`${this.API_BASE}/updateQuest`, {
-                method: 'POST',
+            if (!token) {
+                console.warn('No auth token found for quest sync');
+                return;
+            }
+            
+            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     questType: questType,
-                    completed: true,
-                    progress: quest.currentProgress,
-                    xpGained: quest.xpReward,
-                    coinsGained: quest.coinReward
+                    progress: quest.currentProgress || 1,
+                    completed: true
                 })
             });
 
             if (response.ok) {
-                console.log('Quest synced with backend successfully');
+                const result = await response.json();
+                console.log('Quest synced with backend successfully:', result);
+                
+                // Update user data with new XP/coins/level from backend
+                if (result.xp !== undefined) this.currentUser.exp = result.xp;
+                if (result.coins !== undefined) this.currentUser.coins = result.coins;
+                if (result.level !== undefined) this.currentUser.level = result.level;
+                
+                // Force UI update after backend sync to ensure coin balance is displayed correctly
+                this.updateUI();
+                console.log('UI updated after backend sync. New coin balance:', this.currentUser.coins);
             } else {
                 console.warn('Failed to sync quest with backend:', response.statusText);
             }
@@ -538,7 +894,9 @@ class EnhancedDashboardGamification {
     updateUI() {
         // Update coin balance
         if (this.coinBalance) {
-            this.coinBalance.textContent = this.currentUser.coins || 0;
+            const newCoinBalance = this.currentUser.coins || 0;
+            this.coinBalance.textContent = newCoinBalance;
+            console.log('Coin balance updated in UI:', newCoinBalance);
         }
 
         // Update level and XP
@@ -589,15 +947,42 @@ class EnhancedDashboardGamification {
         const proteinDisplay = document.getElementById('protein-display');
         const stepsDisplay = document.getElementById('steps-display');
         
-        if (caloriesDisplay) caloriesDisplay.textContent = this.getTodayCalories();
-        if (proteinDisplay) proteinDisplay.textContent = this.getTodayProtein();
-        if (stepsDisplay) stepsDisplay.textContent = this.getTodaySteps().toLocaleString();
+        if (caloriesDisplay && this.smartQuests && this.smartQuests.calories) {
+            const calories = this.smartQuests.calories.currentProgress || 0;
+            caloriesDisplay.textContent = calories;
+        }
+        if (proteinDisplay && this.smartQuests && this.smartQuests.protein) {
+            const protein = this.smartQuests.protein.currentProgress || 0;
+            proteinDisplay.textContent = protein;
+        }
+        if (stepsDisplay && this.smartQuests && this.smartQuests.steps) {
+            const steps = this.smartQuests.steps.currentProgress || 0;
+            stepsDisplay.textContent = steps.toLocaleString();
+        }
     }
 
     updateSmartQuestUI() {
+        if (!this.smartQuests) {
+            console.warn('Smart quests not initialized');
+            return;
+        }
+        
+        console.log('Updating smart quest UI with data:', this.smartQuests);
+        
         Object.keys(this.smartQuests).forEach(questType => {
             const quest = this.smartQuests[questType];
+            if (!quest) {
+                console.warn(`Quest data not found for: ${questType}`);
+                return;
+            }
+            
             const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+            console.log(`Looking for quest item: ${questType}`, questItem);
+            
+            if (!questItem) {
+                console.error(`Quest item not found for: ${questType}`);
+                return;
+            }
             
             if (questItem) {
                 const goalEl = questItem.querySelector('.current-goal');
@@ -606,37 +991,184 @@ class EnhancedDashboardGamification {
                 const rewardXp = questItem.querySelector('.reward-xp');
                 const rewardCoins = questItem.querySelector('.reward-coins');
                 const scalingNotice = questItem.querySelector('.scaling-notice');
+                const collectButton = questItem.querySelector('.collect-reward-btn');
+                
+                console.log(`Elements found for ${questType}:`, {
+                    goalEl: !!goalEl,
+                    progressFill: !!progressFill,
+                    progressText: !!progressText,
+                    rewardXp: !!rewardXp,
+                    rewardCoins: !!rewardCoins,
+                    scalingNotice: !!scalingNotice,
+                    collectButton: !!collectButton
+                });
 
-                if (goalEl) goalEl.textContent = quest.target.toLocaleString();
+                if (goalEl) {
+                    const targetValue = (quest.target || 0).toLocaleString();
+                    const oldValue = goalEl.textContent;
+                    goalEl.textContent = targetValue;
+                    console.log(`Set goal for ${questType}: ${oldValue} → ${targetValue}`);
+                } else {
+                    console.error(`Goal element not found for ${questType}`);
+                }
                 if (progressText) {
-                    progressText.textContent = `${quest.currentProgress.toLocaleString()} / ${quest.target.toLocaleString()}`;
+                    const currentProgress = quest.currentProgress || 0;
+                    const target = quest.target || 0;
+                    const progressTextValue = `${currentProgress.toLocaleString()} / ${target.toLocaleString()}`;
+                    const oldValue = progressText.textContent;
+                    progressText.textContent = progressTextValue;
+                    console.log(`Set progress for ${questType}: ${oldValue} → ${progressTextValue}`);
+                } else {
+                    console.error(`Progress text element not found for ${questType}`);
                 }
                 
                 if (progressFill) {
-                    const progressPercent = Math.min((quest.currentProgress / quest.target) * 100, 120);
+                    const currentProgress = quest.currentProgress || 0;
+                    const target = quest.target || 1; // Avoid division by zero
+                    const progressPercent = Math.min((currentProgress / target) * 100, 120);
+                    const oldWidth = progressFill.style.width;
                     progressFill.style.width = `${progressPercent}%`;
+                    console.log(`Set progress fill for ${questType}: ${oldWidth} → ${progressPercent}% (${currentProgress}/${target})`);
                     
                     // Change color based on completion
                     if (quest.completed) {
                         progressFill.style.background = 'linear-gradient(90deg, #4CAF50, #45a049)';
+                        console.log(`Quest ${questType} is completed - setting green color`);
                     } else if (progressPercent > 100) {
                         progressFill.style.background = 'linear-gradient(90deg, #FF9800, #F57C00)';
+                        console.log(`Quest ${questType} exceeded target - setting orange color`);
                     } else {
                         progressFill.style.background = 'linear-gradient(90deg, #2196F3, #1976D2)';
+                        console.log(`Quest ${questType} in progress - setting blue color`);
                     }
+                    
+                    // Force a reflow to ensure the style change is applied
+                    progressFill.offsetHeight;
+                    
+                    // Verify the change was applied
+                    setTimeout(() => {
+                        const actualWidth = progressFill.style.width;
+                        console.log(`Verified progress fill for ${questType}: ${actualWidth}`);
+                    }, 10);
+                } else {
+                    console.error(`Progress fill element not found for ${questType}`);
                 }
 
-                if (rewardXp) rewardXp.textContent = `+${quest.xpReward} XP`;
-                if (rewardCoins) rewardCoins.textContent = `+${quest.coinReward} Coins`;
+                if (rewardXp) {
+                    const xpValue = `+${quest.xpReward || this.getQuestXP(questType)} XP`;
+                    rewardXp.textContent = xpValue;
+                    console.log(`Set XP reward for ${questType}: ${xpValue} (quest.xpReward: ${quest.xpReward})`);
+                }
+                if (rewardCoins) {
+                    const coinValue = `+${quest.coinReward || this.getQuestCoins(questType)} Coins`;
+                    rewardCoins.textContent = coinValue;
+                    console.log(`Set coin reward for ${questType}: ${coinValue} (quest.coinReward: ${quest.coinReward})`);
+                }
                 
-                // Add completion styling
-                if (quest.completed) {
+                // Handle completion state and collect button
+                if (quest.completed && !quest.rewardCollected) {
                     questItem.classList.add('quest-completed');
+                    questItem.classList.add('reward-available');
+                    
+                    // Show collect button if it exists
+                    if (collectButton) {
+                        collectButton.style.display = 'block';
+                        collectButton.textContent = 'Collect Reward';
+                        collectButton.onclick = () => this.collectSmartQuestReward(questType);
+                    }
+                    
+                    // Add pulsing animation for completed quests
+                    questItem.style.animation = 'pulse 2s infinite';
+                } else if (quest.completed && quest.rewardCollected) {
+                    questItem.classList.add('quest-completed');
+                    questItem.classList.remove('reward-available');
+                    
+                    // Hide collect button and show completed text
+                    if (collectButton) {
+                        collectButton.style.display = 'none';
+                    }
+                    
+                    // Remove pulsing animation
+                    questItem.style.animation = 'none';
+                    
+                    // Update progress text to show completion
+                    if (progressText) {
+                        progressText.textContent = 'Completed!';
+                        progressText.style.color = '#4CAF50';
+                        progressText.style.fontWeight = 'bold';
+                    }
                 } else {
-                    questItem.classList.remove('quest-completed');
+                    questItem.classList.remove('quest-completed', 'reward-available');
+                    
+                    // Hide collect button
+                    if (collectButton) {
+                        collectButton.style.display = 'none';
+                    }
+                    
+                    // Remove pulsing animation
+                    questItem.style.animation = 'none';
+                    
+                    // Reset progress text styling
+                    if (progressText) {
+                        progressText.style.color = '';
+                        progressText.style.fontWeight = '';
+                    }
+                }
+                
+                // Show scaling notice if quest is scaling
+                if (scalingNotice && quest.scaling && (quest.currentProgress || 0) > (quest.target || 0)) {
+                    scalingNotice.style.display = 'block';
+                    scalingNotice.textContent = 'Goal exceeded! +10% bonus';
+                } else if (scalingNotice) {
+                    scalingNotice.style.display = 'none';
                 }
             }
         });
+    }
+
+    async collectSmartQuestReward(questType) {
+        try {
+            const quest = this.smartQuests[questType];
+            if (!quest || !quest.completed || quest.rewardCollected) {
+                this.showNotification('No reward available to collect', 'warning');
+                return;
+            }
+
+            // Mark reward as collected
+            quest.rewardCollected = true;
+
+            // Call backend to claim smart quest reward
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${this.API_BASE}/claimSmartQuestReward`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ questType })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                // Update user data with new coins/xp
+                this.currentUser.coins = result.coins;
+                this.currentUser.exp = result.xp;
+                this.updateUI();
+                this.showNotification(`Reward collected! +${result.xpGained} XP, +${result.coinsGained} coins`, 'success');
+            } else {
+                this.showNotification(result.error || 'Failed to claim reward', 'error');
+            }
+
+            // Save states
+            this.saveQuestStates();
+            this.saveUserDataToStorage();
+
+            // Optionally, refresh smart quest data
+            await this.refreshSmartQuestData();
+            this.updateSmartQuestUI();
+        } catch (error) {
+            console.error('Error collecting smart quest reward:', error);
+            this.showNotification('Failed to collect reward', 'error');
+        }
     }
 
     updateRegularQuestUI() {
@@ -645,8 +1177,13 @@ class EnhancedDashboardGamification {
             if (checkbox) {
                 checkbox.checked = this.questCompletionStatus[questType] || false;
                 
-                // Disable if completed
-                checkbox.disabled = this.questCompletionStatus[questType];
+                // Steps quest: always clickable (multiple toggles allowed)
+                // Other quests: lock after completion (unlock next day)
+                if (questType === 'steps') {
+                    checkbox.disabled = false; // Always allow toggles for steps
+                } else {
+                    checkbox.disabled = this.questCompletionStatus[questType]; // Lock other quests after completion
+                }
                 
                 // Update parent styling
                 const questItem = checkbox.closest('.checklist-item');
@@ -710,27 +1247,114 @@ class EnhancedDashboardGamification {
 
     async syncFoodLogData() {
         try {
-            await this.loadUserData();
-            
-            // Update smart quests based on new food log data
-            this.smartQuests.calories.currentProgress = this.getTodayCalories();
-            this.smartQuests.protein.currentProgress = this.getTodayProtein();
+            // Refresh smart quest data from backend
+            await this.refreshSmartQuestData();
             
             // Check for new completions
             Object.keys(this.smartQuests).forEach(questType => {
                 const quest = this.smartQuests[questType];
-                const wasCompleted = quest.completed;
-                quest.completed = quest.currentProgress >= quest.target;
+                if (!quest) return;
                 
-                // If newly completed, trigger completion
+                const wasCompleted = quest.completed;
+                const currentProgress = quest.currentProgress || 0;
+                const target = quest.target || 0;
+                quest.completed = currentProgress >= target;
+                
+                // If newly completed, automatically award coins and XP
                 if (!wasCompleted && quest.completed && !this.questCompletionStatus[questType]) {
-                    this.completeQuest(questType);
+                    console.log(`Smart quest ${questType} newly completed! Auto-awarding rewards.`);
+                    
+                    // Award coins and XP immediately
+                    const xpGained = quest.xpReward || this.getQuestXP(questType);
+                    const coinsGained = quest.coinReward || this.getQuestCoins(questType);
+                    
+                    this.currentUser.exp += xpGained;
+                    this.currentUser.coins += coinsGained;
+                    
+                    // Mark as completed to prevent double rewards
+                    this.questCompletionStatus[questType] = true;
+                    
+                    // Add to activity log
+                    const activity = {
+                        type: 'smart_quest',
+                        questType: questType,
+                        date: new Date(),
+                        details: `Completed ${quest.questName || questType}`,
+                        xpGained: xpGained,
+                        coinsGained: coinsGained
+                    };
+                    
+                    this.currentUser.activityLog.unshift(activity);
+                    if (this.currentUser.activityLog.length > 50) {
+                        this.currentUser.activityLog = this.currentUser.activityLog.slice(0, 50);
+                    }
+                    
+                    // Save states
+                    this.saveQuestStates();
+                    this.saveUserDataToStorage();
+                    
+                    // Show notification
+                    this.showNotification(
+                        `${quest.questName || questType} completed! +${xpGained} XP, +${coinsGained} coins`, 
+                        'success'
+                    );
+                    
+                    // Add pulsing animation to indicate completion
+                    const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+                    if (questItem) {
+                        questItem.style.animation = 'pulse 2s infinite';
+                    }
+                    
+                    // Sync with backend
+                    this.syncQuestWithBackend(questType, quest);
                 }
             });
             
-            this.updateUI();
+            await this.updateUI();
         } catch (error) {
             console.error('Data sync failed:', error);
+        }
+    }
+
+    async refreshSmartQuestData() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for smart quest refresh');
+                return;
+            }
+            
+            const decoded = window.jwt_decode(token);
+            const email = decoded.email;
+            
+            // Refresh smart quest data from backend
+            const response = await fetch(`${this.API_BASE}/getSmartQuestData/${email}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const questData = await response.json();
+                this.smartQuests = questData.quests;
+                console.log('Smart quest data refreshed:', questData);
+            } else {
+                console.warn('Failed to refresh smart quest data');
+            }
+        } catch (error) {
+            console.error('Error refreshing smart quest data:', error);
+        }
+    }
+
+    // Public method to refresh dashboard data (can be called from other pages)
+    async refreshDashboardData() {
+        try {
+            console.log('Refreshing dashboard data...');
+            await this.refreshSmartQuestData();
+            await this.updateUI();
+            console.log('Dashboard data refreshed successfully');
+        } catch (error) {
+            console.error('Error refreshing dashboard data:', error);
         }
     }
 
@@ -762,11 +1386,37 @@ class EnhancedDashboardGamification {
                             }
                         });
                     }
+                } else {
+                    // New day - reset quest states
+                    console.log('New day detected, resetting quest states');
+                    this.resetDailyQuests();
                 }
+            } else {
+                // No stored data - initialize for today
+                console.log('No stored quest data, initializing for today');
+                this.resetDailyQuests();
             }
         } catch (error) {
             console.error('Failed to load quest states:', error);
+            this.resetDailyQuests();
         }
+    }
+
+    resetDailyQuests() {
+        // Reset quest completion status for a new day
+        this.questCompletionStatus = {};
+        
+        // Reset smart quest completion status
+        Object.keys(this.smartQuests).forEach(questType => {
+            if (this.smartQuests[questType]) {
+                this.smartQuests[questType].completed = false;
+            }
+        });
+        
+        // Save the reset state
+        this.saveQuestStates();
+        
+        console.log('Daily quests reset for new day');
     }
 
     saveUserDataToStorage() {
@@ -1315,6 +1965,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add a small delay to ensure all elements are rendered
     setTimeout(() => {
         window.enhancedDashboard = new EnhancedDashboardGamification();
+        // Also create a global dashboard variable for easier access
+        window.dashboard = window.enhancedDashboard;
     }, 100);
 });
 

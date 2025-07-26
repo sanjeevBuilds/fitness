@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     email: data.email,
                     xp: data.xp,
                     level: data.level,
+                    coins: data.coins || 0,
                     createdAt: data.createdAt,
                     token: data.token
                 }));
