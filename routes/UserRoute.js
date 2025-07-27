@@ -80,6 +80,25 @@ router.post('/sendFriendRequest', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Find the sender user to check cooldown
+    const sender = await UserModel.findOne({ email: fromEmail.toLowerCase() });
+    if (!sender) {
+      return res.status(404).json({ error: 'Sender not found' });
+    }
+
+    // Check 6-hour cooldown for sent requests
+    const cooldownCheckTime = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    const recentRequest = sender.sentFriendRequests && sender.sentFriendRequests.find(
+      req => req.toEmail === toEmail.toLowerCase() && req.sentAt > cooldownCheckTime
+    );
+    
+    if (recentRequest) {
+      const timeLeft = Math.ceil((recentRequest.sentAt.getTime() + 6 * 60 * 60 * 1000 - Date.now()) / (60 * 60 * 1000));
+      return res.status(400).json({ 
+        error: `You can only send one friend request every 6 hours. Try again in ${timeLeft} hours.` 
+      });
+    }
+
     // Find the recipient user
     const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
     if (!recipient) {
@@ -119,6 +138,25 @@ router.post('/sendFriendRequest', async (req, res) => {
     
     recipient.friendRequests.push(friendRequest);
     await recipient.save();
+
+    // Add to sender's sent requests record
+    const sentRequest = {
+      toEmail: toEmail.toLowerCase(),
+      sentAt: new Date()
+    };
+
+    if (!sender.sentFriendRequests) {
+      sender.sentFriendRequests = [];
+    }
+    
+    // Clean up old sent requests (older than 6 hours)
+    const cleanupTime = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    sender.sentFriendRequests = sender.sentFriendRequests.filter(
+      req => req.sentAt > cleanupTime
+    );
+    
+    sender.sentFriendRequests.push(sentRequest);
+    await sender.save();
 
     res.json({ success: true, message: 'Friend request sent successfully' });
   } catch (err) {
@@ -189,6 +227,13 @@ router.post('/respondFriendRequest', async (req, res) => {
 
       recipient.friends.push(recipientFriend);
       sender.friends.push(senderFriend);
+    } else if (action === 'reject') {
+      // Remove the sent request from sender's cooldown list to allow resending
+      if (sender.sentFriendRequests) {
+        sender.sentFriendRequests = sender.sentFriendRequests.filter(
+          req => req.toEmail !== recipient.email.toLowerCase()
+        );
+      }
     }
 
     await recipient.save();

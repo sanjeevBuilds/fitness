@@ -56,12 +56,6 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Coin Wallet -->
-            <div class="coin-wallet">
-                <span class="coin-icon">💰</span>
-                <span class="coin-balance">0</span>
-                <span class="coin-label">Coins</span>
-            </div>
 
             <!-- Gamified Header -->
             <div class="quest-header">
@@ -265,6 +259,65 @@
                             <span>Regenerate</span>
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- My Plan Section -->
+            <div class="my-plan-section">
+                <div class="my-plan-header">
+                    <h3><i class="fas fa-shopping-cart"></i> My Plan</h3>
+                    <div class="plan-summary">
+                        <span class="plan-count">0</span> meals selected
+                    </div>
+                </div>
+                
+                <!-- Plan Nutrition Summary -->
+                <div class="nutrition-summary">
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="totalCalories">0</span>
+                            <span class="nutrition-label">Calories</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="totalProtein">0g</span>
+                            <span class="nutrition-label">Protein</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="totalCarbs">0g</span>
+                            <span class="nutrition-label">Carbs</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="totalFat">0g</span>
+                            <span class="nutrition-label">Fat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Meals List -->
+                <div class="selected-meals" id="selectedMeals">
+                    <div class="empty-plan">
+                        <i class="fas fa-utensils"></i>
+                        <h4>No meals selected yet</h4>
+                        <p>Click "Add to Plan" on any meal to start building your plan</p>
+                    </div>
+                </div>
+
+                <!-- Plan Actions -->
+                <div class="plan-actions">
+                    <button class="plan-btn clear-btn" id="clearPlanBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Clear Plan</span>
+                    </button>
+                    <button class="plan-btn save-plan-btn" id="savePlanBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Save Plan</span>
+                    </button>
                 </div>
             </div>
 

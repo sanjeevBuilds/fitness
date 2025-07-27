@@ -204,6 +204,10 @@ const UserSchema = new mongoose.Schema({
   // Subdocuments
   notifications: [NotificationSchema],
   friendRequests: [FriendRequestSchema],
+  sentFriendRequests: [{
+    toEmail: { type: String, required: true, lowercase: true },
+    sentAt: { type: Date, default: Date.now }
+  }],
   dailyQuests: [DailyQuestSchema], // Enhanced daily quests
   miniChallenges: [MiniChallengeSchema], // Enhanced mini challenges
   foodLogs: [FoodLogSchema],

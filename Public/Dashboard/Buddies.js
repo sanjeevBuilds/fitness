@@ -59,8 +59,12 @@ function acceptRequest(button) {
             // Remove from UI
             requestItem.style.opacity = '0';
             requestItem.style.transform = 'translateX(-100%)';
-            setTimeout(() => { requestItem.remove(); }, 300);
-            // Optionally update friends list here
+            setTimeout(() => { 
+                requestItem.remove(); 
+                // Refresh friends list and friend requests
+                renderFriends();
+                renderFriendRequests();
+            }, 300);
         } else {
             button.textContent = 'Error';
         }
@@ -83,7 +87,12 @@ function rejectRequest(button) {
             // Remove from UI
             requestItem.style.opacity = '0';
             requestItem.style.transform = 'translateX(-100%)';
-            setTimeout(() => { requestItem.remove(); }, 300);
+            setTimeout(() => { 
+                requestItem.remove(); 
+                // Refresh friends list and friend requests
+                renderFriends();
+                renderFriendRequests();
+            }, 300);
         } else {
             button.textContent = 'Error';
         }
@@ -384,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const name = document.createElement('h3');
                     const displayName = user.profileName || user.fullName || user.username || 'User';
                     name.textContent = displayName;
+                    name.setAttribute('data-email', user.email);
                     name.style.marginBottom = '0.3rem';
                     name.style.fontWeight = 'bold';
                     name.style.fontSize = '1rem';
@@ -438,20 +448,61 @@ document.addEventListener('DOMContentLoaded', function() {
                         addBtn.style.boxShadow = '0 2px 8px #1ec87822';
                         addBtn.style.cursor = 'not-allowed';
                     } else {
-                        addBtn = document.createElement('button');
-                        addBtn.className = 'btn btn-primary add-friend-btn';
-                        addBtn.textContent = 'Add';
-                        addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
-                        addBtn.style.color = '#fff';
-                        addBtn.style.fontWeight = 'bold';
-                        addBtn.style.border = 'none';
-                        addBtn.style.borderRadius = '999px';
-                        addBtn.style.padding = '0.4rem 1.2rem';
-                        addBtn.style.marginLeft = '1rem';
-                        addBtn.style.fontSize = '0.98rem';
-                        addBtn.style.boxShadow = '0 2px 8px #1ec87822';
-                        addBtn.style.cursor = 'pointer';
-                        addBtn.style.transition = 'background 0.2s, transform 0.2s';
+                        // Check if we have a recent sent request (cooldown)
+                        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                        if (currentUser && currentUser.sentFriendRequests) {
+                            const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+                            const recentRequest = currentUser.sentFriendRequests.find(
+                                req => req.toEmail === user.email && req.sentAt > sixHoursAgo
+                            );
+                            if (recentRequest) {
+                                addBtn = document.createElement('button');
+                                addBtn.className = 'btn btn-secondary add-friend-btn';
+                                addBtn.textContent = '6h Cooldown';
+                                addBtn.disabled = true;
+                                addBtn.style.background = '#ff6b6b';
+                                addBtn.style.color = '#fff';
+                                addBtn.style.fontWeight = 'bold';
+                                addBtn.style.border = 'none';
+                                addBtn.style.borderRadius = '999px';
+                                addBtn.style.padding = '0.4rem 1.2rem';
+                                addBtn.style.marginLeft = '1rem';
+                                addBtn.style.fontSize = '0.98rem';
+                                addBtn.style.boxShadow = '0 2px 8px #ff6b6b22';
+                                addBtn.style.cursor = 'not-allowed';
+                            } else {
+                                addBtn = document.createElement('button');
+                                addBtn.className = 'btn btn-primary add-friend-btn';
+                                addBtn.textContent = 'Add';
+                                addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
+                                addBtn.style.color = '#fff';
+                                addBtn.style.fontWeight = 'bold';
+                                addBtn.style.border = 'none';
+                                addBtn.style.borderRadius = '999px';
+                                addBtn.style.padding = '0.4rem 1.2rem';
+                                addBtn.style.marginLeft = '1rem';
+                                addBtn.style.fontSize = '0.98rem';
+                                addBtn.style.boxShadow = '0 2px 8px #1ec87822';
+                                addBtn.style.cursor = 'pointer';
+                                addBtn.style.transition = 'background 0.2s, transform 0.2s';
+                            }
+                        } else {
+                            addBtn = document.createElement('button');
+                            addBtn.className = 'btn btn-primary add-friend-btn';
+                            addBtn.textContent = 'Add';
+                            addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
+                            addBtn.style.color = '#fff';
+                            addBtn.style.fontWeight = 'bold';
+                            addBtn.style.border = 'none';
+                            addBtn.style.borderRadius = '999px';
+                            addBtn.style.padding = '0.4rem 1.2rem';
+                            addBtn.style.marginLeft = '1rem';
+                            addBtn.style.fontSize = '0.98rem';
+                            addBtn.style.boxShadow = '0 2px 8px #1ec87822';
+                            addBtn.style.cursor = 'pointer';
+                            addBtn.style.transition = 'background 0.2s, transform 0.2s';
+                        }
+                        
                         addBtn.addEventListener('mouseenter', () => {
                             if (!addBtn.disabled) {
                                 addBtn.style.background = 'linear-gradient(90deg, #39e6a0, #1ec878)';
@@ -470,14 +521,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             addBtn.disabled = true;
                             addBtn.style.background = '#ccc';
                             addBtn.style.transform = 'scale(1)';
-                                                    let currentUser = null;
-                        try {
-                            currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                        } catch (e) {}
-                        if (!currentUser || !user.email) {
-                            addBtn.textContent = 'Error';
-                            return;
-                        }
+                            let currentUser = null;
+                            try {
+                                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                            } catch (e) {}
+                            if (!currentUser || !user.email) {
+                                addBtn.textContent = 'Error';
+                                return;
+                            }
                             try {
                                 const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
                                     method: 'POST',
@@ -496,7 +547,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                     addBtn.style.background = '#ccc';
                                     addBtn.style.cursor = 'not-allowed';
                                 } else {
-                                    addBtn.textContent = data.error || 'Error';
+                                    if (data.error && data.error.includes('6 hours')) {
+                                        addBtn.textContent = '6h Cooldown';
+                                        addBtn.disabled = true;
+                                        addBtn.style.background = '#ff6b6b';
+                                        addBtn.style.cursor = 'not-allowed';
+                                        addBtn.title = data.error;
+                                    } else {
+                                        addBtn.textContent = data.error || 'Error';
+                                    }
                                 }
                             } catch (err) {
                                 addBtn.textContent = 'Error';
@@ -509,6 +568,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.appendChild(addBtn);
                     searchResults.appendChild(card);
                 });
+                // Update cooldown status after displaying search results
+                updateCooldownStatus();
             } catch (err) {
                 searchResults.innerHTML = '<div class="no-results">Error searching users.</div>';
             }
@@ -545,6 +606,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     renderFriends();
+
+    // Check and update cooldown status for sent requests
+    async function updateCooldownStatus() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser || !currentUser.email) return;
+        
+        try {
+            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(currentUser.email)}`);
+            if (!res.ok) throw new Error('Failed to fetch user');
+            const user = await res.json();
+            
+            // Check each search result for cooldown status
+            const searchResultItems = document.querySelectorAll('.search-result-item');
+            searchResultItems.forEach(item => {
+                const addBtn = item.querySelector('.add-friend-btn');
+                if (addBtn && addBtn.textContent === '6h Cooldown') {
+                    const userEmail = item.querySelector('.friend-info h3').getAttribute('data-email');
+                    if (userEmail) {
+                        const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+                        const sentRequest = user.sentFriendRequests && user.sentFriendRequests.find(
+                            req => req.toEmail === userEmail && req.sentAt > sixHoursAgo
+                        );
+                        
+                        if (!sentRequest) {
+                            // Cooldown expired, reset button
+                            addBtn.textContent = 'Add';
+                            addBtn.disabled = false;
+                            addBtn.style.background = 'linear-gradient(90deg, #1ec878, #39e6a0)';
+                            addBtn.style.cursor = 'pointer';
+                            addBtn.title = '';
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            console.error('Error updating cooldown status:', err);
+        }
+    }
 
     // Render real friend requests for the logged-in user
     async function renderFriendRequests() {
@@ -637,4 +736,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     renderLeaderboard();
     fetchMyFriends();
+    updateCooldownStatus();
 });
