@@ -13,7 +13,7 @@ const BadgeSchema = new mongoose.Schema({
   unlockedAt: { type: Date, default: Date.now },
   earnedBy: { 
     type: String, 
-    enum: ['achievement', 'purchase', 'quest', 'challenge'],
+    enum: ['achievement', 'purchase', 'quest', 'challenge', 'title'], // added 'title'
     default: 'achievement'
   }
 }, { _id: false });

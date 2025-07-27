@@ -44,6 +44,191 @@ router.get('/getUser/:email', async (req, res) => {
   }
 });
 
+// GET search users by query
+router.get('/searchUsers', async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.trim() === '') {
+      return res.json([]);
+    }
+
+    const searchQuery = query.trim();
+    
+    // Search in profileName, username, and email fields
+    const users = await UserModel.find({
+      $or: [
+        { profileName: { $regex: searchQuery, $options: 'i' } },
+        { username: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } }
+      ]
+    }).select('-password').limit(10);
+
+    res.json(users);
+  } catch (err) {
+    console.error('Search users error:', err);
+    res.status(500).json({ error: 'Failed to search users' });
+  }
+});
+
+// POST send friend request
+router.post('/sendFriendRequest', async (req, res) => {
+  try {
+    const { toEmail, fromEmail, fromProfileName, fromAvatar } = req.body;
+    
+    if (!toEmail || !fromEmail) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Find the recipient user
+    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if request already exists
+    const existingRequest = recipient.friendRequests.find(
+      req => req.fromEmail === fromEmail.toLowerCase()
+    );
+    
+    if (existingRequest) {
+      return res.status(400).json({ error: 'Friend request already sent' });
+    }
+
+    // Check if already friends
+    const isAlreadyFriend = recipient.friends && recipient.friends.some(
+      friend => friend.email === fromEmail.toLowerCase()
+    );
+    
+    if (isAlreadyFriend) {
+      return res.status(400).json({ error: 'Already friends' });
+    }
+
+    // Add friend request
+    const friendRequest = {
+      fromEmail: fromEmail.toLowerCase(),
+      fromProfileName: fromProfileName,
+      fromAvatar: fromAvatar,
+      sentAt: new Date(),
+      status: 'pending'
+    };
+
+    if (!recipient.friendRequests) {
+      recipient.friendRequests = [];
+    }
+    
+    recipient.friendRequests.push(friendRequest);
+    await recipient.save();
+
+    res.json({ success: true, message: 'Friend request sent successfully' });
+  } catch (err) {
+    console.error('Send friend request error:', err);
+    res.status(500).json({ error: 'Failed to send friend request' });
+  }
+});
+
+// POST respond to friend request (accept/reject)
+router.post('/respondFriendRequest', async (req, res) => {
+  try {
+    const { fromEmail, toEmail, action } = req.body;
+    
+    if (!fromEmail || !toEmail || !action) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!['accept', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    // Find the recipient user
+    const recipient = await UserModel.findOne({ email: toEmail.toLowerCase() });
+    if (!recipient) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Find the sender user
+    const sender = await UserModel.findOne({ email: fromEmail.toLowerCase() });
+    if (!sender) {
+      return res.status(404).json({ error: 'Sender not found' });
+    }
+
+    // Find and remove the friend request
+    const requestIndex = recipient.friendRequests.findIndex(
+      req => req.fromEmail === fromEmail.toLowerCase()
+    );
+    
+    if (requestIndex === -1) {
+      return res.status(404).json({ error: 'Friend request not found' });
+    }
+
+    const friendRequest = recipient.friendRequests[requestIndex];
+    recipient.friendRequests.splice(requestIndex, 1);
+
+    if (action === 'accept') {
+      // Add to friends list for both users
+      const recipientFriend = {
+        email: sender.email,
+        profileName: sender.profileName,
+        avatar: sender.avatar,
+        level: sender.level,
+        exp: sender.exp,
+        addedAt: new Date()
+      };
+
+      const senderFriend = {
+        email: recipient.email,
+        profileName: recipient.profileName,
+        avatar: recipient.avatar,
+        level: recipient.level,
+        exp: recipient.exp,
+        addedAt: new Date()
+      };
+
+      if (!recipient.friends) recipient.friends = [];
+      if (!sender.friends) sender.friends = [];
+
+      recipient.friends.push(recipientFriend);
+      sender.friends.push(senderFriend);
+    }
+
+    await recipient.save();
+    await sender.save();
+
+    res.json({ 
+      success: true, 
+      message: action === 'accept' ? 'Friend request accepted' : 'Friend request rejected' 
+    });
+  } catch (err) {
+    console.error('Respond to friend request error:', err);
+    res.status(500).json({ error: 'Failed to respond to friend request' });
+  }
+});
+
+// POST reject all friend requests
+router.post('/rejectAllFriendRequests', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' });
+    }
+
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Clear all friend requests
+    user.friendRequests = [];
+    await user.save();
+
+    res.json({ success: true, message: 'All friend requests rejected' });
+  } catch (err) {
+    console.error('Reject all friend requests error:', err);
+    res.status(500).json({ error: 'Failed to reject all friend requests' });
+  }
+});
+
 // POST create new user
 router.post('/createUser', async (req, res) => {
   try {
@@ -217,7 +402,15 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       quest.currentProgress = progress;
     }
 
-    // Check if quest should be completed
+    // NEW LOGIC: Reset quest completion if toggled OFF
+    if (completed === false && quest.completed) {
+      quest.completed = false;
+      // Optionally, you could also reset currentProgress if you want
+      // quest.currentProgress = 0;
+      console.log(`[updateDailyQuest] Quest ${questType} reset to not completed.`);
+    }
+
+    // Check if quest should be completed (allow multiple completions per day)
     if (quest.currentProgress >= quest.target && !quest.completed) {
       quest.completed = true;
       
@@ -545,6 +738,118 @@ router.put('/updateUser/:email', async (req, res) => {
   }
 });
 
+// PATCH update user data (coins, titles, activityLog, badges, etc.)
+router.patch('/updateUser', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const updateData = req.body;
+    
+    console.log('[UPDATE USER] Request received for user:', userId);
+    console.log('[UPDATE USER] Request body keys:', Object.keys(updateData));
+    console.log('[UPDATE USER] Update data:', JSON.stringify(updateData, null, 2));
+    console.log('[UPDATE USER] Badges in request:', updateData.badges);
+    console.log('[UPDATE USER] Badges type:', typeof updateData.badges);
+    console.log('[UPDATE USER] Badges is array:', Array.isArray(updateData.badges));
+    
+    // Find the user
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      console.log('[UPDATE USER] User not found:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('[UPDATE USER] Current user badges before update:', user.badges);
+    console.log('[UPDATE USER] Current user badges length:', user.badges ? user.badges.length : 0);
+
+    // Update allowed fields
+    if (updateData.coins !== undefined) {
+      user.coins = updateData.coins;
+      console.log('[UPDATE USER] Updated coins to:', updateData.coins);
+    }
+    if (updateData.exp !== undefined) {
+      user.exp = updateData.exp;
+      user.level = calculateLevel(updateData.exp);
+      console.log('[UPDATE USER] Updated exp to:', updateData.exp, 'and level to:', user.level);
+    }
+    if (updateData.titles !== undefined) {
+      user.titles = updateData.titles;
+      console.log('[UPDATE USER] Updated titles to:', updateData.titles);
+    }
+    if (updateData.badges !== undefined) {
+      console.log('[UPDATE USER] Updating badges from:', user.badges, 'to:', updateData.badges);
+      console.log('[UPDATE USER] Badges data type:', typeof updateData.badges);
+      console.log('[UPDATE USER] Badges is array:', Array.isArray(updateData.badges));
+      console.log('[UPDATE USER] Badges length:', updateData.badges ? updateData.badges.length : 0);
+      
+      // Validate badge structure
+      if (Array.isArray(updateData.badges)) {
+        updateData.badges.forEach((badge, index) => {
+          console.log(`[UPDATE USER] Badge ${index}:`, badge);
+          if (!badge.badgeId || !badge.title) {
+            console.error(`[UPDATE USER] Invalid badge at index ${index}:`, badge);
+          }
+        });
+      }
+      
+      user.badges = updateData.badges;
+      console.log('[UPDATE USER] Badges after assignment:', user.badges);
+    } else {
+      console.log('[UPDATE USER] No badges in updateData, skipping badge update');
+    }
+    if (updateData.activityLog !== undefined) {
+      user.activityLog = updateData.activityLog;
+      console.log('[UPDATE USER] Updated activityLog');
+    }
+    if (updateData.questStats !== undefined) {
+      user.questStats = updateData.questStats;
+      console.log('[UPDATE USER] Updated questStats');
+    }
+    if (updateData.dailyQuests !== undefined) {
+      user.dailyQuests = updateData.dailyQuests;
+      console.log('[UPDATE USER] Updated dailyQuests');
+    }
+    if (updateData.miniChallenges !== undefined) {
+      user.miniChallenges = updateData.miniChallenges;
+      console.log('[UPDATE USER] Updated miniChallenges');
+    }
+
+    console.log('[UPDATE USER] User badges before save:', user.badges);
+    console.log('[UPDATE USER] User badges length before save:', user.badges ? user.badges.length : 0);
+
+    // Save the updated user
+    try {
+      await user.save();
+      console.log('[UPDATE USER] User saved successfully');
+    } catch (saveError) {
+      console.error('[UPDATE USER] Save error:', saveError);
+      console.error('[UPDATE USER] Save error message:', saveError.message);
+      if (saveError.errors) {
+        Object.keys(saveError.errors).forEach(key => {
+          console.error(`[UPDATE USER] Validation error for ${key}:`, saveError.errors[key].message);
+        });
+      }
+      return res.status(400).json({ error: 'Validation error', details: saveError.message });
+    }
+
+    // Verify the save worked
+    const savedUser = await UserModel.findById(userId);
+    console.log('[UPDATE USER] User badges after save:', savedUser.badges);
+    console.log('[UPDATE USER] User badges length after save:', savedUser.badges ? savedUser.badges.length : 0);
+
+    // Return updated user data (excluding password)
+    const updatedUser = await UserModel.findById(userId).select('-password');
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: 'User updated successfully'
+    });
+
+  } catch (err) {
+    console.error('[UPDATE USER] Error:', err);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 // PATCH claim smart quest reward
 router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
   try {
@@ -606,9 +911,30 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
       xpGained,
       coinsGained
     });
+
   } catch (err) {
     console.error('Claim smart quest reward error:', err);
     res.status(500).json({ error: 'Failed to claim smart quest reward' });
+  }
+});
+
+// PATCH update user badges from local storage
+router.patch('/updateUserBadges', async (req, res) => {
+  try {
+    const { email, badges } = req.body;
+    if (!email || !Array.isArray(badges)) {
+      return res.status(400).json({ error: 'Email and badges array are required.' });
+    }
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    user.badges = badges;
+    await user.save();
+    res.json({ success: true, badges: user.badges });
+  } catch (err) {
+    console.error('Failed to update user badges:', err);
+    res.status(500).json({ error: 'Failed to update user badges' });
   }
 });
 

@@ -32,7 +32,7 @@ console.log('Buddies.js loaded successfully');
 
 // Load user data for sidebar (match dashboard)
 (function() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (userData) {
         const avatar = document.getElementById('sidebar-avatar');
         const name = document.getElementById('sidebar-username');
@@ -47,11 +47,11 @@ console.log('Buddies.js loaded successfully');
 function acceptRequest(button) {
     const requestItem = button.closest('.request-item');
     const email = requestItem && requestItem.getAttribute('data-email');
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (!email || !userData) return;
     // Call backend to accept
     fetch('http://localhost:8000/api/respondFriendRequest', {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'accept' })
     }).then(res => res.json()).then(data => {
@@ -71,11 +71,11 @@ function acceptRequest(button) {
 function rejectRequest(button) {
     const requestItem = button.closest('.request-item');
     const email = requestItem && requestItem.getAttribute('data-email');
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (!email || !userData) return;
     // Call backend to reject
     fetch('http://localhost:8000/api/respondFriendRequest', {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'reject' })
     }).then(res => res.json()).then(data => {
@@ -92,10 +92,10 @@ function rejectRequest(button) {
 
 // Reject all friend requests functionality
 function rejectAllRequests() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (!userData || !userData.email) return;
     fetch('http://localhost:8000/api/rejectAllFriendRequests', {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toEmail: userData.email })
     }).then(res => res.json()).then(data => {
@@ -212,7 +212,7 @@ let myFriendEmails = new Set();
 
 // Fetch and cache current user's friends on page load
 async function fetchMyFriends() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (!userData || !userData.email) return;
     try {
         const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide current user from search results
                 let currentUser = null;
                 try {
-                    currentUser = JSON.parse(localStorage.getItem('userData'));
+                    currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 } catch (e) {}
                 if (currentUser) {
                     users = users.filter(u => {
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Avatar
                     const avatar = document.createElement('img');
                     avatar.src = `../../assets/${user.avatar || 'avator1.jpeg'}`;
-                    avatar.alt = user.profileName || user.username;
+                    avatar.alt = user.profileName || user.fullName || user.username || 'User';
                     avatar.className = 'friend-avatar';
                     avatar.style.width = '56px';
                     avatar.style.height = '56px';
@@ -380,9 +380,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     const info = document.createElement('div');
                     info.className = 'friend-info';
                     info.style.flex = '1';
-                    // Name
+                    // Name (show real name for search results)
                     const name = document.createElement('h3');
-                    name.textContent = user.profileName || user.username;
+                    const displayName = user.profileName || user.fullName || user.username || 'User';
+                    name.textContent = displayName;
                     name.style.marginBottom = '0.3rem';
                     name.style.fontWeight = 'bold';
                     name.style.fontSize = '1rem';
@@ -469,14 +470,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             addBtn.disabled = true;
                             addBtn.style.background = '#ccc';
                             addBtn.style.transform = 'scale(1)';
-                            let currentUser = null;
-                            try {
-                                currentUser = JSON.parse(localStorage.getItem('userData'));
-                            } catch (e) {}
-                            if (!currentUser || !user.email) {
-                                addBtn.textContent = 'Error';
-                                return;
-                            }
+                                                    let currentUser = null;
+                        try {
+                            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                        } catch (e) {}
+                        if (!currentUser || !user.email) {
+                            addBtn.textContent = 'Error';
+                            return;
+                        }
                             try {
                                 const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
                                     method: 'POST',
@@ -535,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render real friends for the logged-in user
     async function renderFriends() {
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = JSON.parse(localStorage.getItem('currentUser'));
         if (!userData || !userData.email) return;
         try {
             const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
@@ -566,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render real friend requests for the logged-in user
     async function renderFriendRequests() {
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = JSON.parse(localStorage.getItem('currentUser'));
         if (!userData || !userData.email) return;
         try {
             const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
