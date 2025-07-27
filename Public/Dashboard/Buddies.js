@@ -492,28 +492,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const data = await res.json();
                                 if (res.ok && data.success) {
                                     addBtn.textContent = 'Request Sent!';
-                                    // Add to request-list visually (simulate as if you received it)
-                                    const requestList = document.getElementById('request-list');
-                                    if (requestList) {
-                                        const reqDiv = document.createElement('div');
-                                        reqDiv.className = 'request-item';
-                                        reqDiv.setAttribute('data-email', user.email);
-                                        reqDiv.innerHTML = `
-                                            <img src="../../assets/${currentUser.avatar || 'avator1.jpeg'}" alt="${currentUser.profileName}" class="request-avatar">
-                                            <div class="request-info">
-                                                <h3>${currentUser.profileName}</h3>
-                                                <span class="level-tag">Level ${currentUser.level || 1}</span>
-                                            </div>
-                                            <div class="request-actions">
-                                                <button class="btn btn-primary accept-btn">Accept</button>
-                                                <button class="btn btn-danger reject-btn">Reject</button>
-                                            </div>
-                                        `;
-                                        // Attach accept/reject logic
-                                        reqDiv.querySelector('.accept-btn').addEventListener('click', function() { acceptRequest(this); });
-                                        reqDiv.querySelector('.reject-btn').addEventListener('click', function() { rejectRequest(this); });
-                                        requestList.prepend(reqDiv);
-                                    }
+                                    addBtn.disabled = true;
+                                    addBtn.style.background = '#ccc';
+                                    addBtn.style.cursor = 'not-allowed';
                                 } else {
                                     addBtn.textContent = data.error || 'Error';
                                 }
@@ -580,11 +561,11 @@ document.addEventListener('DOMContentLoaded', function() {
             requests.filter(r => r.status === 'pending').forEach(req => {
                 const reqDiv = document.createElement('div');
                 reqDiv.className = 'request-item';
-                reqDiv.setAttribute('data-email', req.email);
+                reqDiv.setAttribute('data-email', req.fromEmail);
                 reqDiv.innerHTML = `
-                    <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
+                    <img src="../../assets/${req.fromAvatar || 'avator1.jpeg'}" alt="${req.fromProfileName || req.fromEmail}" class="request-avatar">
                     <div class="request-info">
-                        <h3>${req.profileName || req.email}</h3>
+                        <h3>${req.fromProfileName || req.fromEmail}</h3>
                         <span class="level-tag">Friend Request</span>
                     </div>
                     <div class="request-actions">
