@@ -934,6 +934,66 @@ body {
     font-weight: 600;
 }
 
+.description-input-wrapper {
+    width: 100%;
+}
+
+.meal-description-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    background: var(--input-bg);
+    color: var(--text-dark);
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 80px;
+    transition: var(--transition);
+    font-family: 'Inter', sans-serif;
+}
+
+.meal-description-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(41, 236, 139, 0.1);
+}
+
+.meal-description-input::placeholder {
+    color: var(--text-light);
+}
+
+.description-tips {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(41, 236, 139, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.description-tips small {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Dark mode support for description input */
+body.dark-mode .meal-description-input {
+    background: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--text-dark);
+}
+
+body.dark-mode .meal-description-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 200, 120, 0.1);
+}
+
+body.dark-mode .description-tips {
+    background: rgba(30, 200, 120, 0.1);
+    border-left-color: var(--primary-color);
+}
+
 .option-buttons {
     display: flex;
     gap: 15px;
@@ -1753,6 +1813,15 @@ body.dark-mode .selected-meal-item {
     
     .selected-meal-actions {
         justify-content: center;
+    }
+    
+    .meal-description-input {
+        min-height: 60px;
+        font-size: 13px;
+    }
+    
+    .description-tips {
+        font-size: 11px;
     }
 }
 
