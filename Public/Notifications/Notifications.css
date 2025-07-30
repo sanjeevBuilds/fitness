@@ -17,66 +17,7 @@ body {
   display: flex;
 }
 
-/* Sidebar - match Dashboard */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
-  background: var(--sidebar-bg);
-  padding: 2rem;
-  box-shadow: var(--card-shadow);
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-.user-profile {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  margin-bottom: 1rem;
-}
-
-.user-name {
-  font-size: 1.2rem;
-  color: var(--text-dark);
-}
-
-.nav-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  text-decoration: none;
-  color: var(--text-dark);
-  border-radius: var(--border-radius);
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-  background: rgba(30, 200, 120, 0.1);
-}
-
-.nav-item.active {
-  background: var(--primary-btn);
-  color: rgb(18, 24, 22);
-}
-
-.nav-icon {
-  margin-right: 1rem;
-  font-size: 1.2rem;
-}
+/* Sidebar - Now handled by shared-sidebar.css */
 
 /* Main Content - match Dashboard */
 .main-content,
