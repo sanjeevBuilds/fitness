@@ -15,8 +15,10 @@
         <div class="sidebar">
             <div class="user-profile">
                 <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-                <h3 class="user-name" id="sidebar-username">John Doe</h3>
-                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+                <div class="user-info">
+                    <h3 class="user-name" id="sidebar-username">John Doe</h3>
+                    <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
+                </div>
             </div>
             <nav class="nav-menu">
                 <a href="dashbaord.html" class="nav-item">
@@ -84,6 +86,45 @@
                   <button id="close-avatar-options" title="Close" style="display:none;">&times;</button>
                 </div>
                 <button id="confirm-avatar-btn" class="btn btn-success" style="display:none;">Confirm Avatar</button>
+            </section>
+
+            <!-- Badges & Titles Section -->
+            <section class="settings-section" id="badges-titles-section">
+                <h2>🏆 Badges & Titles</h2>
+                
+                <!-- Titles Section -->
+                <div class="titles-section">
+                    <h3>👑 Select Your Title</h3>
+                    <p class="section-description">Choose a title to display next to your avatar. Titles are earned through achievements!</p>
+                    
+                    <div class="current-selection">
+                        <label>Current Title:</label>
+                        <span id="current-title-display" class="current-title">None</span>
+                    </div>
+                    
+                    <div class="titles-grid" id="titles-grid">
+                        <!-- Titles will be populated by JavaScript -->
+                    </div>
+                    
+                    <button id="confirm-title-btn" class="btn btn-success" style="display:none;">Confirm Title</button>
+                </div>
+                
+                <!-- Badges Section -->
+                <div class="badges-section">
+                    <h3>🏅 Your Badges</h3>
+                    <p class="section-description">Badges you've earned through your fitness journey</p>
+                    
+                    <div class="current-selection">
+                        <label>Active Badge:</label>
+                        <span id="current-badge-display" class="current-badge">None</span>
+                    </div>
+                    
+                    <div class="badges-grid" id="badges-grid">
+                        <!-- Badges will be populated by JavaScript -->
+                    </div>
+                    
+                    <button id="confirm-badge-btn" class="btn btn-success" style="display:none;">Confirm Badge</button>
+                </div>
             </section>
 
             <!-- Notification Preferences Section -->
@@ -184,6 +225,7 @@
     </div>
 
     <script src="Settings.js"></script>
+    <script src="../shared-sidebar.js"></script>
     <script>
     // Autofill profileName and email from localStorage if available
     (function() {
