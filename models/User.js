@@ -10,7 +10,7 @@ const PostureScanSchema = require('./PostureScan');
 const InsightSchema = require('./Insight');
 const DailyQuestSchema = require('./DailyQuest');
 const MiniChallengeSchema = require('./MiniChallenge');
-const BadgeSchema = require('./Badge');
+// BadgeSchema import removed - only titles are used now
 const TitleSchema = require('./Tittle');
 const ActivityLogSchema = require('./ActivityLog');
 
@@ -55,15 +55,11 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Coins cannot be negative']
   },
-  badges: [BadgeSchema], // Enhanced badge system
-  activeBadge: {
-    type: String,
-    default: ''
-  },
+  // Badges removed - only titles are used now
   titles: [TitleSchema], // Enhanced title system
-  activeTitle: {
+  selectedTitle: {
     type: String,
-    default: ''
+    default: null
   },
   activityLog: [ActivityLogSchema], // Enhanced activity log
   
@@ -326,7 +322,7 @@ UserSchema.pre('save', function(next) {
       };
     }
     
-    // Update total completed quests
+    // Update total completed quests (count ALL completed quests across all dates)
     this.questStats.totalQuestsCompleted = this.dailyQuests.filter(q => q.completed).length;
     
     // Update streak if quests completed today
@@ -354,6 +350,17 @@ UserSchema.pre('save', function(next) {
         this.questStats.lastQuestDate = today;
       }
     }
+    
+    // Debug logging
+    console.log(`[UserSchema] Quest stats updated:`, {
+      totalQuestsCompleted: this.questStats.totalQuestsCompleted,
+      currentStreak: this.questStats.currentStreak,
+      longestStreak: this.questStats.longestStreak,
+      lastQuestDate: this.questStats.lastQuestDate,
+      completedToday: completedToday,
+      totalQuestsInDB: this.dailyQuests.length,
+      completedQuestsInDB: this.dailyQuests.filter(q => q.completed).length
+    });
   }
   next();
 });

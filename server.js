@@ -9,6 +9,8 @@ const notificationRoutes = require('./routes/Notifications');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 
+
+
 app.use(express.json());
 
 // Add CORS middleware
@@ -69,6 +71,4 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
-
-  
 });
