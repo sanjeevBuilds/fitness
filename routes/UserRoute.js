@@ -1098,10 +1098,18 @@ function calculateProteinGoal(user) {
 
 function getTitleName(titleId) {
   const titles = {
+    'fitness-novice': 'Fitness Novice',
+    'meal-master': 'Meal Master',
+    'strength-warrior': 'Strength Warrior',
+    'cardio-king': 'Cardio King',
+    'yoga-guru': 'Yoga Guru',
+    'nutrition-expert': 'Nutrition Expert',
+    'consistency-champion': 'Consistency Champion',
+    'goal-crusher': 'Goal Crusher',
+    'fitness-legend': 'Fitness Legend',
+    'wellness-guru': 'Wellness Guru',
     'protein-beast': 'Protein Beast',
-    'streak-legend': 'Streak Legend',
-    'fitness-master': 'Fitness Master',
-    'nutrition-guru': 'Nutrition Guru'
+    'streak-legend': 'Streak Legend'
   };
   return titles[titleId] || 'Unknown Title';
 }

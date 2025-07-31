@@ -266,6 +266,96 @@ class EnhancedDashboardGamification {
 
         // Initialize titles
         this.availableTitles = {
+            'fitness-novice': {
+                name: 'Fitness Novice',
+                description: 'Just starting your fitness journey',
+                cost: 50,
+                icon: '🏃‍♂️',
+                progress: 0,
+                target: 1,
+                unlocked: true
+            },
+            'meal-master': {
+                name: 'Meal Master',
+                description: 'Expert at planning healthy meals',
+                cost: 75,
+                icon: '👨‍🍳',
+                progress: 0,
+                target: 50,
+                unlocked: true
+            },
+            'strength-warrior': {
+                name: 'Strength Warrior',
+                description: 'Master of strength training',
+                cost: 150,
+                icon: '💪',
+                progress: 0,
+                target: 100,
+                unlocked: false
+            },
+            'cardio-king': {
+                name: 'Cardio King',
+                description: 'Endurance and cardio expert',
+                cost: 200,
+                icon: '🏃‍♀️',
+                progress: 0,
+                target: 100,
+                unlocked: false
+            },
+            'yoga-guru': {
+                name: 'Yoga Guru',
+                description: 'Flexibility and mindfulness master',
+                cost: 120,
+                icon: '🧘‍♀️',
+                progress: 0,
+                target: 50,
+                unlocked: false
+            },
+            'nutrition-expert': {
+                name: 'Nutrition Expert',
+                description: 'Deep knowledge of nutrition',
+                cost: 100,
+                icon: '🥗',
+                progress: 0,
+                target: 30,
+                unlocked: true
+            },
+            'consistency-champion': {
+                name: 'Consistency Champion',
+                description: 'Unwavering dedication to fitness',
+                cost: 80,
+                icon: '📈',
+                progress: 0,
+                target: 7,
+                unlocked: true
+            },
+            'goal-crusher': {
+                name: 'Goal Crusher',
+                description: 'Achieved multiple fitness goals',
+                cost: 300,
+                icon: '🎯',
+                progress: 0,
+                target: 5,
+                unlocked: false
+            },
+            'fitness-legend': {
+                name: 'Fitness Legend',
+                description: 'Ultimate fitness achievement',
+                cost: 500,
+                icon: '👑',
+                progress: 0,
+                target: 10,
+                unlocked: false
+            },
+            'wellness-guru': {
+                name: 'Wellness Guru',
+                description: 'Master of holistic wellness',
+                cost: 250,
+                icon: '🌟',
+                progress: 0,
+                target: 1,
+                unlocked: true
+            },
             'protein-beast': {
                 name: 'Protein Beast',
                 description: 'Avg. 100g protein/day',
@@ -779,6 +869,16 @@ class EnhancedDashboardGamification {
 
     getTitleName(titleId) {
         const titles = {
+            'fitness-novice': 'Fitness Novice',
+            'meal-master': 'Meal Master',
+            'strength-warrior': 'Strength Warrior',
+            'cardio-king': 'Cardio King',
+            'yoga-guru': 'Yoga Guru',
+            'nutrition-expert': 'Nutrition Expert',
+            'consistency-champion': 'Consistency Champion',
+            'goal-crusher': 'Goal Crusher',
+            'fitness-legend': 'Fitness Legend',
+            'wellness-guru': 'Wellness Guru',
             'protein-beast': 'Protein Beast',
             'streak-legend': 'Streak Legend'
         };
@@ -1406,12 +1506,23 @@ class EnhancedDashboardGamification {
 
     saveUserDataToStorage() {
         try {
+            // Get existing user data to preserve titles and other important fields
+            const existingUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+            
             const userData = {
+                ...existingUserData, // Preserve existing data including titles
                 profileName: this.currentUser.profileName,
                 level: this.currentUser.level,
                 exp: this.currentUser.exp,
                 coins: this.currentUser.coins,
-                avatar: this.currentUser.avatar
+                avatar: this.currentUser.avatar,
+                // Ensure titles are preserved
+                titles: this.currentUser.titles || existingUserData.titles || [],
+                selectedTitle: this.currentUser.selectedTitle || existingUserData.selectedTitle,
+                // Preserve other important fields
+                email: this.currentUser.email || existingUserData.email,
+                activityLog: this.currentUser.activityLog || existingUserData.activityLog || [],
+                questStats: this.currentUser.questStats || existingUserData.questStats || {}
             };
             localStorage.setItem('userData', JSON.stringify(userData));
         } catch (error) {

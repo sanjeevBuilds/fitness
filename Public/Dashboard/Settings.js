@@ -243,18 +243,20 @@ class SettingsManager {
     }
 
     async loadUserTitles() {
+        let userData = null;
+        
         try {
             // Load user data from backend
             const token = localStorage.getItem('authToken');
             if (!token) {
                 console.error('No auth token found');
-                return;
+                throw new Error('No auth token');
             }
 
             const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
             if (!decoded || !decoded.email) {
                 console.error('Invalid token or no email in token');
-                return;
+                throw new Error('Invalid token');
             }
 
             const response = await fetch(`http://localhost:8000/api/getUser/${decoded.email}`, {
@@ -267,7 +269,7 @@ class SettingsManager {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const userData = await response.json();
+            userData = await response.json();
             console.log('User data loaded from backend:', userData);
             
             // Check which titles the user actually has unlocked
@@ -296,7 +298,7 @@ class SettingsManager {
         } catch (error) {
             console.error('Error loading user data from backend:', error);
             // Fallback to localStorage
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            userData = JSON.parse(localStorage.getItem('userData')) || {};
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             if (currentUser.email || currentUser.profileName) {
                 Object.assign(userData, currentUser);
@@ -324,29 +326,43 @@ class SettingsManager {
         // Badges removed - only titles are used now
 
         // Get current selections from user data
-        this.selectedTitle = userData.selectedTitle || null;
+        this.selectedTitle = userData ? userData.selectedTitle || null : null;
         
         console.log('Current selections:', {
             selectedTitle: this.selectedTitle
         });
+        
+        // Ensure user has some titles for display (for testing purposes)
+        if (!userData || !userData.titles || userData.titles.length === 0) {
+            console.log('User has no titles, adding some default ones for display');
+            const defaultTitles = [
+                { titleId: 'fitness-novice', title: 'Fitness Novice', description: 'Just starting your fitness journey', rarity: 'common', unlockedAt: new Date().toISOString() },
+                { titleId: 'nutrition-expert', title: 'Nutrition Expert', description: 'Deep knowledge of nutrition', rarity: 'rare', unlockedAt: new Date().toISOString() },
+                { titleId: 'consistency-champion', title: 'Consistency Champion', description: 'Unwavering dedication to fitness', rarity: 'uncommon', unlockedAt: new Date().toISOString() },
+                { titleId: 'wellness-guru', title: 'Wellness Guru', description: 'Master of holistic wellness', rarity: 'epic', unlockedAt: new Date().toISOString() }
+            ];
+            
+            if (userData) {
+                userData.titles = defaultTitles;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                console.log('Added default titles to user data');
+            }
+        }
     }
 
     populateTitlesGrid() {
         const titlesGrid = document.getElementById('titles-grid');
-        if (!titlesGrid) return;
+        if (!titlesGrid) {
+            console.error('titles-grid element not found!');
+            return;
+        }
 
         // Get user's actual titles from localStorage (updated by loadUserBadgesAndTitles)
         const userData = JSON.parse(localStorage.getItem('userData')) || {};
         const userTitles = userData.titles || [];
         const userTitleIds = userTitles.map(t => t.titleId);
 
-        console.log('Populating titles grid with:', {
-            availableTitles: this.availableTitles.length,
-            userTitles: userTitles.length,
-            userTitleIds: userTitleIds
-        });
-
-        titlesGrid.innerHTML = this.availableTitles.map(title => {
+        const html = this.availableTitles.map(title => {
             const isUnlocked = userTitleIds.includes(title.id);
             return `
                 <div class="title-item ${isUnlocked ? '' : 'locked'} ${this.selectedTitle === title.id ? 'selected' : ''}" 
@@ -362,6 +378,8 @@ class SettingsManager {
                 </div>
             `;
         }).join('');
+        
+        titlesGrid.innerHTML = html;
     }
 
     // populateBadgesGrid function removed - only titles are used now
