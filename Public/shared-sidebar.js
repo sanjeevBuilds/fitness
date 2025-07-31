@@ -7,11 +7,13 @@ class SharedSidebarManager {
             { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
             { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
             { id: 'yoga-guru', name: 'Yoga Guru', icon: '🧘‍♀️', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
-            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: 'Deep knowledge of nutrition', requirement: 'Track nutrition for 30 days', unlocked: true },
+            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: '5+ day calorie streak', requirement: 'Track nutrition for 30 days', unlocked: true },
             { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
             { id: 'goal-crusher', name: 'Goal Crusher', icon: '🎯', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
             { id: 'fitness-legend', name: 'Fitness Legend', icon: '👑', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true }
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
+            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: '5+ day protein streak', requirement: 'Complete protein goals', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '7+ day quest streak', requirement: 'Maintain quest streak', unlocked: false }
         ];
 
         // Badges removed - only titles are used now

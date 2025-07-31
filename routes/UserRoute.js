@@ -458,7 +458,7 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
     // Check if quest should be completed
     // For regular quests (water, sleep, exercise, etc.), progress of 1 means completed
     // For smart quests (calories, protein), check if progress >= target
-    const isRegularQuest = ['water', 'sleep', 'exercise', 'posture', 'meal'].includes(questType);
+    const isRegularQuest = ['water', 'sleep', 'exercise', 'meal'].includes(questType);
     const shouldComplete = isRegularQuest ? 
       (quest.currentProgress >= 1) : 
       (quest.currentProgress >= quest.target);
@@ -509,7 +509,10 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       // Keep only last 20 activities
       user.activityLog = user.activityLog.slice(0, 20);
       
-          // Badge unlocks removed - only titles are used now
+      // Check and unlock titles based on streaks
+      const unlockedTitles = await checkAndUnlockStreakTitles(user);
+      
+      // Badge unlocks removed - only titles are used now
     }
 
     await user.save();
@@ -529,7 +532,8 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       xp: user.exp,
       level: user.level,
       coins: user.coins,
-      leveledUp: quest.completed
+      leveledUp: quest.completed,
+      unlockedTitles: unlockedTitles || []
     });
 
   } catch (err) {
@@ -864,6 +868,10 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       user.titles = updateData.titles;
       console.log('[UPDATE USER] Updated titles to:', updateData.titles);
     }
+    if (updateData.selectedTitle !== undefined) {
+      user.selectedTitle = updateData.selectedTitle;
+      console.log('[UPDATE USER] Updated selectedTitle to:', updateData.selectedTitle);
+    }
     // Badge update removed - only titles are used now
     if (updateData.activityLog !== undefined) {
       user.activityLog = updateData.activityLog;
@@ -966,6 +974,9 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
     user.coins = (user.coins || 0) + coinsGained;
     user.smartQuestClaims[today][questType] = true;
 
+    // Check and unlock titles based on streaks
+    const unlockedTitles = await checkAndUnlockStreakTitles(user);
+
     // Save and respond
     await user.save();
     res.json({
@@ -974,7 +985,8 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
       coins: user.coins,
       questType,
       xpGained,
-      coinsGained
+      coinsGained,
+      unlockedTitles: unlockedTitles
     });
 
   } catch (err) {
@@ -1005,8 +1017,7 @@ function calculateQuestXP(questType) {
     'protein': 25,
     'water': 20,
     'sleep': 35,
-    'exercise': 40,
-    'posture': 30
+    'exercise': 40
   };
   return xpRewards[questType] || 10;
 }
@@ -1018,7 +1029,6 @@ function calculateQuestCoins(questType) {
     'water': 5,
     'sleep': 12,
     'exercise': 18,
-    'posture': 10,
     'meal': 5
   };
   const coins = coinRewards[questType] || 5;
@@ -1033,8 +1043,7 @@ function getQuestName(questType) {
     'protein': 'Protein Power',
     'water': 'Hydration Hero',
     'sleep': 'Sleep Master',
-    'exercise': 'Fitness Champion',
-    'posture': 'Posture Pro'
+    'exercise': 'Fitness Champion'
   };
   return names[questType] || 'Daily Quest';
 }
@@ -1112,6 +1121,90 @@ function getTitleName(titleId) {
     'streak-legend': 'Streak Legend'
   };
   return titles[titleId] || 'Unknown Title';
+}
+
+// Function to check and unlock titles based on streaks
+async function checkAndUnlockStreakTitles(user) {
+  const unlockedTitles = [];
+  
+  // Check for Streak Legend title (7+ days overall quest streak)
+  if (user.questStats && user.questStats.longestStreak >= 7) {
+    const streakLegendTitle = 'streak-legend';
+    if (!user.titles || !user.titles.some(t => t.titleId === streakLegendTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: streakLegendTitle,
+        title: getTitleName(streakLegendTitle),
+        unlockedAt: new Date(),
+        unlockedBy: 'streak_achievement'
+      });
+      unlockedTitles.push(streakLegendTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(streakLegendTitle)}" title for ${user.questStats.longestStreak} day streak!`,
+        unlockedBy: 'streak_achievement'
+      });
+    }
+  }
+  
+  // Check for Protein Master title (5+ days protein streak)
+  if (user.questStats && user.questStats.proteinLongestStreak >= 5) {
+    const proteinMasterTitle = 'protein-beast';
+    if (!user.titles || !user.titles.some(t => t.titleId === proteinMasterTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: proteinMasterTitle,
+        title: getTitleName(proteinMasterTitle),
+        unlockedAt: new Date(),
+        unlockedBy: 'protein_streak_achievement'
+      });
+      unlockedTitles.push(proteinMasterTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(proteinMasterTitle)}" title for ${user.questStats.proteinLongestStreak} day protein streak!`,
+        unlockedBy: 'protein_streak_achievement'
+      });
+    }
+  }
+  
+  // Check for Calorie Master title (5+ days calorie streak)
+  if (user.questStats && user.questStats.calorieLongestStreak >= 5) {
+    const calorieMasterTitle = 'nutrition-expert'; // Using existing nutrition-expert title for calorie mastery
+    if (!user.titles || !user.titles.some(t => t.titleId === calorieMasterTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: calorieMasterTitle,
+        title: getTitleName(calorieMasterTitle),
+        unlockedAt: new Date(),
+        unlockedBy: 'calorie_streak_achievement'
+      });
+      unlockedTitles.push(calorieMasterTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(calorieMasterTitle)}" title for ${user.questStats.calorieLongestStreak} day calorie streak!`,
+        unlockedBy: 'calorie_streak_achievement'
+      });
+    }
+  }
+  
+  if (unlockedTitles.length > 0) {
+    await user.save();
+    console.log(`[TITLE UNLOCK] Unlocked titles for user ${user.email}:`, unlockedTitles);
+  }
+  
+  return unlockedTitles;
 }
 
 // checkAndUnlockBadges function removed - only titles are used now

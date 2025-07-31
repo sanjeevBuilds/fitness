@@ -1,6 +1,9 @@
 // Enhanced Dashboard Gamification Class - Fixed Version
 console.log('=== DASHBOARD.JS LOADED ===');
 
+// Global variable to access dashboard instance
+let dashboardInstance = null;
+
 class EnhancedDashboardGamification {
     constructor() {
         console.log('[DASHBOARD] Constructor called - initializing dashboard...');
@@ -21,6 +24,10 @@ class EnhancedDashboardGamification {
             this.questCompletionStatus = {};
 
             console.log('[DASHBOARD] Constructor completed successfully');
+            
+            // Store instance globally for debugging
+            dashboardInstance = this;
+            
             this.init();
         } catch (error) {
             console.error('[DASHBOARD] Constructor error:', error);
@@ -97,7 +104,23 @@ class EnhancedDashboardGamification {
             this.currentUser.coins = this.currentUser.coins || 0;
             // Always calculate level from XP to ensure it's correct
             this.currentUser.level = this.calculateLevel(this.currentUser.exp);
+            
+            // Log the loaded data for debugging
+            console.log('[LOAD USER DATA] Loaded from backend:', {
+                exp: this.currentUser.exp,
+                level: this.currentUser.level,
+                coins: this.currentUser.coins
+            });
+            
+            // Verify that XP and level are consistent
+            const calculatedLevel = this.calculateLevel(this.currentUser.exp);
+            if (this.currentUser.level !== calculatedLevel) {
+                console.warn('[LOAD USER DATA] Level mismatch detected! Backend level:', this.currentUser.level, 'Calculated level:', calculatedLevel);
+                this.currentUser.level = calculatedLevel;
+                console.log('[LOAD USER DATA] Corrected level to:', this.currentUser.level);
+            }
             this.currentUser.titles = this.currentUser.titles || [];
+            this.currentUser.selectedTitle = this.currentUser.selectedTitle || null;
             this.currentUser.activityLog = this.currentUser.activityLog || [];
             this.currentUser.dailyQuests = this.currentUser.dailyQuests || [];
             this.currentUser.miniChallenges = this.currentUser.miniChallenges || [];
@@ -704,23 +727,37 @@ class EnhancedDashboardGamification {
 
             if (response.ok) {
                 const result = await response.json();
+                console.log('[SYNC QUEST] Backend response:', result);
+                
+                // Update local user data with backend response
                 if (result.xp !== undefined) {
-                    console.log('[DEBUG] Backend XP response:', result.xp, 'Old XP:', this.currentUser.exp);
+                    console.log('[SYNC QUEST] Updating XP from backend:', result.xp);
                     this.currentUser.exp = result.xp;
-                    console.log('[DEBUG] Updated local XP from backend:', this.currentUser.exp);
                 }
                 if (result.coins !== undefined) {
-                    console.log('[DEBUG] Backend coins response:', result.coins);
+                    console.log('[SYNC QUEST] Updating coins from backend:', result.coins);
                     this.currentUser.coins = result.coins;
                 }
                 if (result.level !== undefined) {
-                    console.log('[DEBUG] Backend level response:', result.level);
+                    console.log('[SYNC QUEST] Updating level from backend:', result.level);
                     this.currentUser.level = result.level;
                 }
 
-                // Force UI update after backend sync to ensure coin balance is displayed correctly
+                // Handle unlocked titles from backend
+                if (result.unlockedTitles && result.unlockedTitles.length > 0) {
+                    console.log('[SYNC QUEST] Titles unlocked from backend:', result.unlockedTitles);
+                    result.unlockedTitles.forEach(titleId => {
+                        this.updateTitleUI(titleId);
+                        this.showNotification(`🏆 Unlocked "${this.getTitleName(titleId)}" title!`, 'success');
+                    });
+                }
+
+                // Save the updated data to localStorage
+                this.saveUserDataToStorage();
+
+                // Force UI update to reflect the backend changes
                 this.updateUI();
-                console.log('UI updated after backend sync. New coin balance:', this.currentUser.coins);
+                console.log('[SYNC QUEST] UI updated with backend data. XP:', this.currentUser.exp, 'Level:', this.currentUser.level, 'Coins:', this.currentUser.coins);
             } else {
                 console.warn('Failed to sync quest with backend:', response.statusText);
             }
@@ -731,11 +768,50 @@ class EnhancedDashboardGamification {
         this.updateStatsUI();
     }
 
+    async syncUserDataToBackend() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for user data sync');
+                return;
+            }
+
+            const requestBody = {
+                exp: this.currentUser.exp,
+                level: this.currentUser.level,
+                coins: this.currentUser.coins,
+                titles: this.currentUser.titles,
+                selectedTitle: this.currentUser.selectedTitle,
+                activityLog: this.currentUser.activityLog,
+                questStats: this.currentUser.questStats
+            };
+
+            console.log('[SYNC USER DATA] Sending updated user data to backend:', requestBody);
+
+            const response = await fetch(`${this.API_BASE}/updateUser`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('[SYNC USER DATA] User data synced successfully:', result);
+            } else {
+                console.warn('[SYNC USER DATA] Failed to sync user data:', response.statusText);
+            }
+        } catch (error) {
+            console.warn('[SYNC USER DATA] User data sync failed:', error);
+        }
+    }
+
     getRegularQuestData(questType) {
         const questData = {
             water: { questName: 'Hydration Master', xpReward: 25, coinReward: 5 },
             sleep: { questName: 'Sleep Warrior', xpReward: 30, coinReward: 8 },
-            posture: { questName: 'Posture Pro', xpReward: 40, coinReward: 10 },
             meal: { questName: 'Nutrition Tracker', xpReward: 20, coinReward: 5 },
             exercise: { questName: 'Fitness Fanatic', xpReward: 60, coinReward: 18 }
         };
@@ -749,7 +825,13 @@ class EnhancedDashboardGamification {
                 currentStreak: 0,
                 longestStreak: 0,
                 lastQuestDate: null,
-                stepGoalHistory: []
+                stepGoalHistory: [],
+                proteinStreak: 0,
+                proteinLongestStreak: 0,
+                proteinLastCompletedDate: null,
+                calorieStreak: 0,
+                calorieLongestStreak: 0,
+                calorieLastCompletedDate: null
             };
         }
 
@@ -806,6 +888,10 @@ class EnhancedDashboardGamification {
         this.currentUser.titles.push(newTitle);
         console.log('🏆 Title added to user. Total titles:', this.currentUser.titles.length);
 
+        // Set the newly unlocked title as active
+        this.currentUser.selectedTitle = titleId;
+        console.log('🏆 Set newly unlocked title as active:', titleId);
+
         // Badge unlock removed - only titles are used now
 
         // Update UI
@@ -824,6 +910,11 @@ class EnhancedDashboardGamification {
         this.updateUI();
         this.showNotification(`Title unlocked! -${cost} coins`, 'success');
 
+        // Update sidebar to show the new title
+        if (window.sharedSidebar) {
+            window.sharedSidebar.refreshDisplay();
+        }
+
         // Sync with backend
         try {
             const token = localStorage.getItem('authToken');
@@ -832,6 +923,7 @@ class EnhancedDashboardGamification {
                     coins: this.currentUser.coins,
                     titles: this.currentUser.titles,
                     activityLog: this.currentUser.activityLog,
+                    selectedTitle: this.currentUser.selectedTitle,
                     // Badges removed from request body
                 };
                 console.log('🏆 Sending title unlock to backend:', requestBody);
@@ -939,6 +1031,13 @@ class EnhancedDashboardGamification {
             xpDisplay.innerHTML = `${progressXP}/${neededXP} XP`;
             console.log('✅ XP display updated:', `${progressXP}/${neededXP} XP`);
             console.log('Element content after update:', xpDisplay.textContent);
+            console.log('XP calculation details:', {
+                currentXP: currentXP,
+                currentLevelXP: currentLevelXP,
+                nextLevelXP: nextLevelXP,
+                progressXP: progressXP,
+                neededXP: neededXP
+            });
         } else {
             console.log('❌ XP display element not found');
         }
@@ -1007,6 +1106,9 @@ class EnhancedDashboardGamification {
 
         // Update activity list
         this.updateActivityList();
+
+        // Update title progress
+        this.updateTitleProgress();
 
         // Update quest checkboxes
         this.updateRegularQuestUI();
@@ -1140,20 +1242,12 @@ class EnhancedDashboardGamification {
                     questItem.classList.add('quest-completed');
                     questItem.classList.remove('reward-available');
 
-                    // Hide collect button and show completed text
-                    if (collectButton) {
-                        collectButton.style.display = 'none';
-                    }
+                    // Hide the entire quest after reward collection (like regular quests)
+                    questItem.style.display = 'none';
+                    console.log(`Hiding completed and reward-collected smart quest: ${questType}`);
 
                     // Remove pulsing animation
                     questItem.style.animation = 'none';
-
-                    // Update progress text to show completion
-                    if (progressText) {
-                        progressText.textContent = 'Completed!';
-                        progressText.style.color = '#4CAF50';
-                        progressText.style.fontWeight = 'bold';
-                    }
                 } else {
                     questItem.classList.remove('quest-completed', 'reward-available');
 
@@ -1211,6 +1305,23 @@ class EnhancedDashboardGamification {
                 this.currentUser.exp = result.xp;
                 this.updateUI();
                 this.showNotification(`Reward collected! +${result.xpGained} XP, +${result.coinsGained} coins`, 'success');
+                
+                // Handle unlocked titles from backend
+                if (result.unlockedTitles && result.unlockedTitles.length > 0) {
+                    console.log('[SMART QUEST] Titles unlocked from backend:', result.unlockedTitles);
+                    result.unlockedTitles.forEach(titleId => {
+                        this.updateTitleUI(titleId);
+                        this.showNotification(`🏆 Unlocked "${this.getTitleName(titleId)}" title!`, 'success');
+                    });
+                }
+                
+                // Hide the quest after reward collection (like regular quests)
+                const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+                if (questItem) {
+                    console.log(`Hiding smart quest ${questType} after reward collection`);
+                    questItem.style.display = 'none';
+                    questItem.classList.add('quest-completed');
+                }
             } else {
                 this.showNotification(result.error || 'Failed to claim reward', 'error');
             }
@@ -1257,6 +1368,47 @@ class EnhancedDashboardGamification {
             console.log(`🏆 Removing title card after unlock: ${titleId}`);
             // Remove the entire title card from the DOM
             titleCard.remove();
+        }
+    }
+
+    updateTitleProgress() {
+        // Update streak legend progress
+        const streakLegendCard = document.querySelector('[data-title="streak-legend"]');
+        if (streakLegendCard) {
+            const currentStreak = this.currentUser.questStats?.longestStreak || 0;
+            const targetStreak = 7;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = streakLegendCard.querySelector('.progress-fill');
+            const progressText = streakLegendCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+        }
+
+        // Update protein beast progress
+        const proteinBeastCard = document.querySelector('[data-title="protein-beast"]');
+        if (proteinBeastCard) {
+            const currentStreak = this.currentUser.questStats?.proteinLongestStreak || 0;
+            const targetStreak = 5;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = proteinBeastCard.querySelector('.progress-fill');
+            const progressText = proteinBeastCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+        }
+
+        // Update nutrition expert progress
+        const nutritionExpertCard = document.querySelector('[data-title="nutrition-expert"]');
+        if (nutritionExpertCard) {
+            const currentStreak = this.currentUser.questStats?.calorieLongestStreak || 0;
+            const targetStreak = 5;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = nutritionExpertCard.querySelector('.progress-fill');
+            const progressText = nutritionExpertCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
         }
     }
 
@@ -1422,6 +1574,8 @@ class EnhancedDashboardGamification {
     async refreshDashboardData() {
         try {
             console.log('Refreshing dashboard data...');
+            // Force refresh user data from backend to ensure we have the latest XP and level
+            await this.loadUserData();
             await this.refreshSmartQuestData();
             await this.updateUI();
             // Hide unlocked titles after refresh
@@ -1435,7 +1589,24 @@ class EnhancedDashboardGamification {
     // Manual test function to force update UI
 
 
-    // Force update UI with direct DOM manipulation
+            // Force update UI with direct DOM manipulation
+
+        // Manual refresh function for testing
+        async forceRefreshUserData() {
+            try {
+                console.log('[FORCE REFRESH] Starting manual user data refresh...');
+                await this.loadUserData();
+                this.updateUI();
+                console.log('[FORCE REFRESH] Manual refresh completed');
+                console.log('[FORCE REFRESH] Current user data after refresh:', {
+                    exp: this.currentUser.exp,
+                    level: this.currentUser.level,
+                    coins: this.currentUser.coins
+                });
+            } catch (error) {
+                console.error('[FORCE REFRESH] Error during manual refresh:', error);
+            }
+        }
 
 
     // Storage functions
@@ -1463,6 +1634,7 @@ class EnhancedDashboardGamification {
                         Object.keys(questData.smartQuests).forEach(questType => {
                             if (this.smartQuests[questType]) {
                                 this.smartQuests[questType].completed = questData.smartQuests[questType].completed;
+                                this.smartQuests[questType].rewardCollected = questData.smartQuests[questType].rewardCollected || false;
                             }
                         });
                     }
@@ -1470,6 +1642,7 @@ class EnhancedDashboardGamification {
                     // Hide completed quests on page load
                     setTimeout(() => {
                         this.updateRegularQuestUI();
+                        this.updateSmartQuestUI();
                     }, 100);
                 } else {
                     // New day - reset quest states
@@ -1491,17 +1664,26 @@ class EnhancedDashboardGamification {
         // Reset quest completion status for a new day
         this.questCompletionStatus = {};
 
-        // Reset smart quest completion status
+        // Reset smart quest completion status and reward collection
         Object.keys(this.smartQuests).forEach(questType => {
             if (this.smartQuests[questType]) {
                 this.smartQuests[questType].completed = false;
+                this.smartQuests[questType].rewardCollected = false;
+                
+                // Show the quest again for the new day
+                const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+                if (questItem) {
+                    console.log(`Showing smart quest ${questType} for new day`);
+                    questItem.style.display = 'flex';
+                    questItem.classList.remove('quest-completed');
+                }
             }
         });
 
         // Save the reset state
         this.saveQuestStates();
 
-        console.log('Daily quests reset for new day');
+        console.log('Daily quests and smart quests reset for new day');
     }
 
     saveUserDataToStorage() {
@@ -1558,7 +1740,6 @@ class EnhancedDashboardGamification {
             'water': 20,
             'sleep': 35,
             'exercise': 40,
-            'posture': 30,
             'meal': 20
         };
         return xpRewards[questType] || 15;
@@ -1572,7 +1753,6 @@ class EnhancedDashboardGamification {
             'water': 5,
             'sleep': 12,
             'exercise': 18,
-            'posture': 10,
             'meal': 5
         };
         return coinRewards[questType] || 3;
@@ -1601,7 +1781,6 @@ class EnhancedDashboardGamification {
                 'water': '💧',
                 'sleep': '😴',
                 'exercise': '🏋️',
-                'posture': '📊',
                 'meal': '🍽️'
             };
             return questIcons[questType] || '🎯';
@@ -1836,6 +2015,12 @@ class EnhancedDashboardGamification {
 
         const streakStatValue = document.querySelector('[data-stat="streak"]');
         if (streakStatValue) streakStatValue.textContent = this.currentUser.questStats?.currentStreak || 0;
+
+        const proteinStreakStatValue = document.querySelector('[data-stat="protein-streak"]');
+        if (proteinStreakStatValue) proteinStreakStatValue.textContent = this.currentUser.questStats?.proteinStreak || 0;
+
+        const calorieStreakStatValue = document.querySelector('[data-stat="calorie-streak"]');
+        if (calorieStreakStatValue) calorieStreakStatValue.textContent = this.currentUser.questStats?.calorieStreak || 0;
     }
 }
 
@@ -2169,6 +2354,7 @@ EnhancedDashboardGamification.prototype.handleSmartQuestClick = EnhancedDashboar
 EnhancedDashboardGamification.prototype.handleRegularQuestToggle = EnhancedDashboardGamification.prototype.handleRegularQuestToggle;
 EnhancedDashboardGamification.prototype.completeQuest = EnhancedDashboardGamification.prototype.completeQuest;
 EnhancedDashboardGamification.prototype.syncQuestWithBackend = EnhancedDashboardGamification.prototype.syncQuestWithBackend;
+EnhancedDashboardGamification.prototype.syncUserDataToBackend = EnhancedDashboardGamification.prototype.syncUserDataToBackend;
 EnhancedDashboardGamification.prototype.getRegularQuestData = EnhancedDashboardGamification.prototype.getRegularQuestData;
 EnhancedDashboardGamification.prototype.updateQuestStats = EnhancedDashboardGamification.prototype.updateQuestStats;
 EnhancedDashboardGamification.prototype.unlockChallenge = EnhancedDashboardGamification.prototype.unlockChallenge;
@@ -2186,6 +2372,7 @@ EnhancedDashboardGamification.prototype.startDataSync = EnhancedDashboardGamific
 EnhancedDashboardGamification.prototype.syncFoodLogData = EnhancedDashboardGamification.prototype.syncFoodLogData;
 EnhancedDashboardGamification.prototype.refreshSmartQuestData = EnhancedDashboardGamification.prototype.refreshSmartQuestData;
 EnhancedDashboardGamification.prototype.refreshDashboardData = EnhancedDashboardGamification.prototype.refreshDashboardData;
+EnhancedDashboardGamification.prototype.forceRefreshUserData = EnhancedDashboardGamification.prototype.forceRefreshUserData;
 EnhancedDashboardGamification.prototype.saveQuestStates = EnhancedDashboardGamification.prototype.saveQuestStates;
 EnhancedDashboardGamification.prototype.loadQuestStates = EnhancedDashboardGamification.prototype.loadQuestStates;
 EnhancedDashboardGamification.prototype.resetDailyQuests = EnhancedDashboardGamification.prototype.resetDailyQuests;
@@ -2201,3 +2388,44 @@ EnhancedDashboardGamification.prototype.showLevelUpNotification = EnhancedDashbo
 EnhancedDashboardGamification.prototype.showUnlockModal = EnhancedDashboardGamification.prototype.showUnlockModal;
 EnhancedDashboardGamification.prototype.createUnlockModal = EnhancedDashboardGamification.prototype.createUnlockModal;
 EnhancedDashboardGamification.prototype.updateStatsUI = EnhancedDashboardGamification.prototype.updateStatsUI;
+
+// Global functions for testing
+window.testRefreshUserData = () => {
+    if (dashboardInstance) {
+        dashboardInstance.forceRefreshUserData();
+    } else {
+        console.error('Dashboard instance not available');
+    }
+};
+
+window.logUserData = () => {
+    if (dashboardInstance && dashboardInstance.currentUser) {
+        console.log('Current user data:', {
+            exp: dashboardInstance.currentUser.exp,
+            level: dashboardInstance.currentUser.level,
+            coins: dashboardInstance.currentUser.coins
+        });
+    } else {
+        console.error('Dashboard instance or user data not available');
+    }
+};
+
+window.testXPLevelSync = () => {
+    if (dashboardInstance && dashboardInstance.currentUser) {
+        const calculatedLevel = dashboardInstance.calculateLevel(dashboardInstance.currentUser.exp);
+        console.log('XP/Level Sync Test:', {
+            currentXP: dashboardInstance.currentUser.exp,
+            currentLevel: dashboardInstance.currentUser.level,
+            calculatedLevel: calculatedLevel,
+            isConsistent: dashboardInstance.currentUser.level === calculatedLevel
+        });
+        
+        if (dashboardInstance.currentUser.level !== calculatedLevel) {
+            console.warn('⚠️ Level inconsistency detected!');
+        } else {
+            console.log('✅ XP and level are consistent');
+        }
+    } else {
+        console.error('Dashboard instance or user data not available');
+    }
+};

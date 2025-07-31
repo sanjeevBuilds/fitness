@@ -150,10 +150,7 @@
                     <span class="nav-icon">💡</span>
                     Food Suggestion
                 </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
+
                 <a href="Buddies.html" class="nav-item">
                     <span class="nav-icon">👥</span>
                     Buddies
@@ -215,6 +212,16 @@
                         <span class="stat-value" data-stat="streak">0</span>
                         <span class="stat-label">Streak</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🥩</span>
+                        <span class="stat-value" data-stat="protein-streak">0</span>
+                        <span class="stat-label">Protein</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🍎</span>
+                        <span class="stat-value" data-stat="calorie-streak">0</span>
+                        <span class="stat-label">Calorie</span>
+                    </div>
                 </div>
             </div>
             
@@ -247,12 +254,7 @@
                         <div class="summary-unit">hrs</div>
                         <div class="summary-change positive" id="sleep-change">+0%</div>
                     </div>
-                    <div class="summary-card">
-                        <h3>Posture Score</h3>
-                        <div class="summary-value" id="posture-display">88</div>
-                        <div class="summary-unit">points</div>
-                        <div class="summary-change positive">+22%</div>
-                    </div>
+
                 </div>
             </section>
 
@@ -296,22 +298,7 @@
                         </div>
                     </div>
 
-                    <div class="checklist-item" data-quest="posture">
-                        <div class="quest-info">
-                            <span class="quest-icon">📊</span>
-                            <div class="quest-details">
-                                <h3>Posture Pro</h3>
-                                <p>Complete posture scan</p>
-                            </div>
-                        </div>
-                        <div class="quest-reward">
-                            <span class="xp-reward">+40 XP</span>
-                            <input type="checkbox" class="quest-checkbox" id="posture-quest">
-                            <label for="posture-quest" class="gamified-checkbox">
-                                <span class="checkbox-icon">✓</span>
-                            </label>
-                        </div>
-                    </div>
+
 
                     <div class="checklist-item" data-quest="meal">
                         <div class="quest-info">
@@ -429,32 +416,12 @@
                         </div>
                     </div>
 
-                    <div class="title-card" data-title="meal-master">
-                        <div class="title-header">
-                            <span class="title-icon">👨‍🍳</span>
-                            <div class="title-info">
-                                <h3>Meal Master</h3>
-                                <p>Expert at planning healthy meals</p>
-                            </div>
-                        </div>
-                        <div class="title-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
-                            </div>
-                            <span class="progress-text">30/50 meals</span>
-                        </div>
-                        <div class="title-actions">
-                            <span class="title-cost">🪙 75</span>
-                            <button class="btn btn-secondary unlock-title-btn" data-cost="75">Unlock</button>
-                        </div>
-                    </div>
-
                     <div class="title-card" data-title="nutrition-expert">
                         <div class="title-header">
                             <span class="title-icon">🥗</span>
                             <div class="title-info">
                                 <h3>Nutrition Expert</h3>
-                                <p>Deep knowledge of nutrition</p>
+                                <p>5+ day calorie streak</p>
                             </div>
                         </div>
                         <div class="title-progress">
@@ -469,52 +436,12 @@
                         </div>
                     </div>
 
-                    <div class="title-card" data-title="consistency-champion">
-                        <div class="title-header">
-                            <span class="title-icon">📈</span>
-                            <div class="title-info">
-                                <h3>Consistency Champion</h3>
-                                <p>Unwavering dedication to fitness</p>
-                            </div>
-                        </div>
-                        <div class="title-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                            <span class="progress-text">Completed!</span>
-                        </div>
-                        <div class="title-actions">
-                            <span class="title-cost">🪙 80</span>
-                            <button class="btn btn-secondary unlock-title-btn" data-cost="80">Unlock</button>
-                        </div>
-                    </div>
-
-                    <div class="title-card" data-title="wellness-guru">
-                        <div class="title-header">
-                            <span class="title-icon">🌟</span>
-                            <div class="title-info">
-                                <h3>Wellness Guru</h3>
-                                <p>Master of holistic wellness</p>
-                            </div>
-                        </div>
-                        <div class="title-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                            <span class="progress-text">Completed!</span>
-                        </div>
-                        <div class="title-actions">
-                            <span class="title-cost">🪙 250</span>
-                            <button class="btn btn-secondary unlock-title-btn" data-cost="250">Unlock</button>
-                        </div>
-                    </div>
-
                     <div class="title-card" data-title="protein-beast">
                         <div class="title-header">
                             <span class="title-icon">💪</span>
                             <div class="title-info">
                                 <h3>Protein Beast</h3>
-                                <p>Avg. 100g protein/day</p>
+                                <p>5+ day protein streak</p>
                             </div>
                         </div>
                         <div class="title-progress">
@@ -534,7 +461,7 @@
                             <span class="title-icon">🔥</span>
                             <div class="title-info">
                                 <h3>Streak Legend</h3>
-                                <p>14-day perfect activity streak</p>
+                                <p>7+ day quest streak</p>
                             </div>
                         </div>
                         <div class="title-progress">
@@ -554,13 +481,7 @@
             <div class="activity-section">
                 <h2>Recent Activity</h2>
                 <div class="activity-list" id="activity-list">
-                    <div class="activity-item">
-                        <span class="activity-icon">📊</span>
-                        <div class="activity-details">
-                            <span class="activity-xp">+50 XP</span>
-                            Completed a posture scan
-                        </div>
-                    </div>
+
                     <div class="activity-item">
                         <span class="activity-icon">🍳</span>
                         <div class="activity-details">

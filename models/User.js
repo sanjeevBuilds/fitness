@@ -74,7 +74,14 @@ const UserSchema = new mongoose.Schema({
     currentStreak: { type: Number, default: 0 },
     longestStreak: { type: Number, default: 0 },
     lastQuestDate: { type: String }, // YYYY-MM-DD format
-    stepGoalHistory: [{ date: String, goal: Number, achieved: Number }] // For smart scaling
+    stepGoalHistory: [{ date: String, goal: Number, achieved: Number }], // For smart scaling
+    // New streak tracking for specific titles
+    proteinStreak: { type: Number, default: 0 },
+    proteinLongestStreak: { type: Number, default: 0 },
+    proteinLastCompletedDate: { type: String }, // YYYY-MM-DD format
+    calorieStreak: { type: Number, default: 0 },
+    calorieLongestStreak: { type: Number, default: 0 },
+    calorieLastCompletedDate: { type: String } // YYYY-MM-DD format
   },
   
   theme: {
@@ -318,7 +325,13 @@ UserSchema.pre('save', function(next) {
         currentStreak: 0,
         longestStreak: 0,
         lastQuestDate: null,
-        stepGoalHistory: []
+        stepGoalHistory: [],
+        proteinStreak: 0,
+        proteinLongestStreak: 0,
+        proteinLastCompletedDate: null,
+        calorieStreak: 0,
+        calorieLongestStreak: 0,
+        calorieLastCompletedDate: null
       };
     }
     
@@ -357,9 +370,97 @@ UserSchema.pre('save', function(next) {
       currentStreak: this.questStats.currentStreak,
       longestStreak: this.questStats.longestStreak,
       lastQuestDate: this.questStats.lastQuestDate,
+      proteinStreak: this.questStats.proteinStreak,
+      proteinLongestStreak: this.questStats.proteinLongestStreak,
+      calorieStreak: this.questStats.calorieStreak,
+      calorieLongestStreak: this.questStats.calorieLongestStreak,
       completedToday: completedToday,
       totalQuestsInDB: this.dailyQuests.length,
       completedQuestsInDB: this.dailyQuests.filter(q => q.completed).length
+    });
+  }
+  next();
+});
+
+// Update smart quest streaks when smartQuestClaims are modified
+UserSchema.pre('save', function(next) {
+  if (this.isModified('smartQuestClaims')) {
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // Initialize questStats if it doesn't exist
+    if (!this.questStats) {
+      this.questStats = {
+        totalQuestsCompleted: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastQuestDate: null,
+        stepGoalHistory: [],
+        proteinStreak: 0,
+        proteinLongestStreak: 0,
+        proteinLastCompletedDate: null,
+        calorieStreak: 0,
+        calorieLongestStreak: 0,
+        calorieLastCompletedDate: null
+      };
+    }
+    
+    // Check if protein quest was completed today
+    if (this.smartQuestClaims && this.smartQuestClaims[today] && this.smartQuestClaims[today].protein) {
+      if (this.questStats.proteinLastCompletedDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        
+        if (this.questStats.proteinLastCompletedDate === yesterdayStr) {
+          // Continuing protein streak
+          this.questStats.proteinStreak += 1;
+        } else {
+          // New protein streak starts
+          this.questStats.proteinStreak = 1;
+        }
+        
+        // Update longest protein streak
+        if (this.questStats.proteinStreak > this.questStats.proteinLongestStreak) {
+          this.questStats.proteinLongestStreak = this.questStats.proteinStreak;
+        }
+        
+        this.questStats.proteinLastCompletedDate = today;
+      }
+    }
+    
+    // Check if calorie quest was completed today
+    if (this.smartQuestClaims && this.smartQuestClaims[today] && this.smartQuestClaims[today].calories) {
+      if (this.questStats.calorieLastCompletedDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        
+        if (this.questStats.calorieLastCompletedDate === yesterdayStr) {
+          // Continuing calorie streak
+          this.questStats.calorieStreak += 1;
+        } else {
+          // New calorie streak starts
+          this.questStats.calorieStreak = 1;
+        }
+        
+        // Update longest calorie streak
+        if (this.questStats.calorieStreak > this.questStats.calorieLongestStreak) {
+          this.questStats.calorieLongestStreak = this.questStats.calorieStreak;
+        }
+        
+        this.questStats.calorieLastCompletedDate = today;
+      }
+    }
+    
+    // Debug logging
+    console.log(`[UserSchema] Smart quest streaks updated:`, {
+      proteinStreak: this.questStats.proteinStreak,
+      proteinLongestStreak: this.questStats.proteinLongestStreak,
+      proteinLastCompletedDate: this.questStats.proteinLastCompletedDate,
+      calorieStreak: this.questStats.calorieStreak,
+      calorieLongestStreak: this.questStats.calorieLongestStreak,
+      calorieLastCompletedDate: this.questStats.calorieLastCompletedDate,
+      todayClaims: this.smartQuestClaims ? this.smartQuestClaims[today] : null
     });
   }
   next();
