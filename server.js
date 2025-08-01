@@ -3,8 +3,9 @@ const app = express(); // ✅ Declare app FIRST
 
 const mongoose = require('mongoose');
 const UserModel = require('./models/User');
-const foodEntryRoute = require('./Routes/FoodEntry');
-const userRoutes = require('./Routes/UserRoute');
+const foodEntryRoute = require('./routes/FoodEntry');
+const userRoutes = require('./routes/UserRoute');
+const notificationRoutes = require('./routes/Notifications');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 
@@ -31,7 +32,7 @@ app.use((req, res, next) => {
 // Serve static files from Public folder
 app.use('/Public', express.static('Public'));
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8000;
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/Health';
 
 // Connect to MongoDB
@@ -44,6 +45,7 @@ mongoose.connect(MONGO_URL)
 // Use routes
 app.use('/api', userRoutes);
 app.use('/api/foodentry', foodEntryRoute);
+app.use('/api/notifications', notificationRoutes);
 
 // Basic health check route
 app.get('/', (req, res) => {

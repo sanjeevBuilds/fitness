@@ -7,50 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="FoodLog.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
-            <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-                <h3 class="user-name" id="sidebar-username">John Doe</h3>
-                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
-            </div>
-            <nav class="nav-menu">
-                <a href="dashbaord.html" class="nav-item">
-                    <span class="nav-icon">🏠</span>
-                    Home
-                </a>
-                <a href="FoodLog.html" class="nav-item active">
-                    <span class="nav-icon">🍽️</span>
-                    Food Log
-                </a>
-                <a href="FoodSuggestion.html" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    Food Suggestion
-                </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
-                <a href="Buddies.html" class="nav-item">
-                    <span class="nav-icon">👥</span>
-                    Buddies
-                </a>
-                <a href="../Insights/Insights.html" class="nav-item">
-                    <span class="nav-icon">📈</span>
-                    Insights
-                </a>
-                <a href="../Notifications/Notifications.html" class="nav-item">
-                    <span class="nav-icon">🔔</span>
-                    Notification
-                </a>
-                <a href="Settings.html" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
-                    Settings
-                </a>
-            </nav>
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
         </aside>
 
         <main class="main-content">
@@ -149,7 +112,10 @@
             </section>
 
             <section class="meals-section">
-                <h2>Logged Meals</h2>
+                <div class="meals-header">
+                    <h2>Logged Meals</h2>
+                    <button class="btn btn-danger clear-all-btn" id="clear-all-meals-btn">Clear All</button>
+                </div>
                 <div class="meal-list">
                     <!-- Meals will be dynamically added here -->
                 </div>
@@ -158,6 +124,7 @@
     </div>
 
     <script src="FoodLog.js"></script>
+    <script src="../shared-sidebar.js"></script>
     <script>
         // Global Dark Mode Application
         function applyGlobalDarkMode() {
@@ -170,17 +137,7 @@
         // Apply dark mode immediately for faster loading
         applyGlobalDarkMode();
 
-        (function() {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (userData) {
-                const avatar = document.getElementById('sidebar-avatar');
-                const name = document.getElementById('sidebar-username');
-                const level = document.getElementById('sidebar-userlevel');
-                if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
-                if (name && userData.profileName) name.textContent = userData.profileName;
-                if (level && userData.level) level.textContent = 'Level ' + userData.level;
-            }
-        })();
+        // Sidebar is now handled by shared-sidebar.js
     </script>
 </body>
 </html>

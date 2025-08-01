@@ -6,6 +6,127 @@
     <title>HealthQuest Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <style>
+        /* Smart Quest Animations and Styles */
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        /* Quest completion states */
+        .quest-completed {
+            border: 2px solid #4CAF50 !important;
+            background: linear-gradient(135deg, #f8fff8, #e8f5e8) !important;
+        }
+        
+        .reward-available {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .reward-available::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        /* Collect reward button */
+        .collect-reward-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        .collect-reward-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+        }
+        
+        .collect-reward-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Progress bar enhancements */
+        .progress-fill {
+            transition: width 0.5s ease, background 0.3s ease;
+        }
+        
+        /* Scaling notice */
+        .scaling-notice {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 4px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-3px);
+            }
+            60% {
+                transform: translateY(-2px);
+            }
+        }
+        
+        /* Quest item hover effects */
+        .smart-quests-section .quest-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        /* Completed quest styling */
+        .quest-completed .progress-text {
+            color: #4CAF50 !important;
+            font-weight: bold !important;
+        }
+        
+        .quest-completed .reward-xp,
+        .quest-completed .reward-coins {
+            color: #FFD700 !important;
+            font-weight: bold !important;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
@@ -25,7 +146,7 @@
                     <span class="nav-icon">🍽️</span>
                     Food Log
                 </a>
-                <a href="FoodSuggestion.html" class="nav-item">
+                <a href="../FoodSuggestion/FoodSuggestion.html" class="nav-item">
                     <span class="nav-icon">💡</span>
                     Food Suggestion
                 </a>
@@ -88,6 +209,11 @@
                         <span class="stat-icon">💎</span>
                         <span class="stat-value" data-stat="xp">0</span>
                         <span class="stat-label">XP</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🔥</span>
+                        <span class="stat-value" data-stat="streak">0</span>
+                        <span class="stat-label">Streak</span>
                     </div>
                 </div>
             </div>
@@ -229,30 +355,46 @@
                         </div>
                     </div>
                 </div>
+                <!-- Badge Unlock Button -->
+                <button class="btn btn-success unlock-badge-btn"
+                        data-badge-id="first-quest-badge"
+                        data-badge-title="First Quest Complete"
+                        data-badge-description="Completed your first quest!"
+                        data-badge-icon="🏅"
+                        data-badge-rarity="common"
+                        data-badge-earnedby="quest">
+                    Unlock First Quest Badge
+                </button>
             </div>
 
             <!-- Smart Daily Quest Scaling -->
             <section class="smart-quests-section">
-                <h2>🎯 Smart Daily Quests</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>🎯 Smart Daily Quests</h2>
+                    <button id="refresh-dashboard-btn" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🔄 Refresh
+                    </button>
+                </div>
                 <div class="quest-scaling-grid">
                     <div class="quest-item" data-quest="steps">
                         <div class="quest-header">
                             <span class="quest-icon">👣</span>
                             <div class="quest-info">
                                 <h3>Steps</h3>
-                                <p>Today's Goal: <span class="current-goal">10,000</span></p>
+                                <p>Today's Goal: <span class="current-goal">0</span></p>
                             </div>
                         </div>
                         <div class="quest-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 120%"></div>
+                                <div class="progress-fill" style="width: 0%"></div>
                             </div>
-                            <span class="progress-text">12,000 / 10,000</span>
+                            <span class="progress-text">0 / 0</span>
                         </div>
                         <div class="quest-rewards">
-                            <span class="reward-xp">+50 XP</span>
-                            <span class="reward-coins">+15 Coins</span>
-                            <span class="scaling-notice">🎯 Tomorrow's goal: 20,000</span>
+                            <span class="reward-xp">+0 XP</span>
+                            <span class="reward-coins">+0 Coins</span>
+                            <span class="scaling-notice" style="display: none;">🎯 Tomorrow's goal: 20,000</span>
+                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
                         </div>
                     </div>
 
@@ -261,18 +403,19 @@
                             <span class="quest-icon">🔥</span>
                             <div class="quest-info">
                                 <h3>Calories</h3>
-                                <p>Today's Goal: <span class="current-goal">2,000</span></p>
+                                <p>Today's Goal: <span class="current-goal">0</span></p>
                             </div>
                         </div>
                         <div class="quest-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 85%"></div>
+                                <div class="progress-fill" style="width: 0%"></div>
                             </div>
-                            <span class="progress-text">1,700 / 2,000</span>
+                            <span class="progress-text">0 / 0</span>
                         </div>
                         <div class="quest-rewards">
-                            <span class="reward-xp">+30 XP</span>
+                            <span class="reward-xp">+0 XP</span>
                             <span class="reward-coins">+0 Coins</span>
+                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
                         </div>
                     </div>
 
@@ -281,18 +424,19 @@
                             <span class="quest-icon">💪</span>
                             <div class="quest-info">
                                 <h3>Protein</h3>
-                                <p>Today's Goal: <span class="current-goal">100g</span></p>
+                                <p>Today's Goal: <span class="current-goal">0g</span></p>
                             </div>
                         </div>
                         <div class="quest-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 95%"></div>
+                                <div class="progress-fill" style="width: 0%"></div>
                             </div>
-                            <span class="progress-text">95 / 100g</span>
+                            <span class="progress-text">0 / 0g</span>
                         </div>
                         <div class="quest-rewards">
-                            <span class="reward-xp">+25 XP</span>
+                            <span class="reward-xp">+0 XP</span>
                             <span class="reward-coins">+0 Coins</span>
+                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
                         </div>
                     </div>
                 </div>
@@ -490,7 +634,21 @@
     </div>
 
     <script src="dashboard.js"></script>
+    <script src="../shared-sidebar.js"></script>
     <script>
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                const avatar = document.querySelector('.avatar');
+                const name = document.querySelector('.user-name');
+                const level = document.querySelector('.user-level');
+        
+                if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+                if (name && userData.profileName) name.textContent = userData.profileName;
+                if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            }
+        })();
+        
         // Global Dark Mode Application
         function applyGlobalDarkMode() {
             const isDark = localStorage.getItem('darkMode') === 'true';

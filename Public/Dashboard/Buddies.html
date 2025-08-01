@@ -7,51 +7,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Buddies.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
     <script src="Buddies.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
-            <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-                <h3 class="user-name" id="sidebar-username">John Doe</h3>
-                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
-            </div>
-            <nav class="nav-menu">
-                <a href="dashbaord.html" class="nav-item">
-                    <span class="nav-icon">🏠</span>
-                    Home
-                </a>
-                <a href="FoodLog.html" class="nav-item">
-                    <span class="nav-icon">🍽️</span>
-                    Food Log
-                </a>
-                <a href="FoodSuggestion.html" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    Food Suggestion
-                </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
-                <a href="Buddies.html" class="nav-item active">
-                    <span class="nav-icon">👥</span>
-                    Buddies
-                </a>
-                <a href="../Insights/Insights.html" class="nav-item">
-                    <span class="nav-icon">📈</span>
-                    Insights
-                </a>
-                <a href="../Notifications/Notifications.html" class="nav-item">
-                    <span class="nav-icon">🔔</span>
-                    Notification
-                </a>
-                <a href="Settings.html" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
-                    Settings
-                </a>
-            </nav>
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
         </aside>
 
         <main class="main-content">
@@ -74,28 +37,7 @@
                     </div>
                 </div>
                 <div class="request-list" id="request-list">
-                    <div class="request-item">
-                        <img src="../../assets/avator1.jpeg" alt="Sarah" class="request-avatar">
-                        <div class="request-info">
-                            <h3>Sarah Johnson</h3>
-                            <span class="level-tag">Level 6</span>
-                        </div>
-                        <div class="request-actions">
-                            <button class="btn btn-primary accept-btn">Accept</button>
-                            <button class="btn btn-danger reject-btn">Reject</button>
-                        </div>
-                    </div>
-                    <div class="request-item">
-                        <img src="../../assets/avator2.jpeg" alt="Mike" class="request-avatar">
-                        <div class="request-info">
-                            <h3>Mike Chen</h3>
-                            <span class="level-tag">Level 4</span>
-                        </div>
-                        <div class="request-actions">
-                            <button class="btn btn-primary accept-btn">Accept</button>
-                            <button class="btn btn-danger reject-btn">Reject</button>
-                        </div>
-                    </div>
+                    
                 </div>
             </section>
 
@@ -103,47 +45,13 @@
             <section class="my-friends">
                 <h2>My Friends</h2>
                 <div class="friends-list">
-                    <div class="friend-item">
-                        <img src="../../assets/avator3.jpeg" alt="Emma" class="friend-avatar">
-                        <div class="friend-info">
-                            <h3>Emma Wilson</h3>
-                            <span class="friend-level">Level 12</span>
-                            <span class="friend-xp">2,450 XP</span>
-                        </div>
-                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
-                    </div>
-                    <div class="friend-item">
-                        <img src="../../assets/avator4.jpeg" alt="Alex" class="friend-avatar">
-                        <div class="friend-info">
-                            <h3>Alex Martinez</h3>
-                            <span class="friend-level">Level 10</span>
-                            <span class="friend-xp">2,120 XP</span>
-                        </div>
-                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
-                    </div>
-                    <div class="friend-item">
-                        <img src="../../assets/avator5.jpeg" alt="Lisa" class="friend-avatar">
-                        <div class="friend-info">
-                            <h3>Lisa Taylor</h3>
-                            <span class="friend-level">Level 9</span>
-                            <span class="friend-xp">1,890 XP</span>
-                        </div>
-                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
-                    </div>
-                    <div class="friend-item">
-                        <img src="../../assets/avator6.jpeg" alt="Liam" class="friend-avatar">
-                        <div class="friend-info">
-                            <h3>Liam Anderson</h3>
-                            <span class="friend-level">Level 7</span>
-                            <span class="friend-xp">1,650 XP</span>
-                        </div>
-                        <button class="btn btn-outline copy-routine-btn">Copy Routine</button>
-                    </div>
+                    
                 </div>
             </section>
 
             <section class="leaderboard">
                 <h2>Leaderboard</h2>
+                <button class="leaderboard-next-btn" style="float:right;margin-top:-2.2rem;margin-right:0.5rem;">→</button>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -154,34 +62,8 @@
                                 <th>XP</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td class="user-cell">
-                                    <img src="../../assets/avator3.jpeg" alt="Emma" class="small-avatar">
-                                    Emma Wilson
-                                </td>
-                                <td>12</td>
-                                <td>2,450</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td class="user-cell">
-                                    <img src="../../assets/avator4.jpeg" alt="Alex" class="small-avatar">
-                                    Alex Martinez
-                                </td>
-                                <td>10</td>
-                                <td>2,120</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td class="user-cell">
-                                    <img src="../../assets/avator5.jpeg" alt="Lisa" class="small-avatar">
-                                    Lisa Taylor
-                                </td>
-                                <td>9</td>
-                                <td>1,890</td>
-                            </tr>
+                        <tbody id="leaderboard-body">
+                            
                         </tbody>
                     </table>
                 </div>
@@ -218,6 +100,7 @@
             </section>
         </main>
     </div>
+    <script src="../shared-sidebar.js"></script>
     <script>
         // Global Dark Mode Application
         function applyGlobalDarkMode() {
@@ -231,17 +114,7 @@
         applyGlobalDarkMode();
     </script>
     <script>
-    (function() {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            const avatar = document.getElementById('sidebar-avatar');
-            const name = document.getElementById('sidebar-username');
-            const level = document.getElementById('sidebar-userlevel');
-            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
-            if (name && userData.profileName) name.textContent = userData.profileName;
-            if (level && userData.level) level.textContent = 'Level ' + userData.level;
-        }
-    })();
+    // Sidebar is now handled by shared-sidebar.js
     </script>
 </body>
 </html>

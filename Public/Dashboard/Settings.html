@@ -6,53 +6,16 @@
     <title>Settings - HealthQuest</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Settings.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="container">
         <!-- Sidebar (maintained from dashboard) -->
-        <div class="sidebar">
-            <div class="user-profile">
-                <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-                <h3 class="user-name" id="sidebar-username">John Doe</h3>
-                <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
-            </div>
-            <nav class="nav-menu">
-                <a href="dashbaord.html" class="nav-item">
-                    <span class="nav-icon">🏠</span>
-                    Home
-                </a>
-                <a href="FoodLog.html" class="nav-item">
-                    <span class="nav-icon">🍽️</span>
-                    Food Log
-                </a>
-                <a href="FoodSuggestion.html" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    Food Suggestion
-                </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
-                <a href="Buddies.html" class="nav-item">
-                    <span class="nav-icon">👥</span>
-                    Buddies
-                </a>
-                <a href="../Insights/Insights.html" class="nav-item">
-                    <span class="nav-icon">📈</span>
-                    Insights
-                </a>
-                <a href="../Notifications/Notifications.html" class="nav-item">
-                    <span class="nav-icon">🔔</span>
-                    Notification
-                </a>
-                <a href="Settings.html" class="nav-item active">
-                    <span class="nav-icon">⚙️</span>
-                    Settings
-                </a>
-            </nav>
-        </div>
+        <aside class="sidebar">
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
+        </aside>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -84,6 +47,45 @@
                   <button id="close-avatar-options" title="Close" style="display:none;">&times;</button>
                 </div>
                 <button id="confirm-avatar-btn" class="btn btn-success" style="display:none;">Confirm Avatar</button>
+            </section>
+
+            <!-- Badges & Titles Section -->
+            <section class="settings-section" id="badges-titles-section">
+                <h2>🏆 Badges & Titles</h2>
+                
+                <!-- Titles Section -->
+                <div class="titles-section">
+                    <h3>👑 Select Your Title</h3>
+                    <p class="section-description">Choose a title to display next to your avatar. Titles are earned through achievements!</p>
+                    
+                    <div class="current-selection">
+                        <label>Current Title:</label>
+                        <span id="current-title-display" class="current-title">None</span>
+                    </div>
+                    
+                    <div class="titles-grid" id="titles-grid">
+                        <!-- Titles will be populated by JavaScript -->
+                    </div>
+                    
+                    <button id="confirm-title-btn" class="btn btn-success" style="display:none;">Confirm Title</button>
+                </div>
+                
+                <!-- Badges Section -->
+                <div class="badges-section">
+                    <h3>🏅 Your Badges</h3>
+                    <p class="section-description">Badges you've earned through your fitness journey</p>
+                    
+                    <div class="current-selection">
+                        <label>Active Badge:</label>
+                        <span id="current-badge-display" class="current-badge">None</span>
+                    </div>
+                    
+                    <div class="badges-grid" id="badges-grid">
+                        <!-- Badges will be populated by JavaScript -->
+                    </div>
+                    
+                    <button id="confirm-badge-btn" class="btn btn-success" style="display:none;">Confirm Badge</button>
+                </div>
             </section>
 
             <!-- Notification Preferences Section -->
@@ -160,6 +162,22 @@
                 </div>
             </section>
 
+            <!-- Gamification Profile Section -->
+            <section class="settings-section gamification-profile">
+              <h2>Gamification Profile</h2>
+              <div>XP: <span id="xp">0</span></div>
+              <div>Coins: <span id="coins">0</span></div>
+              <div>Level: <span id="level">1</span></div>
+              <div>Active Badge: <span id="active-badge">None</span></div>
+              <div>Active Title: <span id="active-title">None</span></div>
+              <h3>All Badges</h3>
+              <div id="badge-list"></div>
+              <h3>All Titles</h3>
+              <div id="title-list"></div>
+              <h3>Recent Activity</h3>
+              <ul id="activity-log"></ul>
+            </section>
+
             <!-- Logout Section -->
             <section class="settings-section logout-section">
                 <button class="logout-btn-gamified" id="logout-btn">🚪 Log Out</button>
@@ -168,18 +186,13 @@
     </div>
 
     <script src="Settings.js"></script>
+    <script src="../shared-sidebar.js"></script>
     <script>
-    // Autofill profileName and email from localStorage if available
+    // Sidebar is now handled by shared-sidebar.js
+    // Autofill form fields from localStorage if available
     (function() {
         const userData = JSON.parse(localStorage.getItem('userData'));
         if (userData) {
-            // Sidebar user profile
-            const avatar = document.getElementById('sidebar-avatar');
-            const name = document.getElementById('sidebar-username');
-            const level = document.getElementById('sidebar-userlevel');
-            if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
-            if (name && userData.profileName) name.textContent = userData.profileName;
-            if (level && userData.level) level.textContent = 'Level ' + userData.level;
             // Form fields
             const profileInput = document.getElementById('profile-name');
             const emailInput = document.getElementById('email');

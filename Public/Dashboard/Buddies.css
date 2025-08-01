@@ -31,66 +31,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100vh;
-    background: var(--sidebar-bg);
-    padding: 2rem;
-    box-shadow: var(--card-shadow);
-    z-index: 1000;
-    overflow-y: auto;
-}
-
-.user-profile {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-bottom: 1rem;
-    object-fit: cover;
-}
-
-.user-info h3 {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-    color: var(--text-dark);
-}
-
-.user-info p {
-    font-size: 0.875rem;
-    color: var(--text-light);
-}
-
-.sidebar nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.sidebar nav a {
-    padding: 0.75rem 1rem;
-    text-decoration: none;
-    color: var(--text-dark);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.sidebar nav a:hover {
-    background-color: rgba(41,236,139, 0.1);
-}
-
-.sidebar nav a.active {
-    background-color: var(--primary-btn);
-    color: white;
-}
+/* Sidebar Styles - Now handled by shared-sidebar.css */
 
 /* Main Content Styles */
 .main-content {
@@ -726,7 +667,6 @@ body.dark-mode .nav-item {
 body.dark-mode .nav-item:hover {
     background: rgba(30, 200, 120, 0.1);
 }
-
 body.dark-mode .nav-item.active {
     background: rgb(30, 200, 120);
     color: rgb(18, 24, 22);

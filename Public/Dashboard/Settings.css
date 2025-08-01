@@ -45,10 +45,7 @@ body.dark-mode {
     color: rgb(240,255,250);
 }
 
-body.dark-mode .sidebar {
-    background-color: rgb(28,36,34);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-}
+
 
 body.dark-mode .settings-section {
     background: rgb(28,36,34);
@@ -120,18 +117,7 @@ body.dark-mode .nav-link:hover {
     background-color: rgba(30,200,120,0.1);
 }
 
-body.dark-mode .sidebar nav a {
-    color: rgb(240,255,250);
-}
 
-body.dark-mode .sidebar nav a:hover {
-    background-color: rgba(30,200,120, 0.1);
-}
-
-body.dark-mode .sidebar nav a.active {
-    background-color: rgb(30,200,120);
-    color: rgb(18,24,22);
-}
 
 /* Theme Feedback Animation */
 @keyframes slideIn {
@@ -145,87 +131,12 @@ body.dark-mode .sidebar nav a.active {
     }
 }
 
-.dashboard-container {
+.container {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100vh;
-    background: var(--sidebar-bg);
-    padding: 2rem;
-    box-shadow: var(--card-shadow);
-    z-index: 1000;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.user-profile {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-bottom: 1rem;
-    object-fit: cover;
-}
-
-.user-name {
-    font-size: 1.2rem;
-    color: var(--text-dark);
-}
-
-.nav-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    text-decoration: none;
-    color: var(--text-dark);
-    border-radius: var(--border-radius);
-    transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-    background: rgba(30, 200, 120, 0.1);
-}
-
-.nav-item.active {
-    background: var(--primary-btn);
-    color: rgb(18, 24, 22);
-}
-
-.nav-icon {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-}
-
-body.dark-mode .sidebar {
-    background: var(--sidebar-bg);
-    box-shadow: var(--card-shadow);
-}
-body.dark-mode .nav-item {
-    color: var(--text-dark);
-}
-body.dark-mode .nav-item.active {
-    background: var(--primary-btn);
-    color: rgb(18, 24, 22);
-}
+/* Sidebar Styles - Now handled by shared-sidebar.css */
 
 /* Main Content Styles */
 .main-content {
@@ -456,14 +367,11 @@ input:checked + .slider:active:before {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .dashboard-container {
+    .container {
         flex-direction: column;
     }
 
-    .sidebar {
-        width: 100%;
-        padding: 1rem;
-    }
+
 
     .main-content {
         padding: 1rem;
@@ -617,4 +525,214 @@ body.dark-mode #change-avatar-btn:hover, body.dark-mode #confirm-avatar-btn:hove
 body.dark-mode .avatar-choice.selected, body.dark-mode .avatar-choice:focus {
     border: 3px solid var(--primary-btn);
     box-shadow: 0 0 0 3px rgba(30,200,120,0.18);
+}
+
+/* Badges & Titles Section Styles */
+#badges-titles-section {
+    margin-bottom: 2rem;
+}
+
+.titles-section, .badges-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.05), rgba(30, 200, 120, 0.05));
+    border-radius: 12px;
+    border: 1px solid rgba(41, 236, 139, 0.1);
+}
+
+.titles-section h3, .badges-section h3 {
+    color: var(--text-dark);
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.section-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.current-selection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(41, 236, 139, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-btn);
+}
+
+.current-selection label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.current-title, .current-badge {
+    font-weight: 600;
+    color: var(--primary-btn);
+    padding: 0.25rem 0.75rem;
+    background: rgba(41, 236, 139, 0.15);
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.titles-grid, .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.title-item, .badge-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.title-item:hover, .badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-btn);
+}
+
+.title-item.selected, .badge-item.selected {
+    border-color: var(--primary-btn);
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.1), rgba(30, 200, 120, 0.1));
+    box-shadow: 0 0 0 3px rgba(41, 236, 139, 0.2);
+}
+
+.title-item.locked, .badge-item.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.title-item.locked:hover, .badge-item.locked:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border-color);
+}
+
+.title-icon, .badge-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-btn), var(--primary-btn-hover));
+    color: white;
+    flex-shrink: 0;
+}
+
+.title-item.locked .title-icon, .badge-item.locked .badge-icon {
+    background: linear-gradient(135deg, #ccc, #999);
+}
+
+.title-info, .badge-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.title-name, .badge-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.title-description, .badge-description {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    line-height: 1.3;
+}
+
+.title-requirement, .badge-requirement {
+    font-size: 0.75rem;
+    color: var(--primary-btn);
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.locked-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* Dark mode styles for badges & titles */
+body.dark-mode .titles-section, 
+body.dark-mode .badges-section {
+    background: linear-gradient(135deg, rgba(30, 200, 120, 0.1), rgba(25, 170, 100, 0.1));
+    border-color: rgba(30, 200, 120, 0.2);
+}
+
+body.dark-mode .current-selection {
+    background: rgba(30, 200, 120, 0.15);
+    border-left-color: var(--primary-btn);
+}
+
+body.dark-mode .current-title, 
+body.dark-mode .current-badge {
+    background: rgba(30, 200, 120, 0.2);
+    color: var(--primary-btn);
+}
+
+body.dark-mode .title-item, 
+body.dark-mode .badge-item {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .title-item.selected, 
+body.dark-mode .badge-item.selected {
+    background: linear-gradient(135deg, rgba(30, 200, 120, 0.15), rgba(25, 170, 100, 0.15));
+    border-color: var(--primary-btn);
+}
+
+body.dark-mode .title-item.locked, 
+body.dark-mode .badge-item.locked {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Mobile responsiveness for badges & titles */
+@media (max-width: 768px) {
+    .titles-grid, .badges-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .title-item, .badge-item {
+        padding: 0.75rem;
+    }
+    
+    .title-icon, .badge-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+    
+    .current-selection {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
 }

@@ -6,9 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - FitWarrior</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Dashboard/dashboard.css">
-  <link rel="stylesheet" href="../Dashboard/Buddies.css">
-  <link rel="stylesheet" href="Notifications.css">
+      <link rel="stylesheet" href="../Dashboard/dashboard.css">
+    <link rel="stylesheet" href="../Dashboard/Buddies.css">
+    <link rel="stylesheet" href="Notifications.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
   <style>
     * {
@@ -27,69 +28,6 @@
     .container {
       display: flex;
       flex: 1;
-    }
-
-    .sidebar {
-      width: 240px;
-      background-color: #fff;
-      border-radius: 15px;
-      padding: 30px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 15px;
-    }
-
-    .user-name {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .user-level {
-      background-color: #00c853;
-      color: white;
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 40px;
-      box-shadow: 0 2px 6px rgba(0, 200, 83, 0.4);
-    }
-
-    .sidebar .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-      width: 100%;
-    }
-
-    .nav-menu .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 15px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: #333;
-      transition: background-color 0.2s ease;
-    }
-
-    .nav-menu .nav-item:hover,
-    .nav-menu .nav-item.active {
-      background-color: #00e676;
-    }
-
-    .nav-icon {
-      font-size: 18px;
     }
 
     .content {
@@ -144,47 +82,9 @@
 
 <body>
   <div class="container">
-    <aside class="sidebar">
-      <div class="user-profile">
-        <img src="../../assets/avator.jpeg" alt="User Avatar" class="avatar" id="sidebar-avatar">
-        <h3 class="user-name" id="sidebar-username">John Doe</h3>
-        <span class="level-badge user-level" id="sidebar-userlevel">Level 1</span>
-      </div>
-      <nav class="nav-menu">
-        <a href="../Dashboard/dashbaord.html" class="nav-item">
-          <span class="nav-icon">🏠</span>
-          Home
-        </a>
-        <a href="../Dashboard/FoodLog.html" class="nav-item">
-          <span class="nav-icon">🍽️</span>
-          Food Log
-        </a>
-        <a href="../Dashboard/FoodSuggestion.html" class="nav-item">
-          <span class="nav-icon">💡</span>
-          Food Suggestion
-        </a>
-        <a href="../Dashboard/Posture.html" class="nav-item">
-          <span class="nav-icon">📊</span>
-          Posture Scan
-        </a>
-        <a href="../Dashboard/Buddies.html" class="nav-item">
-          <span class="nav-icon">👥</span>
-          Buddies
-        </a>
-        <a href="../Insights/Insights.html" class="nav-item">
-          <span class="nav-icon">📈</span>
-          Insights
-        </a>
-        <a href="Notifications.html" class="nav-item active">
-          <span class="nav-icon">🔔</span>
-          Notification
-        </a>
-        <a href="../Dashboard/Settings.html" class="nav-item">
-          <span class="nav-icon">⚙️</span>
-          Settings
-        </a>
-      </nav>
-    </aside>
+      <aside class="sidebar">
+    <!-- Shared sidebar will be populated by shared-sidebar.js -->
+  </aside>
     <main class="main-content notifications-main">
       <h1 class="heading">Notifications</h1>
       <div class="notification-actions">
@@ -245,42 +145,8 @@
   </div>
 
   <script src="Notifications.js"></script>
+  <script src="../shared-sidebar.js"></script>
   <script>
-    // Friend Requests Data
-    const friendRequests = [
-      { name: 'Sophie Lee', avatar: '../../assets/avator1.jpeg', level: 3 },
-      { name: 'Max Turner', avatar: '../../assets/avator2.jpeg', level: 2 },
-      { name: 'Priya Singh', avatar: '../../assets/avator3.jpeg', level: 4 }
-    ];
-    function renderFriendRequests() {
-      const container = document.getElementById('friend-requests');
-      container.innerHTML = '';
-      friendRequests.forEach((req, idx) => {
-        const card = document.createElement('div');
-        card.className = 'friend-request-card';
-        card.innerHTML = `
-          <img src="${req.avatar}" alt="${req.name}" class="friend-avatar">
-          <div class="friend-info">
-            <div class="friend-name">${req.name}</div>
-            <div class="friend-level">Level ${req.level}</div>
-          </div>
-          <div class="friend-actions">
-            <button class="accept-btn" onclick="acceptRequest(${idx})">Accept</button>
-            <button class="decline-btn" onclick="declineRequest(${idx})">Decline</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-    function acceptRequest(idx) {
-      friendRequests.splice(idx, 1);
-      renderFriendRequests();
-    }
-    function declineRequest(idx) {
-      friendRequests.splice(idx, 1);
-      renderFriendRequests();
-    }
-    renderFriendRequests();
     // Mark as Read functionality
     document.querySelectorAll('.mark-read-btn').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -294,18 +160,7 @@
     document.getElementById('clearBtn').addEventListener('click', function() {
       document.getElementById('notification-list').innerHTML = '';
     });
-    // Autofill profileName and email from localStorage if available
-    (function () {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (userData) {
-        const avatar = document.getElementById('sidebar-avatar');
-        const name = document.getElementById('sidebar-username');
-        const level = document.getElementById('sidebar-userlevel');
-        if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
-        if (name && userData.profileName) name.textContent = userData.profileName;
-        if (level && userData.level) level.textContent = 'Level ' + userData.level;
-      }
-    })();
+    // Sidebar is now handled by shared-sidebar.js
     // Dark mode application (same as Dashboard)
     function applyGlobalDarkMode() {
       const isDark = localStorage.getItem('darkMode') === 'true';

@@ -7,12 +7,36 @@ const MealSchema = new mongoose.Schema({
 }, { _id: false });
 
 const FoodLogSchema = new mongoose.Schema({
-  date: String,
-  calories: Number,
-  protein: Number,
-  carbs: Number,
-  fat: Number,
-  meals: [MealSchema]
-}, { _id: false });
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false // Changed to false for backward compatibility
+  },
+  date: {
+    type: String,
+    required: true
+  },
+  calories: {
+    type: Number,
+    default: 0
+  },
+  protein: {
+    type: Number,
+    default: 0
+  },
+  carbs: {
+    type: Number,
+    default: 0
+  },
+  fat: {
+    type: Number,
+    default: 0
+  },
+  meals: [MealSchema],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
 module.exports = FoodLogSchema; 
