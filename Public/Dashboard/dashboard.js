@@ -1,13 +1,16 @@
 // Enhanced Dashboard Gamification Class - Fixed Version
 console.log('=== DASHBOARD.JS LOADED ===');
 
+// Global variable to access dashboard instance
+let dashboardInstance = null;
+
 class EnhancedDashboardGamification {
     constructor() {
         console.log('[DASHBOARD] Constructor called - initializing dashboard...');
         try {
             this.currentUser = null;
             this.smartQuests = {};
-            this.availableBadges = [];
+            // Badges removed - only titles are used now
             this.availableTitles = [];
             this.activityLog = [];
 
@@ -21,6 +24,10 @@ class EnhancedDashboardGamification {
             this.questCompletionStatus = {};
 
             console.log('[DASHBOARD] Constructor completed successfully');
+            
+            // Store instance globally for debugging
+            dashboardInstance = this;
+            
             this.init();
         } catch (error) {
             console.error('[DASHBOARD] Constructor error:', error);
@@ -66,6 +73,14 @@ class EnhancedDashboardGamification {
 
             const decoded = window.jwt_decode(token);
             const email = decoded.email;
+            
+            // Clear any localStorage mini challenge data to ensure we only use backend data
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (userData.miniChallenges) {
+                console.log('Clearing localStorage miniChallenges to use backend data');
+                delete userData.miniChallenges;
+                localStorage.setItem('userData', JSON.stringify(userData));
+            }
 
             const response = await fetch(`${this.API_BASE}/getUser/${email}`, {
                 headers: {
@@ -78,16 +93,37 @@ class EnhancedDashboardGamification {
             }
 
             this.currentUser = await response.json();
+            
+            // Debug: Log the raw backend response
+            console.log('Raw backend response for user data:', this.currentUser);
+            console.log('Backend miniChallenges:', this.currentUser.miniChallenges);
+            console.log('Backend miniChallenges type:', typeof this.currentUser.miniChallenges);
 
             // Initialize defaults if missing
             this.currentUser.exp = this.currentUser.exp || 0;
             this.currentUser.coins = this.currentUser.coins || 0;
             // Always calculate level from XP to ensure it's correct
             this.currentUser.level = this.calculateLevel(this.currentUser.exp);
-            this.currentUser.badges = this.currentUser.badges || [];
+            
+            // Log the loaded data for debugging
+            console.log('[LOAD USER DATA] Loaded from backend:', {
+                exp: this.currentUser.exp,
+                level: this.currentUser.level,
+                coins: this.currentUser.coins
+            });
+            
+            // Verify that XP and level are consistent
+            const calculatedLevel = this.calculateLevel(this.currentUser.exp);
+            if (this.currentUser.level !== calculatedLevel) {
+                console.warn('[LOAD USER DATA] Level mismatch detected! Backend level:', this.currentUser.level, 'Calculated level:', calculatedLevel);
+                this.currentUser.level = calculatedLevel;
+                console.log('[LOAD USER DATA] Corrected level to:', this.currentUser.level);
+            }
             this.currentUser.titles = this.currentUser.titles || [];
+            this.currentUser.selectedTitle = this.currentUser.selectedTitle || null;
             this.currentUser.activityLog = this.currentUser.activityLog || [];
             this.currentUser.dailyQuests = this.currentUser.dailyQuests || [];
+            this.currentUser.miniChallenges = this.currentUser.miniChallenges || [];
             this.currentUser.questStats = this.currentUser.questStats || {
                 totalQuestsCompleted: 0,
                 currentStreak: 0,
@@ -99,20 +135,13 @@ class EnhancedDashboardGamification {
             // Load smart quest data from backend
             await this.loadSmartQuestData(email, token);
 
-            // Store local badges to backend if present - FIXED: Pass correct parameters
-            console.log('[LOAD USER DATA] About to sync badges with email:', email);
-            try {
-                // First, sync badges from localStorage to user's badge array
-                this.syncBadgesFromLocalStorage();
-                // Remove the call to syncLocalBadgesToBackend to avoid 500 error
-                // await this.syncLocalBadgesToBackend(email, token);
-                // Instead, sync using syncBadgesToBackend
-                await this.syncBadgesToBackend();
-                console.log('[LOAD USER DATA] Badge sync completed');
-            } catch (badgeError) {
-                console.error('[LOAD USER DATA] Badge sync failed:', badgeError);
-                // Continue with initialization even if badge sync fails
-            }
+            // Badge sync removed - only titles are used now
+            
+            // Log the final user data to verify miniChallenges are loaded from backend
+            console.log('[LOAD USER DATA] Final user data loaded from backend:', {
+                miniChallenges: this.currentUser.miniChallenges,
+                titles: this.currentUser.titles
+            });
 
             console.log('User data loaded:', this.currentUser);
             console.log('Calculated level from XP:', this.currentUser.level);
@@ -125,6 +154,14 @@ class EnhancedDashboardGamification {
             }, 100);
 
             this.updateStatsUI();
+            
+            // Force update UI after a delay to ensure DOM is ready
+            setTimeout(() => {
+                console.log('=== FORCED UI UPDATE AFTER DELAY ===');
+                this.updateUI();
+                // Hide unlocked titles after UI update
+                this.hideUnlockedTitles();
+            }, 200);
 
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -144,11 +181,6 @@ class EnhancedDashboardGamification {
                 // Ensure xpReward and coinReward are set for all smart quests
                 if (questData.quests) {
                     this.smartQuests = {
-                        steps: {
-                            ...questData.quests.steps,
-                            xpReward: questData.quests.steps?.xpReward ?? 50,
-                            coinReward: questData.quests.steps?.coinReward ?? 15
-                        },
                         calories: {
                             ...questData.quests.calories,
                             xpReward: questData.quests.calories?.xpReward ?? 30,
@@ -173,17 +205,6 @@ class EnhancedDashboardGamification {
 
     initializeDefaultQuests() {
         this.smartQuests = {
-            steps: {
-                questType: 'steps',
-                questName: 'Daily Steps',
-                target: 10000,
-                currentProgress: 0,
-                completed: false,
-                xpReward: 50,
-                coinReward: 15,
-                scaling: true,
-                scalingFactor: 1.1
-            },
             calories: {
                 questType: 'calories',
                 questName: 'Calorie Target',
@@ -210,17 +231,6 @@ class EnhancedDashboardGamification {
     initializeQuests() {
         // Initialize smart quests with default values first
         this.smartQuests = {
-            steps: {
-                questType: 'steps',
-                questName: 'Daily Steps',
-                target: this.calculateStepGoal(),
-                currentProgress: 0, // Will be updated by loadSmartQuestData
-                completed: false,
-                xpReward: 50,
-                coinReward: 15,
-                scaling: true,
-                scalingFactor: 1.1
-            },
             calories: {
                 questType: 'calories',
                 questName: 'Calorie Target',
@@ -279,14 +289,95 @@ class EnhancedDashboardGamification {
 
         // Initialize titles
         this.availableTitles = {
-            'step-warrior': {
-                name: 'Step Warrior',
-                description: '10 days of 10k+ steps',
+            'fitness-novice': {
+                name: 'Fitness Novice',
+                description: 'Just starting your fitness journey',
+                cost: 50,
+                icon: '🏃‍♂️',
+                progress: 0,
+                target: 1,
+                unlocked: true
+            },
+            'meal-master': {
+                name: 'Meal Master',
+                description: 'Expert at planning healthy meals',
                 cost: 75,
-                icon: '🥾',
+                icon: '👨‍🍳',
+                progress: 0,
+                target: 50,
+                unlocked: true
+            },
+            'strength-warrior': {
+                name: 'Strength Warrior',
+                description: 'Master of strength training',
+                cost: 150,
+                icon: '💪',
+                progress: 0,
+                target: 100,
+                unlocked: false
+            },
+            'cardio-king': {
+                name: 'Cardio King',
+                description: 'Endurance and cardio expert',
+                cost: 200,
+                icon: '🏃‍♀️',
+                progress: 0,
+                target: 100,
+                unlocked: false
+            },
+            'yoga-guru': {
+                name: 'Yoga Guru',
+                description: 'Flexibility and mindfulness master',
+                cost: 120,
+                icon: '🧘‍♀️',
+                progress: 0,
+                target: 50,
+                unlocked: false
+            },
+            'nutrition-expert': {
+                name: 'Nutrition Expert',
+                description: 'Deep knowledge of nutrition',
+                cost: 100,
+                icon: '🥗',
+                progress: 0,
+                target: 30,
+                unlocked: true
+            },
+            'consistency-champion': {
+                name: 'Consistency Champion',
+                description: 'Unwavering dedication to fitness',
+                cost: 80,
+                icon: '📈',
+                progress: 0,
+                target: 7,
+                unlocked: true
+            },
+            'goal-crusher': {
+                name: 'Goal Crusher',
+                description: 'Achieved multiple fitness goals',
+                cost: 300,
+                icon: '🎯',
+                progress: 0,
+                target: 5,
+                unlocked: false
+            },
+            'fitness-legend': {
+                name: 'Fitness Legend',
+                description: 'Ultimate fitness achievement',
+                cost: 500,
+                icon: '👑',
                 progress: 0,
                 target: 10,
                 unlocked: false
+            },
+            'wellness-guru': {
+                name: 'Wellness Guru',
+                description: 'Master of holistic wellness',
+                cost: 250,
+                icon: '🌟',
+                progress: 0,
+                target: 1,
+                unlocked: true
             },
             'protein-beast': {
                 name: 'Protein Beast',
@@ -310,15 +401,7 @@ class EnhancedDashboardGamification {
 
     }
 
-    calculateStepGoal() {
-        const history = this.currentUser.questStats?.stepGoalHistory || [];
-        const recent = history.slice(-7); // Last 7 days
 
-        if (recent.length === 0) return 5000; // Default
-
-        const avgAchieved = recent.reduce((sum, day) => sum + day.achieved, 0) / recent.length;
-        return Math.max(Math.round(avgAchieved * 1.05), 5000); // 5% increase
-    }
 
     calculateCalorieGoal() {
         if (!this.currentUser.weight || !this.currentUser.height || !this.currentUser.age) {
@@ -350,21 +433,7 @@ class EnhancedDashboardGamification {
         return Math.round(weight * 1.6); // Standard 1.6g per kg
     }
 
-    async getTodaySteps() {
-        try {
-            // Get steps from user's daily quests (from backend)
-            const todayQuest = this.currentUser.dailyQuests?.find(q => q.date === this.todayDate && q.questType === 'steps');
-            if (todayQuest) {
-                return todayQuest.currentProgress || 0;
-            }
-        } catch (error) {
-            console.error('Error getting steps:', error);
-        }
 
-        // Fallback to local storage
-        const stored = localStorage.getItem(`steps_${this.todayDate}`);
-        return stored ? parseInt(stored) : 0;
-    }
 
     async getTodayCalories() {
         try {
@@ -450,18 +519,7 @@ class EnhancedDashboardGamification {
             });
         });
 
-        // Challenge unlock buttons
-        document.querySelectorAll('.unlock-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const cost = parseInt(e.target.dataset.cost);
-                const challengeCard = e.target.closest('.challenge-card');
-                const challengeType = challengeCard.dataset.challenge;
-                this.showUnlockModal(cost, 'challenge', () => {
-                    this.unlockChallenge(challengeCard, challengeType, cost);
-                });
-            });
-        });
+        // Challenge unlock buttons removed - only titles are used now
 
         // Title unlock buttons
         document.querySelectorAll('.unlock-title-btn').forEach(btn => {
@@ -476,8 +534,7 @@ class EnhancedDashboardGamification {
             });
         });
 
-        // Manual step input
-        this.setupStepInput();
+
 
         // Refresh dashboard button
         const refreshBtn = document.getElementById('refresh-dashboard-btn');
@@ -488,138 +545,20 @@ class EnhancedDashboardGamification {
             });
         }
 
-        // Badge unlock buttons
-        document.querySelectorAll('.unlock-badge-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const badgeId = btn.dataset.badgeId;
-                const badgeTitle = btn.dataset.badgeTitle;
-                const badgeDescription = btn.dataset.badgeDescription;
-                const badgeIcon = btn.dataset.badgeIcon;
-                const badgeRarity = btn.dataset.badgeRarity;
-                const badgeEarnedBy = btn.dataset.badgeEarnedby;
-
-                const newBadge = {
-                    badgeId,
-                    title: badgeTitle,
-                    description: badgeDescription,
-                    icon: badgeIcon,
-                    rarity: badgeRarity,
-                    unlockedAt: new Date(),
-                    earnedBy: badgeEarnedBy
-                };
-
-                // Add to user's badge array only if not already present
-                if (!this.currentUser.badges.some(b => b.badgeId === badgeId)) {
-                    this.currentUser.badges.push(newBadge);
-                } else {
-                    this.showNotification('Badge already unlocked!', 'info');
-                    return;
-                }
-
-                // Send the full badges array to backend (like titles)
-                const token = localStorage.getItem('authToken');
-                if (!token) {
-                    this.showNotification('Not authenticated!', 'error');
-                    return;
-                }
-                try {
-                    const response = await fetch('http://localhost:8000/api/updateUser', {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ badges: this.currentUser.badges })
-                    });
-                    if (response.ok) {
-                        this.showNotification('Badge unlocked and saved!', 'success');
-                        this.updateUI();
-                    } else {
-                        const errorText = await response.text();
-                        this.showNotification('Failed to save badge: ' + errorText, 'error');
-                    }
-                } catch (err) {
-                    this.showNotification('Network error: ' + err.message, 'error');
-                }
-            });
-        });
+        // Badge unlock buttons removed - only titles are used now
     }
 
-    setupStepInput() {
-        const stepsCard = document.querySelector('.summary-card:nth-child(3)'); // Steps card
-        if (stepsCard) {
-            stepsCard.addEventListener('click', () => {
-                const currentSteps = this.getTodaySteps();
-                const newSteps = prompt(`Enter your current step count for today:\nCurrent: ${currentSteps.toLocaleString()}`, currentSteps);
 
-                if (newSteps !== null && !isNaN(newSteps) && parseInt(newSteps) >= 0) {
-                    this.updateSteps(parseInt(newSteps));
-                }
-            });
-            stepsCard.style.cursor = 'pointer';
-            stepsCard.title = 'Click to update step count';
-        }
-    }
-
-    async updateSteps(steps) {
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.warn('No auth token found for steps update');
-                return;
-            }
-            localStorage.setItem(`steps_${this.todayDate}`, steps.toString());
-            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    questType: 'steps',
-                    progress: steps,
-                    completed: steps >= (this.smartQuests.steps?.target || 10000)
-                })
-            });
-            if (response.ok) {
-                const result = await response.json();
-                if (result.xp !== undefined) this.currentUser.exp = result.xp;
-                if (result.coins !== undefined) this.currentUser.coins = result.coins;
-                if (result.level !== undefined) this.currentUser.level = result.level;
-            }
-        } catch (error) {
-            console.error('Error updating steps:', error);
-        }
-        await this.refreshSmartQuestData();
-        const stepsDisplay = document.getElementById('steps-display');
-        if (stepsDisplay) {
-            stepsDisplay.textContent = steps.toLocaleString();
-        }
-        this.updateSmartQuestUI();
-        if (this.smartQuests.steps.completed && !this.questCompletionStatus.steps) {
-            this.completeQuest('steps');
-        }
-        this.showNotification(`Steps updated: ${steps.toLocaleString()}`, 'success');
-        this.updateStatsUI();
-    }
 
     async handleSmartQuestClick(questType) {
         const quest = this.smartQuests[questType];
         if (!quest) return;
 
-        if (questType === 'steps') {
-            const newSteps = prompt(`Current steps: ${quest.currentProgress.toLocaleString()}\nEnter new step count:`, quest.currentProgress);
-            if (newSteps && !isNaN(newSteps) && parseInt(newSteps) >= 0) {
-                this.updateSteps(parseInt(newSteps));
-            }
-        } else {
-            // Show current progress
-            this.showNotification(
-                `${quest.questName}: ${quest.currentProgress}/${quest.target} (${Math.round((quest.currentProgress / quest.target) * 100)}%)`,
-                'info'
-            );
-        }
+        // Show current progress
+        this.showNotification(
+            `${quest.questName}: ${quest.currentProgress}/${quest.target} (${Math.round((quest.currentProgress / quest.target) * 100)}%)`,
+            'info'
+        );
     }
 
     async handleRegularQuestToggle(questType, isCompleted) {
@@ -652,11 +591,12 @@ class EnhancedDashboardGamification {
 
                 if (isCompleted) {
                     await this.completeQuest(questType, true);
-                } else {
-                    // Uncheck - remove completion status (only for steps quest)
-                    if (questType === 'steps') {
-                        this.questCompletionStatus[questType] = false;
-                        this.saveQuestStates();
+                    
+                    // Immediately hide the completed quest
+                    const questItem = document.querySelector(`[data-quest="${questType}"]`);
+                    if (questItem) {
+                        questItem.style.display = 'none';
+                        questItem.classList.add('quest-completed');
                     }
                 }
 
@@ -731,6 +671,15 @@ class EnhancedDashboardGamification {
 
             // Update UI
             this.updateUI();
+            
+            // For regular quests, immediately hide the completed quest
+            if (isRegularQuest) {
+                const questItem = document.querySelector(`[data-quest="${questType}"]`);
+                if (questItem) {
+                    questItem.style.display = 'none';
+                    questItem.classList.add('quest-completed');
+                }
+            }
 
             // Show notifications
             this.showNotification(
@@ -778,23 +727,37 @@ class EnhancedDashboardGamification {
 
             if (response.ok) {
                 const result = await response.json();
+                console.log('[SYNC QUEST] Backend response:', result);
+                
+                // Update local user data with backend response
                 if (result.xp !== undefined) {
-                    console.log('[DEBUG] Backend XP response:', result.xp, 'Old XP:', this.currentUser.exp);
+                    console.log('[SYNC QUEST] Updating XP from backend:', result.xp);
                     this.currentUser.exp = result.xp;
-                    console.log('[DEBUG] Updated local XP from backend:', this.currentUser.exp);
                 }
                 if (result.coins !== undefined) {
-                    console.log('[DEBUG] Backend coins response:', result.coins);
+                    console.log('[SYNC QUEST] Updating coins from backend:', result.coins);
                     this.currentUser.coins = result.coins;
                 }
                 if (result.level !== undefined) {
-                    console.log('[DEBUG] Backend level response:', result.level);
+                    console.log('[SYNC QUEST] Updating level from backend:', result.level);
                     this.currentUser.level = result.level;
                 }
 
-                // Force UI update after backend sync to ensure coin balance is displayed correctly
+                // Handle unlocked titles from backend
+                if (result.unlockedTitles && result.unlockedTitles.length > 0) {
+                    console.log('[SYNC QUEST] Titles unlocked from backend:', result.unlockedTitles);
+                    result.unlockedTitles.forEach(titleId => {
+                        this.updateTitleUI(titleId);
+                        this.showNotification(`🏆 Unlocked "${this.getTitleName(titleId)}" title!`, 'success');
+                    });
+                }
+
+                // Save the updated data to localStorage
+                this.saveUserDataToStorage();
+
+                // Force UI update to reflect the backend changes
                 this.updateUI();
-                console.log('UI updated after backend sync. New coin balance:', this.currentUser.coins);
+                console.log('[SYNC QUEST] UI updated with backend data. XP:', this.currentUser.exp, 'Level:', this.currentUser.level, 'Coins:', this.currentUser.coins);
             } else {
                 console.warn('Failed to sync quest with backend:', response.statusText);
             }
@@ -805,12 +768,50 @@ class EnhancedDashboardGamification {
         this.updateStatsUI();
     }
 
+    async syncUserDataToBackend() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.warn('No auth token found for user data sync');
+                return;
+            }
+
+            const requestBody = {
+                exp: this.currentUser.exp,
+                level: this.currentUser.level,
+                coins: this.currentUser.coins,
+                titles: this.currentUser.titles,
+                selectedTitle: this.currentUser.selectedTitle,
+                activityLog: this.currentUser.activityLog,
+                questStats: this.currentUser.questStats
+            };
+
+            console.log('[SYNC USER DATA] Sending updated user data to backend:', requestBody);
+
+            const response = await fetch(`${this.API_BASE}/updateUser`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('[SYNC USER DATA] User data synced successfully:', result);
+            } else {
+                console.warn('[SYNC USER DATA] Failed to sync user data:', response.statusText);
+            }
+        } catch (error) {
+            console.warn('[SYNC USER DATA] User data sync failed:', error);
+        }
+    }
+
     getRegularQuestData(questType) {
         const questData = {
             water: { questName: 'Hydration Master', xpReward: 25, coinReward: 5 },
-            steps: { questName: 'Step Champion', xpReward: 50, coinReward: 15 },
             sleep: { questName: 'Sleep Warrior', xpReward: 30, coinReward: 8 },
-            posture: { questName: 'Posture Pro', xpReward: 40, coinReward: 10 },
             meal: { questName: 'Nutrition Tracker', xpReward: 20, coinReward: 5 },
             exercise: { questName: 'Fitness Fanatic', xpReward: 60, coinReward: 18 }
         };
@@ -824,7 +825,13 @@ class EnhancedDashboardGamification {
                 currentStreak: 0,
                 longestStreak: 0,
                 lastQuestDate: null,
-                stepGoalHistory: []
+                stepGoalHistory: [],
+                proteinStreak: 0,
+                proteinLongestStreak: 0,
+                proteinLastCompletedDate: null,
+                calorieStreak: 0,
+                calorieLongestStreak: 0,
+                calorieLastCompletedDate: null
             };
         }
 
@@ -858,77 +865,7 @@ class EnhancedDashboardGamification {
         this.currentUser.questStats.totalQuestsCompleted = (this.currentUser.questStats.totalQuestsCompleted || 0) + 1;
     }
 
-    async unlockChallenge(challengeCard, challengeType, cost) {
-        console.log('🎮 UNLOCK CHALLENGE CALLED:', challengeType, 'Cost:', cost);
-        
-        if (this.currentUser.coins < cost) {
-            this.showNotification('Not enough coins!', 'error');
-            return;
-        }
-
-        // Deduct coins
-        this.currentUser.coins -= cost;
-        console.log('🎮 Coins deducted. New balance:', this.currentUser.coins);
-
-        // Update UI
-        challengeCard.classList.add('unlocked');
-        const unlockBtn = challengeCard.querySelector('.unlock-btn');
-        if (unlockBtn) {
-            unlockBtn.textContent = 'Challenge Active';
-            unlockBtn.disabled = true;
-            unlockBtn.classList.remove('btn-primary');
-            unlockBtn.classList.add('btn-success');
-        }
-
-        // Add to activity log
-        const activity = {
-            type: 'challenge',
-            date: new Date(),
-            details: `Unlocked ${challengeType} challenge`,
-            coinsSpent: cost
-        };
-        this.currentUser.activityLog.unshift(activity);
-
-        this.saveUserDataToStorage();
-        this.updateUI();
-        this.showNotification(`Challenge unlocked! -${cost} coins`, 'success');
-
-        // Sync with backend
-        try {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                const requestBody = {
-                    coins: this.currentUser.coins,
-                    activityLog: this.currentUser.activityLog,
-                    badges: this.currentUser.badges || []
-                };
-                console.log('🎮 Sending challenge unlock to backend:', requestBody);
-                
-                const response = await fetch(`${this.API_BASE}/updateUser`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                console.log('🎮 Backend response status:', response.status);
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('🎮 Challenge unlock backend sync successful:', result);
-                    // Hide the challenge card after successful unlock
-                    if (challengeCard) {
-                        challengeCard.remove();
-                    }
-                } else {
-                    const errorText = await response.text();
-                    console.warn('🎮 Challenge unlock backend sync failed:', response.statusText, errorText);
-                }
-            }
-        } catch (error) {
-            console.error('🎮 Challenge unlock backend sync error:', error);
-        }
-    }
+    // unlockChallenge function removed - only titles are used now
 
     async unlockTitle(titleId, cost) {
         console.log('🏆 UNLOCK TITLE CALLED:', titleId, 'Cost:', cost);
@@ -951,15 +888,11 @@ class EnhancedDashboardGamification {
         this.currentUser.titles.push(newTitle);
         console.log('🏆 Title added to user. Total titles:', this.currentUser.titles.length);
 
-        // Unlock a badge for unlocking a title
-        await this.unlockBadge(
-            'title-unlock-badge',
-            'Title Unlocked!',
-            'Unlocked your first title!',
-            '🏆',
-            'rare',
-            'title'
-        );
+        // Set the newly unlocked title as active
+        this.currentUser.selectedTitle = titleId;
+        console.log('🏆 Set newly unlocked title as active:', titleId);
+
+        // Badge unlock removed - only titles are used now
 
         // Update UI
         this.updateTitleUI(titleId);
@@ -977,6 +910,11 @@ class EnhancedDashboardGamification {
         this.updateUI();
         this.showNotification(`Title unlocked! -${cost} coins`, 'success');
 
+        // Update sidebar to show the new title
+        if (window.sharedSidebar) {
+            window.sharedSidebar.refreshDisplay();
+        }
+
         // Sync with backend
         try {
             const token = localStorage.getItem('authToken');
@@ -985,7 +923,8 @@ class EnhancedDashboardGamification {
                     coins: this.currentUser.coins,
                     titles: this.currentUser.titles,
                     activityLog: this.currentUser.activityLog,
-                    badges: this.currentUser.badges || []
+                    selectedTitle: this.currentUser.selectedTitle,
+                    // Badges removed from request body
                 };
                 console.log('🏆 Sending title unlock to backend:', requestBody);
                 console.log('🏆 Request body keys:', Object.keys(requestBody));
@@ -1003,11 +942,7 @@ class EnhancedDashboardGamification {
                 if (response.ok) {
                     const result = await response.json();
                     console.log('🏆 Title unlock backend sync successful:', result);
-                    // Hide the title card after successful unlock
-                    const titleCard = document.querySelector(`[data-title="${titleId}"]`);
-                    if (titleCard) {
-                        titleCard.remove();
-                    }
+                    // Title card is already removed by updateTitleUI()
                 } else {
                     const errorText = await response.text();
                     console.warn('🏆 Title unlock backend sync failed:', response.statusText, errorText);
@@ -1017,155 +952,25 @@ class EnhancedDashboardGamification {
             console.error('🏆 Title unlock backend sync error:', error);
         }
         
-        // Also sync badges if user has any
-        if (this.currentUser.badges && this.currentUser.badges.length > 0) {
-            console.log('🏆 Syncing badges after title unlock...');
-            await this.syncBadgesToBackend();
-        }
+        // Badge sync removed - only titles are used now
     }
 
-    // Add a function to unlock badges and add them to user's badge array
-    async unlockBadge(badgeId, badgeTitle, badgeDescription = '', badgeIcon = '🏅', rarity = 'common', earnedBy = 'achievement') {
-        try {
-            // Create badge object
-            const newBadge = {
-                badgeId: badgeId,
-                title: badgeTitle,
-                description: badgeDescription,
-                icon: badgeIcon,
-                rarity: rarity,
-                unlockedAt: new Date(),
-                earnedBy: earnedBy
-            };
-            console.log('🏅 New badge created:', newBadge);
+    // unlockBadge function removed - only titles are used now
 
-            // Add to user's badge array only if not already present
-            if (!this.currentUser.badges.some(b => b.badgeId === badgeId)) {
-                this.currentUser.badges.push(newBadge);
-            } else {
-                console.log('[BADGE UNLOCK] Badge already exists in user.badges, skipping add.');
-            }
-
-            // Add to activity log
-            const activity = {
-                type: 'badge',
-                date: new Date(),
-                details: `Unlocked badge: ${badgeTitle}`,
-                badgeId: badgeId
-            };
-            this.currentUser.activityLog.unshift(activity);
-
-            // Save to localStorage only if not already present
-            const localBadges = JSON.parse(localStorage.getItem('badges') || '[]');
-            if (!localBadges.some(b => b.badgeId === badgeId)) {
-                localBadges.push(newBadge);
-                localStorage.setItem('badges', JSON.stringify(localBadges));
-            } else {
-                console.log('[BADGE UNLOCK] Badge already exists in localStorage, skipping add.');
-            }
-
-            // Sync with backend
-            await this.syncBadgesToBackend();
-
-            // Update UI
-            this.updateUI();
-            this.showNotification(`Badge unlocked: ${badgeTitle}!`, 'success');
-
-            console.log('[BADGE UNLOCK] Badge unlocked:', newBadge);
-            console.log('[BADGE UNLOCK] User badges count:', this.currentUser.badges.length);
-
-        } catch (error) {
-            console.error('[BADGE UNLOCK] Error unlocking badge:', error);
-            this.showNotification('Failed to unlock badge', 'error');
-        }
-    }
-
-    // Add a function to sync badges from localStorage to user's badge array
-    syncBadgesFromLocalStorage() {
-        try {
-            const localBadges = localStorage.getItem('badges');
-            if (!localBadges) {
-                console.log('[BADGE SYNC] No local badges found');
-                return;
-            }
-
-            const badges = JSON.parse(localBadges);
-            console.log('[BADGE SYNC] Found badges in localStorage:', badges);
-
-            if (Array.isArray(badges) && badges.length > 0) {
-                // Initialize user badges array if it doesn't exist
-                if (!this.currentUser.badges) {
-                    this.currentUser.badges = [];
-                }
-
-                // Add badges that don't already exist in user's badge array
-                badges.forEach(badge => {
-                    const existingBadge = this.currentUser.badges.find(b => b.badgeId === badge.badgeId);
-                    if (!existingBadge) {
-                        this.currentUser.badges.push(badge);
-                        console.log('[BADGE SYNC] Added badge to user array:', badge.title);
-                    }
-                });
-
-                console.log('[BADGE SYNC] User badges after sync:', this.currentUser.badges);
-                console.log('[BADGE SYNC] User badges count:', this.currentUser.badges.length);
-            }
-        } catch (error) {
-            console.error('[BADGE SYNC] Error syncing badges from localStorage:', error);
-        }
-    }
-
-    // Add a function to manually sync badges to backend
-    async syncBadgesToBackend() {
-        console.log('🔥🔥🔥 SYNC BADGES TO BACKEND CALLED! 🔥🔥🔥');
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.log('[BADGE SYNC] No auth token found');
-                return;
-            }
-
-            // Use the user's badge array instead of localStorage
-            const userBadges = this.currentUser.badges || [];
-            console.log('[BADGE SYNC] User badges array:', userBadges);
-            console.log('[BADGE SYNC] User badges count:', userBadges.length);
-            console.log('[BADGE SYNC] User badges type:', typeof userBadges);
-            console.log('[BADGE SYNC] User badges is array:', Array.isArray(userBadges));
-            
-            if (userBadges.length === 0) {
-                console.log('[BADGE SYNC] User has no badges to sync');
-                return;
-            }
-
-            const requestBody = { badges: userBadges };
-            console.log('[BADGE SYNC] Request body:', requestBody);
-            console.log('[BADGE SYNC] Sending badges to backend:', JSON.stringify(requestBody, null, 2));
-            
-            const response = await fetch(`${this.API_BASE}/updateUser`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(requestBody)
-            });
-            
-            console.log('[BADGE SYNC] Response status:', response.status);
-            if (response.ok) {
-                const result = await response.json();
-                console.log('[BADGE SYNC] Badges synced successfully:', result);
-            } else {
-                const errorText = await response.text();
-                console.error('[BADGE SYNC] Failed to sync badges:', response.statusText, errorText);
-            }
-        } catch (error) {
-            console.error('[BADGE SYNC] Error syncing badges:', error);
-        }
-    }
+    // Badge sync functions removed - only titles are used now
 
     getTitleName(titleId) {
         const titles = {
-            'step-warrior': 'Step Warrior',
+            'fitness-novice': 'Fitness Novice',
+            'meal-master': 'Meal Master',
+            'strength-warrior': 'Strength Warrior',
+            'cardio-king': 'Cardio King',
+            'yoga-guru': 'Yoga Guru',
+            'nutrition-expert': 'Nutrition Expert',
+            'consistency-champion': 'Consistency Champion',
+            'goal-crusher': 'Goal Crusher',
+            'fitness-legend': 'Fitness Legend',
+            'wellness-guru': 'Wellness Guru',
             'protein-beast': 'Protein Beast',
             'streak-legend': 'Streak Legend'
         };
@@ -1226,6 +1031,13 @@ class EnhancedDashboardGamification {
             xpDisplay.innerHTML = `${progressXP}/${neededXP} XP`;
             console.log('✅ XP display updated:', `${progressXP}/${neededXP} XP`);
             console.log('Element content after update:', xpDisplay.textContent);
+            console.log('XP calculation details:', {
+                currentXP: currentXP,
+                currentLevelXP: currentLevelXP,
+                nextLevelXP: nextLevelXP,
+                progressXP: progressXP,
+                neededXP: neededXP
+            });
         } else {
             console.log('❌ XP display element not found');
         }
@@ -1279,7 +1091,6 @@ class EnhancedDashboardGamification {
         // Update summary cards
         const caloriesDisplay = document.getElementById('calories-display');
         const proteinDisplay = document.getElementById('protein-display');
-        const stepsDisplay = document.getElementById('steps-display');
 
         if (caloriesDisplay && this.smartQuests && this.smartQuests.calories) {
             const calories = this.smartQuests.calories.currentProgress || 0;
@@ -1289,10 +1100,6 @@ class EnhancedDashboardGamification {
             const protein = this.smartQuests.protein.currentProgress || 0;
             proteinDisplay.textContent = protein;
         }
-        if (stepsDisplay && this.smartQuests && this.smartQuests.steps) {
-            const steps = this.smartQuests.steps.currentProgress || 0;
-            stepsDisplay.textContent = steps.toLocaleString();
-        }
 
         // Update smart quests UI
         this.updateSmartQuestUI();
@@ -1300,9 +1107,18 @@ class EnhancedDashboardGamification {
         // Update activity list
         this.updateActivityList();
 
+        // Update title progress
+        this.updateTitleProgress();
+
         // Update quest checkboxes
         this.updateRegularQuestUI();
+        
+        // Hide unlocked titles
+        this.hideUnlockedTitles();
     }
+
+    // Function to hide unlocked challenges and titles on page load
+    // hideUnlockedItems function removed - only titles are used now
 
     updateSmartQuestUI() {
         if (!this.smartQuests) {
@@ -1426,20 +1242,12 @@ class EnhancedDashboardGamification {
                     questItem.classList.add('quest-completed');
                     questItem.classList.remove('reward-available');
 
-                    // Hide collect button and show completed text
-                    if (collectButton) {
-                        collectButton.style.display = 'none';
-                    }
+                    // Hide the entire quest after reward collection (like regular quests)
+                    questItem.style.display = 'none';
+                    console.log(`Hiding completed and reward-collected smart quest: ${questType}`);
 
                     // Remove pulsing animation
                     questItem.style.animation = 'none';
-
-                    // Update progress text to show completion
-                    if (progressText) {
-                        progressText.textContent = 'Completed!';
-                        progressText.style.color = '#4CAF50';
-                        progressText.style.fontWeight = 'bold';
-                    }
                 } else {
                     questItem.classList.remove('quest-completed', 'reward-available');
 
@@ -1497,6 +1305,23 @@ class EnhancedDashboardGamification {
                 this.currentUser.exp = result.xp;
                 this.updateUI();
                 this.showNotification(`Reward collected! +${result.xpGained} XP, +${result.coinsGained} coins`, 'success');
+                
+                // Handle unlocked titles from backend
+                if (result.unlockedTitles && result.unlockedTitles.length > 0) {
+                    console.log('[SMART QUEST] Titles unlocked from backend:', result.unlockedTitles);
+                    result.unlockedTitles.forEach(titleId => {
+                        this.updateTitleUI(titleId);
+                        this.showNotification(`🏆 Unlocked "${this.getTitleName(titleId)}" title!`, 'success');
+                    });
+                }
+                
+                // Hide the quest after reward collection (like regular quests)
+                const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+                if (questItem) {
+                    console.log(`Hiding smart quest ${questType} after reward collection`);
+                    questItem.style.display = 'none';
+                    questItem.classList.add('quest-completed');
+                }
             } else {
                 this.showNotification(result.error || 'Failed to claim reward', 'error');
             }
@@ -1520,20 +1345,16 @@ class EnhancedDashboardGamification {
             if (checkbox) {
                 checkbox.checked = this.questCompletionStatus[questType] || false;
 
-                // Steps quest: always clickable (multiple toggles allowed)
-                // Other quests: lock after completion (unlock next day)
-                if (questType === 'steps') {
-                    checkbox.disabled = false; // Always allow toggles for steps
-                } else {
-                    checkbox.disabled = this.questCompletionStatus[questType]; // Lock other quests after completion
-                }
-
-                // Update parent styling
+                // Update parent styling and visibility
                 const questItem = checkbox.closest('.checklist-item');
                 if (questItem) {
                     if (this.questCompletionStatus[questType]) {
+                        // Hide completed quests completely
+                        questItem.style.display = 'none';
                         questItem.classList.add('quest-completed');
                     } else {
+                        // Show incomplete quests
+                        questItem.style.display = 'flex';
                         questItem.classList.remove('quest-completed');
                     }
                 }
@@ -1544,17 +1365,71 @@ class EnhancedDashboardGamification {
     updateTitleUI(titleId) {
         const titleCard = document.querySelector(`[data-title="${titleId}"]`);
         if (titleCard) {
-            titleCard.classList.add('unlocked');
-            const unlockBtn = titleCard.querySelector('.unlock-title-btn');
-            if (unlockBtn) {
-                unlockBtn.textContent = 'Unlocked';
-                unlockBtn.disabled = true;
-                unlockBtn.classList.remove('btn-secondary');
-                unlockBtn.classList.add('btn-success');
-                // Hide the unlock button after unlocking
-                unlockBtn.style.display = 'none';
-            }
+            console.log(`🏆 Removing title card after unlock: ${titleId}`);
+            // Remove the entire title card from the DOM
+            titleCard.remove();
         }
+    }
+
+    updateTitleProgress() {
+        // Update streak legend progress
+        const streakLegendCard = document.querySelector('[data-title="streak-legend"]');
+        if (streakLegendCard) {
+            const currentStreak = this.currentUser.questStats?.longestStreak || 0;
+            const targetStreak = 7;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = streakLegendCard.querySelector('.progress-fill');
+            const progressText = streakLegendCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+        }
+
+        // Update protein beast progress
+        const proteinBeastCard = document.querySelector('[data-title="protein-beast"]');
+        if (proteinBeastCard) {
+            const currentStreak = this.currentUser.questStats?.proteinLongestStreak || 0;
+            const targetStreak = 5;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = proteinBeastCard.querySelector('.progress-fill');
+            const progressText = proteinBeastCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+        }
+
+        // Update nutrition expert progress
+        const nutritionExpertCard = document.querySelector('[data-title="nutrition-expert"]');
+        if (nutritionExpertCard) {
+            const currentStreak = this.currentUser.questStats?.calorieLongestStreak || 0;
+            const targetStreak = 5;
+            const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
+            const progressFill = nutritionExpertCard.querySelector('.progress-fill');
+            const progressText = nutritionExpertCard.querySelector('.progress-text');
+            
+            if (progressFill) progressFill.style.width = `${progressPercent}%`;
+            if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+        }
+    }
+
+    // Function to hide unlocked titles on page load
+    hideUnlockedTitles() {
+        console.log('🏆 Hiding unlocked titles...');
+        if (!this.currentUser.titles || this.currentUser.titles.length === 0) {
+            console.log('🏆 No titles to hide - user has no unlocked titles');
+            return;
+        }
+
+        this.currentUser.titles.forEach(title => {
+            const titleCard = document.querySelector(`[data-title="${title.titleId}"]`);
+            if (titleCard) {
+                console.log(`🏆 Removing unlocked title card: ${title.titleId}`);
+                // Remove the entire title card from the DOM
+                titleCard.remove();
+            } else {
+                console.log(`🏆 Title card not found for: ${title.titleId}`);
+            }
+        });
     }
 
     updateActivityList() {
@@ -1699,8 +1574,12 @@ class EnhancedDashboardGamification {
     async refreshDashboardData() {
         try {
             console.log('Refreshing dashboard data...');
+            // Force refresh user data from backend to ensure we have the latest XP and level
+            await this.loadUserData();
             await this.refreshSmartQuestData();
             await this.updateUI();
+            // Hide unlocked titles after refresh
+            this.hideUnlockedTitles();
             console.log('Dashboard data refreshed successfully');
         } catch (error) {
             console.error('Error refreshing dashboard data:', error);
@@ -1710,7 +1589,24 @@ class EnhancedDashboardGamification {
     // Manual test function to force update UI
 
 
-    // Force update UI with direct DOM manipulation
+            // Force update UI with direct DOM manipulation
+
+        // Manual refresh function for testing
+        async forceRefreshUserData() {
+            try {
+                console.log('[FORCE REFRESH] Starting manual user data refresh...');
+                await this.loadUserData();
+                this.updateUI();
+                console.log('[FORCE REFRESH] Manual refresh completed');
+                console.log('[FORCE REFRESH] Current user data after refresh:', {
+                    exp: this.currentUser.exp,
+                    level: this.currentUser.level,
+                    coins: this.currentUser.coins
+                });
+            } catch (error) {
+                console.error('[FORCE REFRESH] Error during manual refresh:', error);
+            }
+        }
 
 
     // Storage functions
@@ -1738,9 +1634,16 @@ class EnhancedDashboardGamification {
                         Object.keys(questData.smartQuests).forEach(questType => {
                             if (this.smartQuests[questType]) {
                                 this.smartQuests[questType].completed = questData.smartQuests[questType].completed;
+                                this.smartQuests[questType].rewardCollected = questData.smartQuests[questType].rewardCollected || false;
                             }
                         });
                     }
+                    
+                    // Hide completed quests on page load
+                    setTimeout(() => {
+                        this.updateRegularQuestUI();
+                        this.updateSmartQuestUI();
+                    }, 100);
                 } else {
                     // New day - reset quest states
                     console.log('New day detected, resetting quest states');
@@ -1761,27 +1664,47 @@ class EnhancedDashboardGamification {
         // Reset quest completion status for a new day
         this.questCompletionStatus = {};
 
-        // Reset smart quest completion status
+        // Reset smart quest completion status and reward collection
         Object.keys(this.smartQuests).forEach(questType => {
             if (this.smartQuests[questType]) {
                 this.smartQuests[questType].completed = false;
+                this.smartQuests[questType].rewardCollected = false;
+                
+                // Show the quest again for the new day
+                const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
+                if (questItem) {
+                    console.log(`Showing smart quest ${questType} for new day`);
+                    questItem.style.display = 'flex';
+                    questItem.classList.remove('quest-completed');
+                }
             }
         });
 
         // Save the reset state
         this.saveQuestStates();
 
-        console.log('Daily quests reset for new day');
+        console.log('Daily quests and smart quests reset for new day');
     }
 
     saveUserDataToStorage() {
         try {
+            // Get existing user data to preserve titles and other important fields
+            const existingUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+            
             const userData = {
+                ...existingUserData, // Preserve existing data including titles
                 profileName: this.currentUser.profileName,
                 level: this.currentUser.level,
                 exp: this.currentUser.exp,
                 coins: this.currentUser.coins,
-                avatar: this.currentUser.avatar
+                avatar: this.currentUser.avatar,
+                // Ensure titles are preserved
+                titles: this.currentUser.titles || existingUserData.titles || [],
+                selectedTitle: this.currentUser.selectedTitle || existingUserData.selectedTitle,
+                // Preserve other important fields
+                email: this.currentUser.email || existingUserData.email,
+                activityLog: this.currentUser.activityLog || existingUserData.activityLog || [],
+                questStats: this.currentUser.questStats || existingUserData.questStats || {}
             };
             localStorage.setItem('userData', JSON.stringify(userData));
         } catch (error) {
@@ -1817,7 +1740,6 @@ class EnhancedDashboardGamification {
             'water': 20,
             'sleep': 35,
             'exercise': 40,
-            'posture': 30,
             'meal': 20
         };
         return xpRewards[questType] || 15;
@@ -1831,7 +1753,6 @@ class EnhancedDashboardGamification {
             'water': 5,
             'sleep': 12,
             'exercise': 18,
-            'posture': 10,
             'meal': 5
         };
         return coinRewards[questType] || 3;
@@ -1860,7 +1781,6 @@ class EnhancedDashboardGamification {
                 'water': '💧',
                 'sleep': '😴',
                 'exercise': '🏋️',
-                'posture': '📊',
                 'meal': '🍽️'
             };
             return questIcons[questType] || '🎯';
@@ -1954,6 +1874,8 @@ class EnhancedDashboardGamification {
     }
 
     showUnlockModal(cost, type, onConfirm) {
+        console.log('showUnlockModal called:', { cost, type });
+        
         // Remove existing modal
         const existingModal = document.getElementById('unlock-modal');
         if (existingModal) {
@@ -1963,6 +1885,7 @@ class EnhancedDashboardGamification {
         const modal = this.createUnlockModal(cost, type, onConfirm);
         document.body.appendChild(modal);
         modal.style.display = 'flex';
+        console.log('Unlock modal displayed');
     }
 
     createUnlockModal(cost, type, onConfirm) {
@@ -2019,7 +1942,9 @@ class EnhancedDashboardGamification {
         cancelBtn.onclick = closeModal;
 
         confirmBtn.onclick = () => {
+            console.log('Confirm unlock button clicked');
             if (this.currentUser.coins >= cost) {
+                console.log('Calling onConfirm callback');
                 onConfirm();
                 closeModal();
             } else {
@@ -2090,6 +2015,12 @@ class EnhancedDashboardGamification {
 
         const streakStatValue = document.querySelector('[data-stat="streak"]');
         if (streakStatValue) streakStatValue.textContent = this.currentUser.questStats?.currentStreak || 0;
+
+        const proteinStreakStatValue = document.querySelector('[data-stat="protein-streak"]');
+        if (proteinStreakStatValue) proteinStreakStatValue.textContent = this.currentUser.questStats?.proteinStreak || 0;
+
+        const calorieStreakStatValue = document.querySelector('[data-stat="calorie-streak"]');
+        if (calorieStreakStatValue) calorieStreakStatValue.textContent = this.currentUser.questStats?.calorieStreak || 0;
     }
 }
 
@@ -2423,24 +2354,25 @@ EnhancedDashboardGamification.prototype.handleSmartQuestClick = EnhancedDashboar
 EnhancedDashboardGamification.prototype.handleRegularQuestToggle = EnhancedDashboardGamification.prototype.handleRegularQuestToggle;
 EnhancedDashboardGamification.prototype.completeQuest = EnhancedDashboardGamification.prototype.completeQuest;
 EnhancedDashboardGamification.prototype.syncQuestWithBackend = EnhancedDashboardGamification.prototype.syncQuestWithBackend;
+EnhancedDashboardGamification.prototype.syncUserDataToBackend = EnhancedDashboardGamification.prototype.syncUserDataToBackend;
 EnhancedDashboardGamification.prototype.getRegularQuestData = EnhancedDashboardGamification.prototype.getRegularQuestData;
 EnhancedDashboardGamification.prototype.updateQuestStats = EnhancedDashboardGamification.prototype.updateQuestStats;
 EnhancedDashboardGamification.prototype.unlockChallenge = EnhancedDashboardGamification.prototype.unlockChallenge;
 EnhancedDashboardGamification.prototype.unlockTitle = EnhancedDashboardGamification.prototype.unlockTitle;
-EnhancedDashboardGamification.prototype.unlockBadge = EnhancedDashboardGamification.prototype.unlockBadge;
-EnhancedDashboardGamification.prototype.syncBadgesFromLocalStorage = EnhancedDashboardGamification.prototype.syncBadgesFromLocalStorage;
-EnhancedDashboardGamification.prototype.syncBadgesToBackend = EnhancedDashboardGamification.prototype.syncBadgesToBackend;
+
 EnhancedDashboardGamification.prototype.getTitleName = EnhancedDashboardGamification.prototype.getTitleName;
 EnhancedDashboardGamification.prototype.updateUI = EnhancedDashboardGamification.prototype.updateUI;
 EnhancedDashboardGamification.prototype.updateSmartQuestUI = EnhancedDashboardGamification.prototype.updateSmartQuestUI;
 EnhancedDashboardGamification.prototype.collectSmartQuestReward = EnhancedDashboardGamification.prototype.collectSmartQuestReward;
 EnhancedDashboardGamification.prototype.updateRegularQuestUI = EnhancedDashboardGamification.prototype.updateRegularQuestUI;
 EnhancedDashboardGamification.prototype.updateTitleUI = EnhancedDashboardGamification.prototype.updateTitleUI;
+EnhancedDashboardGamification.prototype.hideUnlockedTitles = EnhancedDashboardGamification.prototype.hideUnlockedTitles;
 EnhancedDashboardGamification.prototype.updateActivityList = EnhancedDashboardGamification.prototype.updateActivityList;
 EnhancedDashboardGamification.prototype.startDataSync = EnhancedDashboardGamification.prototype.startDataSync;
 EnhancedDashboardGamification.prototype.syncFoodLogData = EnhancedDashboardGamification.prototype.syncFoodLogData;
 EnhancedDashboardGamification.prototype.refreshSmartQuestData = EnhancedDashboardGamification.prototype.refreshSmartQuestData;
 EnhancedDashboardGamification.prototype.refreshDashboardData = EnhancedDashboardGamification.prototype.refreshDashboardData;
+EnhancedDashboardGamification.prototype.forceRefreshUserData = EnhancedDashboardGamification.prototype.forceRefreshUserData;
 EnhancedDashboardGamification.prototype.saveQuestStates = EnhancedDashboardGamification.prototype.saveQuestStates;
 EnhancedDashboardGamification.prototype.loadQuestStates = EnhancedDashboardGamification.prototype.loadQuestStates;
 EnhancedDashboardGamification.prototype.resetDailyQuests = EnhancedDashboardGamification.prototype.resetDailyQuests;
@@ -2456,3 +2388,44 @@ EnhancedDashboardGamification.prototype.showLevelUpNotification = EnhancedDashbo
 EnhancedDashboardGamification.prototype.showUnlockModal = EnhancedDashboardGamification.prototype.showUnlockModal;
 EnhancedDashboardGamification.prototype.createUnlockModal = EnhancedDashboardGamification.prototype.createUnlockModal;
 EnhancedDashboardGamification.prototype.updateStatsUI = EnhancedDashboardGamification.prototype.updateStatsUI;
+
+// Global functions for testing
+window.testRefreshUserData = () => {
+    if (dashboardInstance) {
+        dashboardInstance.forceRefreshUserData();
+    } else {
+        console.error('Dashboard instance not available');
+    }
+};
+
+window.logUserData = () => {
+    if (dashboardInstance && dashboardInstance.currentUser) {
+        console.log('Current user data:', {
+            exp: dashboardInstance.currentUser.exp,
+            level: dashboardInstance.currentUser.level,
+            coins: dashboardInstance.currentUser.coins
+        });
+    } else {
+        console.error('Dashboard instance or user data not available');
+    }
+};
+
+window.testXPLevelSync = () => {
+    if (dashboardInstance && dashboardInstance.currentUser) {
+        const calculatedLevel = dashboardInstance.calculateLevel(dashboardInstance.currentUser.exp);
+        console.log('XP/Level Sync Test:', {
+            currentXP: dashboardInstance.currentUser.exp,
+            currentLevel: dashboardInstance.currentUser.level,
+            calculatedLevel: calculatedLevel,
+            isConsistent: dashboardInstance.currentUser.level === calculatedLevel
+        });
+        
+        if (dashboardInstance.currentUser.level !== calculatedLevel) {
+            console.warn('⚠️ Level inconsistency detected!');
+        } else {
+            console.log('✅ XP and level are consistent');
+        }
+    } else {
+        console.error('Dashboard instance or user data not available');
+    }
+};

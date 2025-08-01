@@ -187,157 +187,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Mini Challenges Section */
-.mini-challenges-section {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    margin-bottom: 2rem;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.section-header h2 {
-    margin: 0;
-    color: var(--text-dark);
-}
-
-.challenge-timer {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--primary-bg);
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.timer-icon {
-    font-size: 1rem;
-}
-
-.challenges-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.challenge-card {
-    background: var(--primary-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.challenge-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(41, 236, 139, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.challenge-card:hover::before {
-    left: 100%;
-}
-
-.challenge-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: var(--primary-btn);
-}
-
-.challenge-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.challenge-icon {
-    font-size: 2.5rem;
-    width: 60px;
-    text-align: center;
-}
-
-.challenge-info h3 {
-    margin: 0 0 0.3rem 0;
-    font-size: 1.2rem;
-    color: var(--text-dark);
-}
-
-.challenge-info p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.challenge-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-}
-
-.challenge-cost {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: var(--text-dark);
-}
-
-.cost-icon {
-    font-size: 1.2rem;
-}
-
-.challenge-reward {
-    text-align: right;
-}
-
-.reward-xp {
-    display: block;
-    color: var(--primary-btn);
-    font-weight: 600;
-    font-size: 0.9rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-}
-
-.reward-badge {
-    display: block;
-    color: var(--text-light);
-    font-size: 0.8rem;
-    margin-top: 0.2rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-}
-
-.unlock-btn {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    background: var(--primary-bg);
-    border: 1px solid var(--border-color);
-}
+/* Mini Challenges Section removed - only titles are used now */
 
 .unlock-btn:hover {
     transform: translateY(-2px);
@@ -700,6 +550,79 @@ body {
     display: none;
 }
 
+/* Gamified Checkbox Styling */
+.gamified-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    border: 3px solid #d0d0d0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.gamified-checkbox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.1), rgba(30, 200, 120, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gamified-checkbox:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #29ec8b;
+}
+
+.gamified-checkbox:hover::before {
+    opacity: 1;
+}
+
+.checkbox-icon {
+    font-size: 16px;
+    font-weight: bold;
+    color: transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.quest-checkbox:checked + .gamified-checkbox {
+    background: linear-gradient(135deg, #29ec8b, #1ec878);
+    border-color: #1ec878;
+    box-shadow: 0 0 20px rgba(41, 236, 139, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+}
+
+.quest-checkbox:checked + .gamified-checkbox::before {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+}
+
+.quest-checkbox:checked + .gamified-checkbox .checkbox-icon {
+    color: white;
+    transform: scale(1.2);
+    animation: checkboxPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkboxPop {
+    0% { transform: scale(0.8) rotate(-10deg); }
+    50% { transform: scale(1.3) rotate(5deg); }
+    100% { transform: scale(1.2) rotate(0deg); }
+}
+
+/* Legacy toggle styles (keeping for compatibility) */
 .quest-toggle {
     position: relative;
     display: inline-block;
@@ -1107,6 +1030,33 @@ body.dark-mode .progress-bar {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Dark mode support for gamified checkboxes */
+body.dark-mode .gamified-checkbox {
+    background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+    border-color: #555;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .gamified-checkbox:hover {
+    border-color: #29ec8b;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .gamified-checkbox::before {
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.15), rgba(30, 200, 120, 0.15));
+}
+
+body.dark-mode .quest-checkbox:checked + .gamified-checkbox {
+    background: linear-gradient(135deg, #29ec8b, #1ec878);
+    border-color: #1ec878;
+    box-shadow: 0 0 20px rgba(41, 236, 139, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .quest-checkbox:checked + .gamified-checkbox::before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+}
+
+/* Legacy dark mode toggle styles */
 body.dark-mode .quest-toggle {
     background: rgba(255, 255, 255, 0.2);
 }

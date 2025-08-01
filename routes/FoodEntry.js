@@ -4,6 +4,76 @@ const User = require('../models/User');
 const FoodLogModel = require('../models/FoodLogModel');
 const jwt = require('jsonwebtoken');
 
+// Function to delete food logs older than one day
+async function deleteOldFoodLogs() {
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10); // YYYY-MM-DD format
+    
+    console.log('🗑️ Deleting food logs older than:', yesterdayStr);
+    
+    // Delete from FoodLogModel collection
+    const deletedFromCollection = await FoodLogModel.deleteMany({
+      date: { $lt: yesterdayStr }
+    });
+    
+    console.log(`🗑️ Deleted ${deletedFromCollection.deletedCount} food logs from collection`);
+    
+    // Also clean up from user's foodLogs array
+    const users = await User.find({});
+    let totalDeletedFromUsers = 0;
+    
+    for (const user of users) {
+      const originalLength = user.foodLogs.length;
+      user.foodLogs = user.foodLogs.filter(log => log.date >= yesterdayStr);
+      const deletedCount = originalLength - user.foodLogs.length;
+      
+      if (deletedCount > 0) {
+        await user.save();
+        totalDeletedFromUsers += deletedCount;
+      }
+    }
+    
+    console.log(`🗑️ Deleted ${totalDeletedFromUsers} food logs from user arrays`);
+    
+    return {
+      collectionDeleted: deletedFromCollection.deletedCount,
+      userArraysDeleted: totalDeletedFromUsers
+    };
+  } catch (error) {
+    console.error('❌ Error deleting old food logs:', error);
+    throw error;
+  }
+}
+
+// Scheduled cleanup function that runs every 24 hours
+function startScheduledCleanup() {
+  console.log('🔄 Starting scheduled food log cleanup (every 24 hours)');
+  
+  // Run cleanup every 24 hours (86400000 milliseconds)
+  setInterval(async () => {
+    try {
+      console.log('🔄 Running scheduled food log cleanup...');
+      await deleteOldFoodLogs();
+      console.log('✅ Scheduled cleanup completed');
+    } catch (error) {
+      console.error('❌ Scheduled cleanup failed:', error);
+    }
+  }, 24 * 60 * 60 * 1000); // 24 hours
+  
+  // Also run initial cleanup
+  setTimeout(async () => {
+    try {
+      console.log('🔄 Running initial food log cleanup...');
+      await deleteOldFoodLogs();
+      console.log('✅ Initial cleanup completed');
+    } catch (error) {
+      console.error('❌ Initial cleanup failed:', error);
+    }
+  }, 5000); // Run after 5 seconds of server start
+}
+
 // Add a food log entry to the user's foodLogs array
 router.post('/add', async (req, res) => {
   try {
@@ -78,6 +148,14 @@ router.post('/add', async (req, res) => {
       protein: savedFoodLog.protein,
       _id: savedFoodLog._id
     });
+
+    // Clean up old food logs after adding a new one
+    try {
+      await deleteOldFoodLogs();
+    } catch (cleanupError) {
+      console.warn('Failed to clean up old food logs:', cleanupError);
+      // Don't fail the request if cleanup fails
+    }
 
     res.json({ 
       success: true, 
@@ -241,5 +319,37 @@ router.delete('/delete/:foodLogId', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete food log', details: err.message });
   }
 });
+
+// Manual cleanup route for old food logs
+router.post('/cleanup-old-logs', async (req, res) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    const result = await deleteOldFoodLogs();
+    
+    res.json({
+      success: true,
+      message: 'Old food logs cleaned up successfully',
+      deletedCount: result
+    });
+  } catch (err) {
+    console.error('Error during manual cleanup:', err);
+    res.status(500).json({ error: 'Failed to clean up old food logs', details: err.message });
+  }
+});
+
+// Start the scheduled cleanup when this route module is loaded
+startScheduledCleanup();
 
 module.exports = router;

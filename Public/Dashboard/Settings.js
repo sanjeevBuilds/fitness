@@ -4,7 +4,9 @@ class SettingsManager {
         this.initializeSettings();
         this.setupEventListeners();
         this.setupDragFunctionality();
-        this.initializeBadgesAndTitles();
+        this.initializeTitles().catch(error => {
+            console.error('Error initializing titles:', error);
+        });
     }
 
     initializeSettings() {
@@ -207,11 +209,11 @@ class SettingsManager {
             });
         }
 
-        // Badges and Titles functionality
-        this.setupBadgesAndTitlesListeners();
+        // Titles functionality only
+        this.setupTitlesListeners();
     }
 
-    setupBadgesAndTitlesListeners() {
+    setupTitlesListeners() {
         // Title selection
         const confirmTitleBtn = document.getElementById('confirm-title-btn');
         if (confirmTitleBtn) {
@@ -220,19 +222,19 @@ class SettingsManager {
             });
         }
 
-        // Badge selection
-        const confirmBadgeBtn = document.getElementById('confirm-badge-btn');
-        if (confirmBadgeBtn) {
-            confirmBadgeBtn.addEventListener('click', () => {
-                this.confirmBadgeSelection();
+        // Refresh titles
+        const refreshTitlesBtn = document.getElementById('refresh-badges-titles-btn');
+        if (refreshTitlesBtn) {
+            refreshTitlesBtn.addEventListener('click', async () => {
+                await this.refreshTitles();
+                this.showToast('Titles refreshed!', 'success');
             });
         }
     }
 
-    initializeBadgesAndTitles() {
-        this.loadUserBadgesAndTitles();
+    async initializeTitles() {
+        await this.loadUserTitles();
         this.populateTitlesGrid();
-        this.populateBadgesGrid();
         this.updateCurrentSelections();
         // Refresh shared sidebar display
         if (window.sharedSidebar) {
@@ -240,23 +242,69 @@ class SettingsManager {
         }
     }
 
-    loadUserBadgesAndTitles() {
-        // Load user data from localStorage
-        const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    async loadUserTitles() {
+        let userData = null;
         
-        // Also try to get from currentUser if userData is empty
-        if (!userData.email && !userData.profileName) {
+        try {
+            // Load user data from backend
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.error('No auth token found');
+                throw new Error('No auth token');
+            }
+
+            const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
+            if (!decoded || !decoded.email) {
+                console.error('Invalid token or no email in token');
+                throw new Error('Invalid token');
+            }
+
+            const response = await fetch(`http://localhost:8000/api/getUser/${decoded.email}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            userData = await response.json();
+            console.log('User data loaded from backend:', userData);
+            
+            // Check which titles the user actually has unlocked
+            let userTitles = userData.titles || [];
+            
+            // Remove duplicates from titles
+            const uniqueTitles = [];
+            const seenTitleIds = new Set();
+            userTitles.forEach(title => {
+                if (!seenTitleIds.has(title.titleId)) {
+                    seenTitleIds.add(title.titleId);
+                    uniqueTitles.push(title);
+                }
+            });
+            userTitles = uniqueTitles;
+            
+            // Update userData with deduplicated titles
+            userData.titles = userTitles;
+            
+            console.log('User titles from backend (deduplicated):', userTitles);
+            console.log('Title count:', userTitles.length);
+            
+            // Store in localStorage for consistency
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+        } catch (error) {
+            console.error('Error loading user data from backend:', error);
+            // Fallback to localStorage
+            userData = JSON.parse(localStorage.getItem('userData')) || {};
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             if (currentUser.email || currentUser.profileName) {
-                // Merge currentUser data into userData
                 Object.assign(userData, currentUser);
-                // Save merged data back to localStorage
                 localStorage.setItem('userData', JSON.stringify(userData));
             }
         }
-        
-        // Debug log to see what user data we have
-        console.log('User data loaded:', userData);
         
         // Sample badges and titles data (in a real app, this would come from the server)
         this.availableTitles = [
@@ -269,62 +317,72 @@ class SettingsManager {
             { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
             { id: 'goal-crusher', name: 'Goal Crusher', icon: '🎯', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
             { id: 'fitness-legend', name: 'Fitness Legend', icon: '👑', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true }
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
+            // Dashboard titles
+            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: 'Avg. 100g protein/day', requirement: 'Achieve protein goals', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '14-day perfect activity streak', requirement: 'Maintain 14-day streak', unlocked: false }
         ];
 
-        this.availableBadges = [
-            { id: 'first-workout', name: 'First Workout', icon: '🎉', description: 'Completed your first workout', requirement: 'Complete 1 workout', unlocked: true },
-            { id: 'week-warrior', name: 'Week Warrior', icon: '📅', description: 'Worked out for 7 consecutive days', requirement: '7-day streak', unlocked: true },
-            { id: 'month-master', name: 'Month Master', icon: '📊', description: 'Consistent for an entire month', requirement: '30-day streak', unlocked: false },
-            { id: 'weight-loss', name: 'Weight Loss Hero', icon: '⚖️', description: 'Achieved weight loss goal', requirement: 'Lose 5kg', unlocked: false },
-            { id: 'muscle-gain', name: 'Muscle Builder', icon: '🏋️‍♂️', description: 'Gained muscle mass', requirement: 'Gain 2kg muscle', unlocked: false },
-            { id: 'meal-planner', name: 'Meal Planner', icon: '📋', description: 'Created 10 meal plans', requirement: 'Plan 10 meals', unlocked: true },
-            { id: 'social-fitness', name: 'Social Fitness', icon: '👥', description: 'Connected with fitness buddies', requirement: 'Add 5 friends', unlocked: true },
-            { id: 'early-bird', name: 'Early Bird', icon: '🌅', description: 'Workout before 8 AM', requirement: '5 AM workouts', unlocked: false }
-        ];
+        // Badges removed - only titles are used now
 
         // Get current selections from user data
-        this.selectedTitle = userData.selectedTitle || null;
-        this.selectedBadge = userData.selectedBadge || null;
+        this.selectedTitle = userData ? userData.selectedTitle || null : null;
+        
+        console.log('Current selections:', {
+            selectedTitle: this.selectedTitle
+        });
+        
+        // Ensure user has some titles for display (for testing purposes)
+        if (!userData || !userData.titles || userData.titles.length === 0) {
+            console.log('User has no titles, adding some default ones for display');
+            const defaultTitles = [
+                { titleId: 'fitness-novice', title: 'Fitness Novice', description: 'Just starting your fitness journey', rarity: 'common', unlockedAt: new Date().toISOString() },
+                { titleId: 'nutrition-expert', title: 'Nutrition Expert', description: 'Deep knowledge of nutrition', rarity: 'rare', unlockedAt: new Date().toISOString() },
+                { titleId: 'consistency-champion', title: 'Consistency Champion', description: 'Unwavering dedication to fitness', rarity: 'uncommon', unlockedAt: new Date().toISOString() },
+                { titleId: 'wellness-guru', title: 'Wellness Guru', description: 'Master of holistic wellness', rarity: 'epic', unlockedAt: new Date().toISOString() }
+            ];
+            
+            if (userData) {
+                userData.titles = defaultTitles;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                console.log('Added default titles to user data');
+            }
+        }
     }
 
     populateTitlesGrid() {
         const titlesGrid = document.getElementById('titles-grid');
-        if (!titlesGrid) return;
+        if (!titlesGrid) {
+            console.error('titles-grid element not found!');
+            return;
+        }
 
-        titlesGrid.innerHTML = this.availableTitles.map(title => `
-            <div class="title-item ${title.unlocked ? '' : 'locked'} ${this.selectedTitle === title.id ? 'selected' : ''}" 
-                 data-title-id="${title.id}" 
-                 onclick="${title.unlocked ? 'settingsManager.selectTitle(\'' + title.id + '\')' : ''}">
-                <div class="title-icon">${title.icon}</div>
-                <div class="title-info">
-                    <div class="title-name">${title.name}</div>
-                    <div class="title-description">${title.description}</div>
-                    <div class="title-requirement">${title.requirement}</div>
+        // Get user's actual titles from localStorage (updated by loadUserBadgesAndTitles)
+        const userData = JSON.parse(localStorage.getItem('userData')) || {};
+        const userTitles = userData.titles || [];
+        const userTitleIds = userTitles.map(t => t.titleId);
+
+        const html = this.availableTitles.map(title => {
+            const isUnlocked = userTitleIds.includes(title.id);
+            return `
+                <div class="title-item ${isUnlocked ? '' : 'locked'} ${this.selectedTitle === title.id ? 'selected' : ''}" 
+                     data-title-id="${title.id}" 
+                     onclick="${isUnlocked ? 'settingsManager.selectTitle(\'' + title.id + '\')' : ''}">
+                    <div class="title-icon">${title.icon}</div>
+                    <div class="title-info">
+                        <div class="title-name">${title.name}</div>
+                        <div class="title-description">${title.description}</div>
+                        <div class="title-requirement">${title.requirement}</div>
+                    </div>
+                    ${!isUnlocked ? '<div class="locked-indicator">🔒</div>' : ''}
                 </div>
-                ${!title.unlocked ? '<div class="locked-indicator">🔒</div>' : ''}
-            </div>
-        `).join('');
+            `;
+        }).join('');
+        
+        titlesGrid.innerHTML = html;
     }
 
-    populateBadgesGrid() {
-        const badgesGrid = document.getElementById('badges-grid');
-        if (!badgesGrid) return;
-
-        badgesGrid.innerHTML = this.availableBadges.map(badge => `
-            <div class="badge-item ${badge.unlocked ? '' : 'locked'} ${this.selectedBadge === badge.id ? 'selected' : ''}" 
-                 data-badge-id="${badge.id}" 
-                 onclick="${badge.unlocked ? 'settingsManager.selectBadge(\'' + badge.id + '\')' : ''}">
-                <div class="badge-icon">${badge.icon}</div>
-                <div class="badge-info">
-                    <div class="badge-name">${badge.name}</div>
-                    <div class="badge-description">${badge.description}</div>
-                    <div class="badge-requirement">${badge.requirement}</div>
-                </div>
-                ${!badge.unlocked ? '<div class="locked-indicator">🔒</div>' : ''}
-            </div>
-        `).join('');
-    }
+    // populateBadgesGrid function removed - only titles are used now
 
     selectTitle(titleId) {
         // Remove previous selection
@@ -342,21 +400,7 @@ class SettingsManager {
         document.getElementById('confirm-title-btn').style.display = 'block';
     }
 
-    selectBadge(badgeId) {
-        // Remove previous selection
-        document.querySelectorAll('.badge-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-
-        // Add selection to clicked item
-        const selectedItem = document.querySelector(`[data-badge-id="${badgeId}"]`);
-        if (selectedItem) {
-            selectedItem.classList.add('selected');
-        }
-
-        this.selectedBadge = badgeId;
-        document.getElementById('confirm-badge-btn').style.display = 'block';
-    }
+    // selectBadge function removed - only titles are used now
 
     async confirmTitleSelection() {
         if (!this.selectedTitle) return;
@@ -380,9 +424,12 @@ class SettingsManager {
 
             const updateData = { selectedTitle: this.selectedTitle };
 
-            const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch(`http://localhost:8000/api/updateUser`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
                 body: JSON.stringify(updateData)
             });
 
@@ -420,124 +467,62 @@ class SettingsManager {
         }
     }
 
-    async confirmBadgeSelection() {
-        if (!this.selectedBadge) return;
-
-        try {
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            
-            // Check if user email exists
-            if (!userData.email) {
-                // Fallback: just update localStorage without server call
-                localStorage.setItem('userData', JSON.stringify({ ...userData, selectedBadge: this.selectedBadge }));
-                this.updateCurrentSelections();
-                // Refresh shared sidebar display
-                if (window.sharedSidebar) {
-                    window.sharedSidebar.refreshDisplay();
-                }
-                document.getElementById('confirm-badge-btn').style.display = 'none';
-                this.showToast('Badge updated successfully! (offline mode)', 'success');
-                return;
-            }
-
-            const updateData = { selectedBadge: this.selectedBadge };
-
-            const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updateData)
-            });
-
-            if (response.ok) {
-                // Update localStorage
-                localStorage.setItem('userData', JSON.stringify({ ...userData, selectedBadge: this.selectedBadge }));
-                
-                // Update display
-                this.updateCurrentSelections();
-                // Refresh shared sidebar display
-                if (window.sharedSidebar) {
-                    window.sharedSidebar.refreshDisplay();
-                }
-                
-                // Hide confirm button
-                document.getElementById('confirm-badge-btn').style.display = 'none';
-                
-                this.showToast('Badge updated successfully!', 'success');
-            } else {
-                const result = await response.json();
-                this.showToast(result.error || 'Failed to update badge', 'error');
-            }
-        } catch (error) {
-            console.error('Error updating badge:', error);
-            // Fallback: update localStorage even if server call fails
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            localStorage.setItem('userData', JSON.stringify({ ...userData, selectedBadge: this.selectedBadge }));
-            this.updateCurrentSelections();
-            // Refresh shared sidebar display
-            if (window.sharedSidebar) {
-                window.sharedSidebar.refreshDisplay();
-            }
-            document.getElementById('confirm-badge-btn').style.display = 'none';
-            this.showToast('Badge updated successfully! (offline mode)', 'success');
-        }
-    }
+    // confirmBadgeSelection function removed - only titles are used now
 
     updateCurrentSelections() {
         const currentTitleDisplay = document.getElementById('current-title-display');
-        const currentBadgeDisplay = document.getElementById('current-badge-display');
 
         if (currentTitleDisplay) {
             const selectedTitle = this.availableTitles.find(t => t.id === this.selectedTitle);
             currentTitleDisplay.textContent = selectedTitle ? selectedTitle.name : 'None';
         }
-
-        if (currentBadgeDisplay) {
-            const selectedBadge = this.availableBadges.find(b => b.id === this.selectedBadge);
-            currentBadgeDisplay.textContent = selectedBadge ? selectedBadge.name : 'None';
-        }
     }
 
-    updateSidebarDisplay() {
-        // Update sidebar to show selected title and badge
-        const userData = JSON.parse(localStorage.getItem('userData')) || {};
-        const selectedTitle = this.availableTitles.find(t => t.id === this.selectedTitle);
-        const selectedBadge = this.availableBadges.find(b => b.id === this.selectedBadge);
+    // Function to refresh titles from backend
+    async refreshTitles() {
+        console.log('Refreshing titles from backend...');
+        await this.loadUserTitles();
+        this.populateTitlesGrid();
+        this.updateCurrentSelections();
+        
+        // Sync deduplicated data back to backend
+        await this.syncDeduplicatedData();
+        
+        console.log('Titles refreshed!');
+    }
 
-        // Update sidebar username to include title prominently
-        const sidebarUsername = document.getElementById('sidebar-username');
-        if (sidebarUsername) {
-            let displayText = userData.profileName || 'User';
+    // Function to sync deduplicated data back to backend
+    async syncDeduplicatedData() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const token = localStorage.getItem('authToken');
             
-            // Add title prominently if selected
-            if (selectedTitle) {
-                displayText = `${selectedTitle.icon} ${selectedTitle.name}`;
+            if (!token || !userData.titles) {
+                return;
             }
-            
-            // Add badge if selected
-            if (selectedBadge) {
-                displayText += ` ${selectedBadge.icon}`;
-            }
-            
-            sidebarUsername.textContent = displayText;
-            
-            // Add special styling for title display
-            if (selectedTitle) {
-                sidebarUsername.style.background = 'linear-gradient(135deg, rgba(41, 236, 139, 0.1), rgba(30, 200, 120, 0.1))';
-                sidebarUsername.style.padding = '0.5rem 1rem';
-                sidebarUsername.style.borderRadius = '20px';
-                sidebarUsername.style.border = '2px solid rgba(41, 236, 139, 0.3)';
-                sidebarUsername.style.fontWeight = '700';
-                sidebarUsername.style.fontSize = '1rem';
+
+            const response = await fetch(`http://localhost:8000/api/updateUser`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    titles: userData.titles
+                })
+            });
+
+            if (response.ok) {
+                console.log('Deduplicated titles synced to backend successfully');
             } else {
-                sidebarUsername.style.background = 'none';
-                sidebarUsername.style.padding = '0';
-                sidebarUsername.style.borderRadius = '0';
-                sidebarUsername.style.border = 'none';
-                sidebarUsername.style.fontWeight = '600';
-                sidebarUsername.style.fontSize = '1.1rem';
+                console.error('Failed to sync deduplicated titles to backend');
             }
+        } catch (error) {
+            console.error('Error syncing deduplicated titles:', error);
         }
     }
+
+    // updateSidebarDisplay function removed - only titles are used now
 
     setupDragFunctionality() {
         const toggleSwitches = document.querySelectorAll('.toggle-switch');
@@ -724,12 +709,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sidebarAvatar) sidebarAvatar.src = `../../assets/${userData.avatar}`;
     }
     
-    // Update sidebar display with titles and badges
-    if (window.settingsManager) {
-        window.settingsManager.updateSidebarDisplay();
-    }
+    // Sidebar display update removed - only titles are used now
     
-    // Populate gamification UI (badges, titles, XP, coins, activity log)
+    // Populate gamification UI (titles, XP, coins, activity log)
     if (typeof fetchUserDataAndRenderProfile === 'function') {
         fetchUserDataAndRenderProfile();
     }

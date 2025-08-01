@@ -150,10 +150,7 @@
                     <span class="nav-icon">💡</span>
                     Food Suggestion
                 </a>
-                <a href="Posture.html" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    Posture Scan
-                </a>
+
                 <a href="Buddies.html" class="nav-item">
                     <span class="nav-icon">👥</span>
                     Buddies
@@ -215,6 +212,16 @@
                         <span class="stat-value" data-stat="streak">0</span>
                         <span class="stat-label">Streak</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🥩</span>
+                        <span class="stat-value" data-stat="protein-streak">0</span>
+                        <span class="stat-label">Protein</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🍎</span>
+                        <span class="stat-value" data-stat="calorie-streak">0</span>
+                        <span class="stat-label">Calorie</span>
+                    </div>
                 </div>
             </div>
             
@@ -234,12 +241,7 @@
                         <div class="summary-unit">g</div>
                         <div class="summary-change positive" id="protein-change">+0%</div>
                     </div>
-                    <div class="summary-card">
-                        <h3>Steps</h3>
-                        <div class="summary-value" id="steps-display">0</div>
-                        <div class="summary-unit">steps</div>
-                        <div class="summary-change positive" id="steps-change">+0%</div>
-                    </div>
+
                     <div class="summary-card">
                         <h3>Water</h3>
                         <div class="summary-value" id="water-display">0</div>
@@ -252,12 +254,7 @@
                         <div class="summary-unit">hrs</div>
                         <div class="summary-change positive" id="sleep-change">+0%</div>
                     </div>
-                    <div class="summary-card">
-                        <h3>Posture Score</h3>
-                        <div class="summary-value" id="posture-display">88</div>
-                        <div class="summary-unit">points</div>
-                        <div class="summary-change positive">+22%</div>
-                    </div>
+
                 </div>
             </section>
 
@@ -276,24 +273,13 @@
                         <div class="quest-reward">
                             <span class="xp-reward">+25 XP</span>
                             <input type="checkbox" class="quest-checkbox" id="water-quest">
-                            <label for="water-quest" class="quest-toggle"></label>
+                            <label for="water-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="checklist-item" data-quest="steps">
-                        <div class="quest-info">
-                            <span class="quest-icon">👣</span>
-                            <div class="quest-details">
-                                <h3>Step Champion</h3>
-                                <p>Complete 5K steps</p>
-                            </div>
-                        </div>
-                        <div class="quest-reward">
-                            <span class="xp-reward">+50 XP</span>
-                            <input type="checkbox" class="quest-checkbox" id="steps-quest">
-                            <label for="steps-quest" class="quest-toggle"></label>
-                        </div>
-                    </div>
+
 
                     <div class="checklist-item" data-quest="sleep">
                         <div class="quest-info">
@@ -306,24 +292,13 @@
                         <div class="quest-reward">
                             <span class="xp-reward">+30 XP</span>
                             <input type="checkbox" class="quest-checkbox" id="sleep-quest">
-                            <label for="sleep-quest" class="quest-toggle"></label>
+                            <label for="sleep-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="checklist-item" data-quest="posture">
-                        <div class="quest-info">
-                            <span class="quest-icon">📊</span>
-                            <div class="quest-details">
-                                <h3>Posture Pro</h3>
-                                <p>Complete posture scan</p>
-                            </div>
-                        </div>
-                        <div class="quest-reward">
-                            <span class="xp-reward">+40 XP</span>
-                            <input type="checkbox" class="quest-checkbox" id="posture-quest">
-                            <label for="posture-quest" class="quest-toggle"></label>
-                        </div>
-                    </div>
+
 
                     <div class="checklist-item" data-quest="meal">
                         <div class="quest-info">
@@ -336,7 +311,9 @@
                         <div class="quest-reward">
                             <span class="xp-reward">+20 XP</span>
                             <input type="checkbox" class="quest-checkbox" id="meal-quest">
-                            <label for="meal-quest" class="quest-toggle"></label>
+                            <label for="meal-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
                         </div>
                     </div>
 
@@ -351,20 +328,13 @@
                         <div class="quest-reward">
                             <span class="xp-reward">+60 XP</span>
                             <input type="checkbox" class="quest-checkbox" id="exercise-quest">
-                            <label for="exercise-quest" class="quest-toggle"></label>
+                            <label for="exercise-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
                         </div>
                     </div>
                 </div>
-                <!-- Badge Unlock Button -->
-                <button class="btn btn-success unlock-badge-btn"
-                        data-badge-id="first-quest-badge"
-                        data-badge-title="First Quest Complete"
-                        data-badge-description="Completed your first quest!"
-                        data-badge-icon="🏅"
-                        data-badge-rarity="common"
-                        data-badge-earnedby="quest">
-                    Unlock First Quest Badge
-                </button>
+
             </div>
 
             <!-- Smart Daily Quest Scaling -->
@@ -376,28 +346,6 @@
                     </button>
                 </div>
                 <div class="quest-scaling-grid">
-                    <div class="quest-item" data-quest="steps">
-                        <div class="quest-header">
-                            <span class="quest-icon">👣</span>
-                            <div class="quest-info">
-                                <h3>Steps</h3>
-                                <p>Today's Goal: <span class="current-goal">0</span></p>
-                            </div>
-                        </div>
-                        <div class="quest-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="progress-text">0 / 0</span>
-                        </div>
-                        <div class="quest-rewards">
-                            <span class="reward-xp">+0 XP</span>
-                            <span class="reward-coins">+0 Coins</span>
-                            <span class="scaling-notice" style="display: none;">🎯 Tomorrow's goal: 20,000</span>
-                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
-                        </div>
-                    </div>
-
                     <div class="quest-item" data-quest="calories">
                         <div class="quest-header">
                             <span class="quest-icon">🔥</span>
@@ -442,102 +390,49 @@
                 </div>
             </section>
 
-            <!-- Mini Challenges Section -->
-            <section class="mini-challenges-section">
-                <div class="section-header">
-                    <h2>🎯 Mini Challenges</h2>
-                    <div class="challenge-timer">
-                        <span class="timer-icon">⏳</span>
-                        <span class="timer-text" id="challenge-timer">Refreshes in 2 days</span>
-                    </div>
-                </div>
-                <div class="challenges-grid">
-                    <div class="challenge-card" data-challenge="night-walk">
-                        <div class="challenge-header">
-                            <span class="challenge-icon">🌙</span>
-                            <div class="challenge-info">
-                                <h3>Night Walk</h3>
-                                <p>Walk after 7 PM</p>
-                            </div>
-                        </div>
-                        <div class="challenge-details">
-                            <div class="challenge-cost">
-                                <span class="cost-icon">🪙</span>
-                                <span class="cost-amount">15</span>
-                            </div>
-                            <div class="challenge-reward">
-                                <span class="reward-xp">+20 XP</span>
-                                <span class="reward-badge">"Moonwalker" Badge</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary unlock-btn" data-cost="15">Unlock Challenge</button>
-                    </div>
-
-                    <div class="challenge-card" data-challenge="fruit-day">
-                        <div class="challenge-header">
-                            <span class="challenge-icon">🍎</span>
-                            <div class="challenge-info">
-                                <h3>Fruit Day</h3>
-                                <p>Log 3 fruits today</p>
-                            </div>
-                        </div>
-                        <div class="challenge-details">
-                            <div class="challenge-cost">
-                                <span class="cost-icon">🪙</span>
-                                <span class="cost-amount">20</span>
-                            </div>
-                            <div class="challenge-reward">
-                                <span class="reward-xp">+30 XP</span>
-                                <span class="reward-badge">Avatar Hat</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary unlock-btn" data-cost="20">Unlock Challenge</button>
-                    </div>
-
-                    <div class="challenge-card" data-challenge="hydration-hero">
-                        <div class="challenge-header">
-                            <span class="challenge-icon">🚿</span>
-                            <div class="challenge-info">
-                                <h3>Hydration Hero</h3>
-                                <p>Drink 3L water</p>
-                            </div>
-                        </div>
-                        <div class="challenge-details">
-                            <div class="challenge-cost">
-                                <span class="cost-icon">🪙</span>
-                                <span class="cost-amount">25</span>
-                            </div>
-                            <div class="challenge-reward">
-                                <span class="reward-xp">+40 XP</span>
-                                <span class="reward-badge">Water Badge + 2x XP</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary unlock-btn" data-cost="25">Unlock Challenge</button>
-                    </div>
-                </div>
-            </section>
+            <!-- Mini Challenges Section removed - only titles are used now -->
 
             <!-- User Titles & Ranks Section -->
             <section class="titles-section">
                 <h2>🏅 Titles & Ranks</h2>
                 <div class="titles-grid">
-                    <div class="title-card" data-title="step-warrior">
+                    <div class="title-card" data-title="fitness-novice">
                         <div class="title-header">
-                            <span class="title-icon">🥾</span>
+                            <span class="title-icon">🏃‍♂️</span>
                             <div class="title-info">
-                                <h3>Step Warrior</h3>
-                                <p>10 days of 10k+ steps</p>
+                                <h3>Fitness Novice</h3>
+                                <p>Just starting your fitness journey</p>
                             </div>
                         </div>
                         <div class="title-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 60%"></div>
+                                <div class="progress-fill" style="width: 100%"></div>
                             </div>
-                            <span class="progress-text">6/10 days</span>
+                            <span class="progress-text">Completed!</span>
                         </div>
                         <div class="title-actions">
-                            <span class="title-cost">🪙 75</span>
-                            <button class="btn btn-secondary unlock-title-btn" data-cost="75">Unlock</button>
+                            <span class="title-cost">🪙 50</span>
+                            <button class="btn btn-secondary unlock-title-btn" data-cost="50">Unlock</button>
+                        </div>
+                    </div>
+
+                    <div class="title-card" data-title="nutrition-expert">
+                        <div class="title-header">
+                            <span class="title-icon">🥗</span>
+                            <div class="title-info">
+                                <h3>Nutrition Expert</h3>
+                                <p>5+ day calorie streak</p>
+                            </div>
+                        </div>
+                        <div class="title-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-text">Completed!</span>
+                        </div>
+                        <div class="title-actions">
+                            <span class="title-cost">🪙 100</span>
+                            <button class="btn btn-secondary unlock-title-btn" data-cost="100">Unlock</button>
                         </div>
                     </div>
 
@@ -546,7 +441,7 @@
                             <span class="title-icon">💪</span>
                             <div class="title-info">
                                 <h3>Protein Beast</h3>
-                                <p>Avg. 100g protein/day</p>
+                                <p>5+ day protein streak</p>
                             </div>
                         </div>
                         <div class="title-progress">
@@ -566,7 +461,7 @@
                             <span class="title-icon">🔥</span>
                             <div class="title-info">
                                 <h3>Streak Legend</h3>
-                                <p>14-day perfect activity streak</p>
+                                <p>7+ day quest streak</p>
                             </div>
                         </div>
                         <div class="title-progress">
@@ -586,13 +481,7 @@
             <div class="activity-section">
                 <h2>Recent Activity</h2>
                 <div class="activity-list" id="activity-list">
-                    <div class="activity-item">
-                        <span class="activity-icon">📊</span>
-                        <div class="activity-details">
-                            <span class="activity-xp">+50 XP</span>
-                            Completed a posture scan
-                        </div>
-                    </div>
+
                     <div class="activity-item">
                         <span class="activity-icon">🍳</span>
                         <div class="activity-details">

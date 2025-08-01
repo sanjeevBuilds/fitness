@@ -327,7 +327,7 @@ router.post('/createUser', async (req, res) => {
     newUser.mealPlan = undefined;
     newUser.postureScans = [];
     newUser.insights = [];
-    newUser.badges = [];
+    // Badges removed - only titles are used now
     newUser.titles = [];
     newUser.activityLog = [];
 
@@ -455,9 +455,19 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       console.log(`[updateDailyQuest] Quest ${questType} reset to not completed.`);
     }
 
-    // Check if quest should be completed (allow multiple completions per day)
-    if (quest.currentProgress >= quest.target && !quest.completed) {
+    // Check if quest should be completed
+    // For regular quests (water, sleep, exercise, etc.), progress of 1 means completed
+    // For smart quests (calories, protein), check if progress >= target
+    const isRegularQuest = ['water', 'sleep', 'exercise', 'meal'].includes(questType);
+    const shouldComplete = isRegularQuest ? 
+      (quest.currentProgress >= 1) : 
+      (quest.currentProgress >= quest.target);
+    
+    if (shouldComplete && !quest.completed) {
       quest.completed = true;
+      quest.completedAt = new Date();
+      
+      console.log(`[updateDailyQuest] Marking quest as completed: ${questType}, progress: ${quest.currentProgress}, target: ${quest.target}`);
       
       // Award XP and coins
       const xpGained = calculateQuestXP(questType);
@@ -499,13 +509,22 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       // Keep only last 20 activities
       user.activityLog = user.activityLog.slice(0, 20);
       
-      // Check for badge unlocks
-      await checkAndUnlockBadges(user, questType, quest);
+      // Check and unlock titles based on streaks
+      const unlockedTitles = await checkAndUnlockStreakTitles(user);
+      
+      // Badge unlocks removed - only titles are used now
     }
 
     await user.save();
     
     console.log(`[updateDailyQuest] Quest saved. Final state: questType=${quest.questType}, progress=${quest.currentProgress}, completed=${quest.completed}, userCoins=${user.coins}`);
+    console.log(`[updateDailyQuest] User questStats after save:`, {
+      totalQuestsCompleted: user.questStats?.totalQuestsCompleted,
+      currentStreak: user.questStats?.currentStreak,
+      longestStreak: user.questStats?.longestStreak,
+      lastQuestDate: user.questStats?.lastQuestDate
+    });
+    console.log(`[updateDailyQuest] Total dailyQuests in DB: ${user.dailyQuests.length}, Completed: ${user.dailyQuests.filter(q => q.completed).length}`);
     
     res.json({
       success: true,
@@ -513,7 +532,8 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       xp: user.exp,
       level: user.level,
       coins: user.coins,
-      leveledUp: quest.completed
+      leveledUp: quest.completed,
+      unlockedTitles: unlockedTitles || []
     });
 
   } catch (err) {
@@ -549,30 +569,11 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
     const todayQuests = user.dailyQuests.filter(q => q.date === today);
 
     // Calculate dynamic goals based on user profile and recent performance
-    const stepsGoal = calculateDynamicStepsGoal(user, todayQuests);
     const caloriesGoal = calculateCaloriesGoal(user);
     const proteinGoal = calculateProteinGoal(user);
 
-    // Find or create quests
-    let stepsQuest = todayQuests.find(q => q.questType === 'steps');
-    if (!stepsQuest) {
-      stepsQuest = {
-        date: today,
-        questType: 'steps',
-        questName: 'Step Challenge',
-        target: stepsGoal,
-        currentProgress: 0,
-        completed: false
-      };
-    }
-
     res.json({
       quests: {
-        steps: {
-          ...stepsQuest,
-          target: stepsGoal,
-          scaling: stepsQuest.currentProgress > stepsQuest.target
-        },
         calories: {
           date: today,
           questType: 'calories',
@@ -604,57 +605,128 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
   }
 });
 
-// POST unlock badge with coins
-router.post('/unlockBadge', authenticateToken, async (req, res) => {
+// POST unlock mini challenge
+router.post('/unlockChallenge', authenticateToken, async (req, res) => {
   try {
-    const { badgeId, cost } = req.body;
+    const { challengeId, cost } = req.body;
+    console.log('[unlockChallenge] Request received:', { challengeId, cost, userId: req.user._id });
+    
+    // Validate input
+    if (!challengeId || !cost) {
+      return res.status(400).json({ error: 'Missing challengeId or cost' });
+    }
+    
     const user = await UserModel.findById(req.user._id);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
+    console.log('[unlockChallenge] User found:', { userId: user._id, coins: user.coins, exp: user.exp });
 
+    // Check if user has enough coins
     if ((user.coins || 0) < cost) {
       return res.status(400).json({ error: 'Insufficient coins' });
     }
 
-    // Check if badge already unlocked
-    if (user.badges && user.badges.some(b => b.badgeId === badgeId)) {
-      return res.status(400).json({ error: 'Badge already unlocked' });
+    // Check if challenge is already unlocked
+    const existingChallenge = user.miniChallenges?.find(c => c.challengeId === challengeId);
+    if (existingChallenge) {
+      return res.status(400).json({ error: 'Challenge already unlocked' });
     }
 
-    // Deduct coins and add badge
+    // Define challenge rewards (badges removed)
+    const challengeRewards = {
+      'night-walk': {
+        xp: 20
+      },
+      'fruit-day': {
+        xp: 30
+      },
+      'hydration-hero': {
+        xp: 40
+      }
+    };
+
+    const reward = challengeRewards[challengeId];
+    if (!reward) {
+      return res.status(400).json({ error: 'Invalid challenge ID' });
+    }
+
+    // Deduct coins
     user.coins = (user.coins || 0) - cost;
-    user.badges = user.badges || [];
-    user.badges.push({
-      badgeId: badgeId,
-      title: getBadgeTitle(badgeId),
+
+    // Add XP
+    user.exp = (user.exp || 0) + reward.xp;
+
+    // Check for level up
+    const oldLevel = user.level || 1;
+    const newLevel = calculateLevel(user.exp);
+    user.level = newLevel;
+
+    // Add challenge to user's miniChallenges
+    if (!user.miniChallenges) user.miniChallenges = [];
+    
+    // Define challenge names
+    const challengeNames = {
+      'night-walk': 'Night Walk',
+      'fruit-day': 'Fruit Day',
+      'hydration-hero': 'Hydration Hero'
+    };
+    
+    user.miniChallenges.push({
+      challengeId: challengeId,
+      challengeName: challengeNames[challengeId] || challengeId,
+      description: `Unlocked ${challengeNames[challengeId] || challengeId} challenge`,
+      cost: cost,
+      xpReward: reward.xp,
+      status: 'unlocked',
       unlockedAt: new Date(),
-      earnedBy: 'purchase'
+      completed: false
     });
+    console.log('[unlockChallenge] Challenge added to miniChallenges:', challengeId);
+
+    // Badge addition removed - only titles are used now
 
     // Add to activity log
-    user.activityLog = user.activityLog || [];
+    if (!user.activityLog) user.activityLog = [];
     user.activityLog.unshift({
-      type: 'badge',
+      type: 'challenge',
       date: new Date(),
-      details: `Unlocked ${getBadgeTitle(badgeId)} badge`,
+      details: `Unlocked challenge: ${challengeId}`,
+      xpGained: reward.xp,
       coinsSpent: cost
     });
 
+    // Keep only last 20 activities
+    user.activityLog = user.activityLog.slice(0, 20);
+
     await user.save();
+    console.log('[unlockChallenge] Challenge unlocked successfully:', { challengeId, userCoins: user.coins, userExp: user.exp, userLevel: user.level });
 
     res.json({
       success: true,
-      coins: user.coins,
-      badges: user.badges
+      message: 'Challenge unlocked successfully',
+      user: {
+        coins: user.coins,
+        exp: user.exp,
+        level: user.level,
+        leveledUp: newLevel > oldLevel
+      },
+      challenge: {
+        challengeId: challengeId,
+        // Badge removed from response
+      }
     });
 
   } catch (err) {
-    console.error('Unlock badge error:', err);
-    res.status(500).json({ error: 'Failed to unlock badge' });
+    console.error('[unlockChallenge] Error:', err);
+    console.error('[unlockChallenge] Error stack:', err.stack);
+    res.status(500).json({ error: 'Failed to unlock challenge', details: err.message });
   }
 });
+
+// unlockBadge route removed - only titles are used now
 
 // POST unlock title with coins
 router.post('/unlockTitle', authenticateToken, async (req, res) => {
@@ -707,28 +779,7 @@ router.post('/unlockTitle', authenticateToken, async (req, res) => {
   }
 });
 
-// PATCH set active badge
-router.patch('/setActiveBadge', authenticateToken, async (req, res) => {
-  try {
-    const { badgeId } = req.body;
-    const user = await UserModel.findById(req.user._id);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (!user.badges || !user.badges.some(b => b.badgeId === badgeId)) {
-      return res.status(400).json({ error: 'Badge not unlocked' });
-    }
-
-    user.activeBadge = badgeId;
-    await user.save();
-
-    res.json({ success: true, activeBadge: user.activeBadge });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to set active badge' });
-  }
-});
+// setActiveBadge route removed - only titles are used now
 
 // PATCH set active title
 router.patch('/setActiveTitle', authenticateToken, async (req, res) => {
@@ -792,9 +843,7 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
     console.log('[UPDATE USER] Request received for user:', userId);
     console.log('[UPDATE USER] Request body keys:', Object.keys(updateData));
     console.log('[UPDATE USER] Update data:', JSON.stringify(updateData, null, 2));
-    console.log('[UPDATE USER] Badges in request:', updateData.badges);
-    console.log('[UPDATE USER] Badges type:', typeof updateData.badges);
-    console.log('[UPDATE USER] Badges is array:', Array.isArray(updateData.badges));
+    // Badge logging removed - only titles are used now
     
     // Find the user
     const user = await UserModel.findById(userId);
@@ -803,8 +852,7 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('[UPDATE USER] Current user badges before update:', user.badges);
-    console.log('[UPDATE USER] Current user badges length:', user.badges ? user.badges.length : 0);
+    // Badge logging removed - only titles are used now
 
     // Update allowed fields
     if (updateData.coins !== undefined) {
@@ -820,27 +868,11 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       user.titles = updateData.titles;
       console.log('[UPDATE USER] Updated titles to:', updateData.titles);
     }
-    if (updateData.badges !== undefined) {
-      console.log('[UPDATE USER] Updating badges from:', user.badges, 'to:', updateData.badges);
-      console.log('[UPDATE USER] Badges data type:', typeof updateData.badges);
-      console.log('[UPDATE USER] Badges is array:', Array.isArray(updateData.badges));
-      console.log('[UPDATE USER] Badges length:', updateData.badges ? updateData.badges.length : 0);
-      
-      // Validate badge structure
-      if (Array.isArray(updateData.badges)) {
-        updateData.badges.forEach((badge, index) => {
-          console.log(`[UPDATE USER] Badge ${index}:`, badge);
-          if (!badge.badgeId || !badge.title) {
-            console.error(`[UPDATE USER] Invalid badge at index ${index}:`, badge);
-          }
-        });
-      }
-      
-      user.badges = updateData.badges;
-      console.log('[UPDATE USER] Badges after assignment:', user.badges);
-    } else {
-      console.log('[UPDATE USER] No badges in updateData, skipping badge update');
+    if (updateData.selectedTitle !== undefined) {
+      user.selectedTitle = updateData.selectedTitle;
+      console.log('[UPDATE USER] Updated selectedTitle to:', updateData.selectedTitle);
     }
+    // Badge update removed - only titles are used now
     if (updateData.activityLog !== undefined) {
       user.activityLog = updateData.activityLog;
       console.log('[UPDATE USER] Updated activityLog');
@@ -857,9 +889,13 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       user.miniChallenges = updateData.miniChallenges;
       console.log('[UPDATE USER] Updated miniChallenges');
     }
+    if (updateData.selectedTitle !== undefined) {
+      user.selectedTitle = updateData.selectedTitle;
+      console.log('[UPDATE USER] Updated selectedTitle to:', updateData.selectedTitle);
+    }
+    // selectedBadge update removed - only titles are used now
 
-    console.log('[UPDATE USER] User badges before save:', user.badges);
-    console.log('[UPDATE USER] User badges length before save:', user.badges ? user.badges.length : 0);
+    // Badge logging removed - only titles are used now
 
     // Save the updated user
     try {
@@ -876,10 +912,7 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Validation error', details: saveError.message });
     }
 
-    // Verify the save worked
-    const savedUser = await UserModel.findById(userId);
-    console.log('[UPDATE USER] User badges after save:', savedUser.badges);
-    console.log('[UPDATE USER] User badges length after save:', savedUser.badges ? savedUser.badges.length : 0);
+    // Badge verification removed - only titles are used now
 
     // Return updated user data (excluding password)
     const updatedUser = await UserModel.findById(userId).select('-password');
@@ -915,12 +948,7 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
 
     // Get today's smart quest progress
     let progress = 0, target = 0;
-    if (questType === 'steps') {
-      const stepsQuest = user.dailyQuests.find(q => q.date === today && q.questType === 'steps');
-      progress = stepsQuest ? stepsQuest.currentProgress : 0;
-      target = stepsQuest ? stepsQuest.target : 10000;
-      console.log(`[claimSmartQuestReward] Total steps for today: ${progress}`);
-    } else if (questType === 'calories' || questType === 'protein') {
+    if (questType === 'calories' || questType === 'protein') {
       // Aggregate from food logs
       const FoodLogModel = require('../models/FoodLogModel');
       const foodLogs = await FoodLogModel.find({ userId: user._id, date: today });
@@ -946,6 +974,9 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
     user.coins = (user.coins || 0) + coinsGained;
     user.smartQuestClaims[today][questType] = true;
 
+    // Check and unlock titles based on streaks
+    const unlockedTitles = await checkAndUnlockStreakTitles(user);
+
     // Save and respond
     await user.save();
     res.json({
@@ -954,7 +985,8 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
       coins: user.coins,
       questType,
       xpGained,
-      coinsGained
+      coinsGained,
+      unlockedTitles: unlockedTitles
     });
 
   } catch (err) {
@@ -963,25 +995,7 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
   }
 });
 
-// PATCH update user badges from local storage
-router.patch('/updateUserBadges', async (req, res) => {
-  try {
-    const { email, badges } = req.body;
-    if (!email || !Array.isArray(badges)) {
-      return res.status(400).json({ error: 'Email and badges array are required.' });
-    }
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    user.badges = badges;
-    await user.save();
-    res.json({ success: true, badges: user.badges });
-  } catch (err) {
-    console.error('Failed to update user badges:', err);
-    res.status(500).json({ error: 'Failed to update user badges' });
-  }
-});
+// updateUserBadges route removed - only titles are used now
 
 // Helper Functions
 function calculateLevel(xp) {
@@ -999,26 +1013,22 @@ function calculateLevel(xp) {
 
 function calculateQuestXP(questType) {
   const xpRewards = {
-    'steps': 50,
     'calories': 30,
     'protein': 25,
     'water': 20,
     'sleep': 35,
-    'exercise': 40,
-    'posture': 30
+    'exercise': 40
   };
   return xpRewards[questType] || 10;
 }
 
 function calculateQuestCoins(questType) {
   const coinRewards = {
-    'steps': 15,
     'calories': 10,
     'protein': 8,
     'water': 5,
     'sleep': 12,
     'exercise': 18,
-    'posture': 10,
     'meal': 5
   };
   const coins = coinRewards[questType] || 5;
@@ -1033,8 +1043,7 @@ function getQuestName(questType) {
     'protein': 'Protein Power',
     'water': 'Hydration Hero',
     'sleep': 'Sleep Master',
-    'exercise': 'Fitness Champion',
-    'posture': 'Posture Pro'
+    'exercise': 'Fitness Champion'
   };
   return names[questType] || 'Daily Quest';
 }
@@ -1058,17 +1067,7 @@ function getQuestTarget(questType, user) {
   }
 }
 
-function calculateDynamicStepsGoal(user, todayQuests) {
-  const baseGoal = 10000;
-  const previousStepsQuest = todayQuests.find(q => q.questType === 'steps');
-  
-  if (previousStepsQuest && previousStepsQuest.completed && previousStepsQuest.currentProgress > previousStepsQuest.target) {
-    // If user exceeded previous goal, increase by 10%
-    return Math.floor(previousStepsQuest.currentProgress * 1.1);
-  }
-  
-  return baseGoal;
-}
+
 
 function calculateCaloriesGoal(user) {
   // Basic calculation based on user profile
@@ -1104,52 +1103,111 @@ function calculateProteinGoal(user) {
   return Math.round(weight * 1.2);
 }
 
-function getBadgeTitle(badgeId) {
-  const badges = {
-    'step-warrior': 'Step Warrior',
-    'calorie-master': 'Calorie Master',
-    'protein-beast': 'Protein Beast',
-    'hydration-hero': 'Hydration Hero',
-    'sleep-champion': 'Sleep Champion',
-    'fitness-guru': 'Fitness Guru',
-    'consistency-king': 'Consistency King'
-  };
-  return badges[badgeId] || 'Unknown Badge';
-}
+// getBadgeTitle function removed - only titles are used now
 
 function getTitleName(titleId) {
   const titles = {
-    'step-warrior': 'Step Warrior',
+    'fitness-novice': 'Fitness Novice',
+    'meal-master': 'Meal Master',
+    'strength-warrior': 'Strength Warrior',
+    'cardio-king': 'Cardio King',
+    'yoga-guru': 'Yoga Guru',
+    'nutrition-expert': 'Nutrition Expert',
+    'consistency-champion': 'Consistency Champion',
+    'goal-crusher': 'Goal Crusher',
+    'fitness-legend': 'Fitness Legend',
+    'wellness-guru': 'Wellness Guru',
     'protein-beast': 'Protein Beast',
-    'streak-legend': 'Streak Legend',
-    'fitness-master': 'Fitness Master',
-    'nutrition-guru': 'Nutrition Guru'
+    'streak-legend': 'Streak Legend'
   };
   return titles[titleId] || 'Unknown Title';
 }
 
-async function checkAndUnlockBadges(user, questType, quest) {
-  // Auto-unlock badges based on quest completion patterns
-  const badges = user.badges || [];
+// Function to check and unlock titles based on streaks
+async function checkAndUnlockStreakTitles(user) {
+  const unlockedTitles = [];
   
-  // Step Warrior badge - complete steps quest 10 times
-  if (questType === 'steps') {
-    const stepQuestCompletions = user.dailyQuests.filter(q => 
-      q.questType === 'steps' && q.completed
-    ).length;
-    
-    if (stepQuestCompletions >= 10 && !badges.some(b => b.badgeId === 'step-warrior')) {
-      user.badges.push({
-        badgeId: 'step-warrior',
-        title: 'Step Warrior',
+  // Check for Streak Legend title (7+ days overall quest streak)
+  if (user.questStats && user.questStats.longestStreak >= 7) {
+    const streakLegendTitle = 'streak-legend';
+    if (!user.titles || !user.titles.some(t => t.titleId === streakLegendTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: streakLegendTitle,
+        title: getTitleName(streakLegendTitle),
         unlockedAt: new Date(),
-        earnedBy: 'achievement'
+        unlockedBy: 'streak_achievement'
+      });
+      unlockedTitles.push(streakLegendTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(streakLegendTitle)}" title for ${user.questStats.longestStreak} day streak!`,
+        unlockedBy: 'streak_achievement'
       });
     }
   }
   
-  // Add more badge unlock conditions here...
+  // Check for Protein Master title (5+ days protein streak)
+  if (user.questStats && user.questStats.proteinLongestStreak >= 5) {
+    const proteinMasterTitle = 'protein-beast';
+    if (!user.titles || !user.titles.some(t => t.titleId === proteinMasterTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: proteinMasterTitle,
+        title: getTitleName(proteinMasterTitle),
+        unlockedAt: new Date(),
+        unlockedBy: 'protein_streak_achievement'
+      });
+      unlockedTitles.push(proteinMasterTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(proteinMasterTitle)}" title for ${user.questStats.proteinLongestStreak} day protein streak!`,
+        unlockedBy: 'protein_streak_achievement'
+      });
+    }
+  }
+  
+  // Check for Calorie Master title (5+ days calorie streak)
+  if (user.questStats && user.questStats.calorieLongestStreak >= 5) {
+    const calorieMasterTitle = 'nutrition-expert'; // Using existing nutrition-expert title for calorie mastery
+    if (!user.titles || !user.titles.some(t => t.titleId === calorieMasterTitle)) {
+      user.titles = user.titles || [];
+      user.titles.push({
+        titleId: calorieMasterTitle,
+        title: getTitleName(calorieMasterTitle),
+        unlockedAt: new Date(),
+        unlockedBy: 'calorie_streak_achievement'
+      });
+      unlockedTitles.push(calorieMasterTitle);
+      
+      // Add to activity log
+      user.activityLog = user.activityLog || [];
+      user.activityLog.unshift({
+        type: 'title',
+        date: new Date(),
+        details: `Unlocked "${getTitleName(calorieMasterTitle)}" title for ${user.questStats.calorieLongestStreak} day calorie streak!`,
+        unlockedBy: 'calorie_streak_achievement'
+      });
+    }
+  }
+  
+  if (unlockedTitles.length > 0) {
+    await user.save();
+    console.log(`[TITLE UNLOCK] Unlocked titles for user ${user.email}:`, unlockedTitles);
+  }
+  
+  return unlockedTitles;
 }
+
+// checkAndUnlockBadges function removed - only titles are used now
 
 async function resetDailyQuests(user) {
   const today = new Date().toISOString().slice(0, 10);

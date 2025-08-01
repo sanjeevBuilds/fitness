@@ -1,4 +1,4 @@
-// Shared Sidebar Management for Titles and Badges
+// Shared Sidebar Management for Titles Only
 class SharedSidebarManager {
     constructor() {
         this.availableTitles = [
@@ -7,23 +7,16 @@ class SharedSidebarManager {
             { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
             { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
             { id: 'yoga-guru', name: 'Yoga Guru', icon: '🧘‍♀️', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
-            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: 'Deep knowledge of nutrition', requirement: 'Track nutrition for 30 days', unlocked: true },
+            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: '5+ day calorie streak', requirement: 'Track nutrition for 30 days', unlocked: true },
             { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
             { id: 'goal-crusher', name: 'Goal Crusher', icon: '🎯', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
             { id: 'fitness-legend', name: 'Fitness Legend', icon: '👑', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true }
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
+            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: '5+ day protein streak', requirement: 'Complete protein goals', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '7+ day quest streak', requirement: 'Maintain quest streak', unlocked: false }
         ];
 
-        this.availableBadges = [
-            { id: 'first-workout', name: 'First Workout', icon: '🎉', description: 'Completed your first workout', requirement: 'Complete 1 workout', unlocked: true },
-            { id: 'week-warrior', name: 'Week Warrior', icon: '📅', description: 'Worked out for 7 consecutive days', requirement: '7-day streak', unlocked: true },
-            { id: 'month-master', name: 'Month Master', icon: '📊', description: 'Consistent for an entire month', requirement: '30-day streak', unlocked: false },
-            { id: 'weight-loss', name: 'Weight Loss Hero', icon: '⚖️', description: 'Achieved weight loss goal', requirement: 'Lose 5kg', unlocked: false },
-            { id: 'muscle-gain', name: 'Muscle Builder', icon: '🏋️‍♂️', description: 'Gained muscle mass', requirement: 'Gain 2kg muscle', unlocked: false },
-            { id: 'meal-planner', name: 'Meal Planner', icon: '📋', description: 'Created 10 meal plans', requirement: 'Plan 10 meals', unlocked: true },
-            { id: 'social-fitness', name: 'Social Fitness', icon: '👥', description: 'Connected with fitness buddies', requirement: 'Add 5 friends', unlocked: true },
-            { id: 'early-bird', name: 'Early Bird', icon: '🌅', description: 'Workout before 8 AM', requirement: '5 AM workouts', unlocked: false }
-        ];
+        // Badges removed - only titles are used now
 
         this.init();
     }
@@ -54,12 +47,12 @@ class SharedSidebarManager {
         
         this.userData = userData;
         this.selectedTitle = userData.selectedTitle || null;
-        this.selectedBadge = userData.selectedBadge || null;
+        // Badge selection removed - only titles are used now
         
         // Debug log to see what user data we have
         console.log('User data loaded:', userData);
         console.log('Selected title:', this.selectedTitle);
-        console.log('Selected badge:', this.selectedBadge);
+        // Badge logging removed - only titles are used now
     }
 
     setupUserProfileStructure() {
@@ -138,7 +131,7 @@ class SharedSidebarManager {
                 { href: 'dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: 'FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                { href: 'Posture.html', icon: '📊', text: 'Posture Scan' },
+                // { href: 'Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: 'Buddies.html', icon: '👥', text: 'Buddies' },
                 { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
@@ -149,7 +142,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: 'FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' },
+                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
                 { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
@@ -160,7 +153,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' },
+                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
                 { href: 'Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
@@ -171,7 +164,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' },
+                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
                 { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: 'Notifications.html', icon: '🔔', text: 'Notification' },
@@ -183,7 +176,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' },
+                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
                 { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
@@ -240,7 +233,7 @@ class SharedSidebarManager {
             }
 
             const selectedTitle = this.availableTitles.find(t => t.id === this.selectedTitle);
-            const selectedBadge = this.availableBadges.find(b => b.id === this.selectedBadge);
+            // Badge selection removed - only titles are used now
 
             // Always show the actual username
             const displayName = this.userData.profileName || this.userData.fullName || 'User';
@@ -250,9 +243,6 @@ class SharedSidebarManager {
             if (titleDisplay) {
                 if (selectedTitle) {
                     let titleText = `${selectedTitle.icon} ${selectedTitle.name}`;
-                    if (selectedBadge) {
-                        titleText += ` ${selectedBadge.icon}`;
-                    }
                     titleDisplay.textContent = titleText;
                     titleDisplay.style.display = 'block';
                 } else {

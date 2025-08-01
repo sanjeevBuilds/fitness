@@ -9,6 +9,8 @@ const notificationRoutes = require('./routes/Notifications');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 
+
+
 app.use(express.json());
 
 // Add CORS middleware
@@ -98,54 +100,5 @@ app.post('/api/createUser', async (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log("🚀 Server is running on http://localhost:${PORT}");
-
-  // Insert another sample user if not already present
-  const sampleEmail2 = 'sampleuser6@example.com';
-  const samplePassword2 = 'samplepass6';
-  const existing2 = await UserModel.findOne({ email: sampleEmail2 });
-  if (!existing2) {
-    const hash2 = await bcrypt.hash(samplePassword2, 10);
-    const sampleUser2 = new UserModel({
-      email: sampleEmail2,
-      password: hash2,
-      profileName: 'Sample User 6',
-      avatar: 'avator4.jpeg',
-      exp: 0,
-      theme: 'dark',
-      fullName: 'Sample User 6',
-      age: 32,
-      gender: 'female',
-      height: 160,
-      weight: 55,
-      primaryGoal: 'weight_loss',
-      activityLevel: 'sedentary',
-      averageSleep: 6,
-      waterIntake: 1.5,
-      mealFrequency: '2',
-      dietType: 'vegetarian',
-      allergies: ['gluten'],
-      dietaryNotes: 'Gluten allergy',
-      username: 'sampleuser6',
-      notificationPreference: 'all',
-      bmi: 21.5,
-      targetWeight: 50,
-      startDate: new Date(),
-      lastLogin: new Date(),
-      notifications: [],
-      friendRequests: [],
-      dailyQuests: [],
-      miniChallenges: [],
-      foodLogs: [],
-      mealPlan: null,
-      postureScans: [],
-      insights: [],
-      badges: [],
-      createdAt: new Date()
-    });
-    await sampleUser2.save();
-    console.log('✅ Sample user inserted: sampleuser6@example.com / samplepass6');
-  } else {
-    console.log('ℹ Sample user already exists: sampleuser6@example.com');
-  }
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
