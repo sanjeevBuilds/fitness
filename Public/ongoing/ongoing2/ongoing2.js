@@ -77,3 +77,15 @@ document.getElementById('sample-fill-btn').addEventListener('click', function() 
     selects[1].value = '3';
   }
 });
+
+// Sign Out function
+function signOut() {
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Show a brief message
+    alert('Signed out successfully!');
+    
+    // Redirect to home page
+    window.location.href = '../../Home/home.html';
+}

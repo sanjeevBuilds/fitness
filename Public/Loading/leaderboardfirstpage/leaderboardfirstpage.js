@@ -76,3 +76,15 @@ document.addEventListener("keydown", (e) => {
     window.history.back();
   }
 });
+
+// Sign Out function
+function signOut() {
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Show a brief message
+    alert('Signed out successfully!');
+    
+    // Redirect to home page
+    window.location.href = '../../Home/home.html';
+}

@@ -93,32 +93,22 @@ body {
   width: 100%;
 }
 
-.signup, .login {
+.signout {
   text-decoration: none;
   padding: 0.75rem 1.5rem;
   border-radius: var(--border-radius);
   font-weight: 600;
   transition: var(--transition);
   display: inline-block;
-}
-
-.signup {
   background: var(--primary-gradient);
   color: white;
+  cursor: pointer;
 }
 
-.signup:hover {
+.signout:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
-
-.login {
-  background: transparent;
-  color: var(--text-primary);
-  border: 2px solid var(--border-color);
-}
-
-.login:hover {
   border-color: var(--text-primary);
   transform: translateY(-2px);
 }

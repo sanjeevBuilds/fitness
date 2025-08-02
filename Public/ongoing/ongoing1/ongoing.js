@@ -83,3 +83,15 @@ document.getElementById('sample-fill-btn').addEventListener('click', function() 
     select.value = 'muscle_gain';
   }
 });
+
+// Sign Out function
+function signOut() {
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Show a brief message
+    alert('Signed out successfully!');
+    
+    // Redirect to home page
+    window.location.href = '../../Home/home.html';
+}
