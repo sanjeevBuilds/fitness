@@ -20,6 +20,20 @@
     --border-color: rgba(0, 0, 0, 0.1);
 }
 
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-bg: rgb(18, 24, 22);
+    --primary-btn: rgb(30, 200, 120);
+    --primary-btn-hover: rgb(25, 170, 100);
+    --text-dark: rgb(240, 255, 250);
+    --text-light: rgba(240, 255, 250, 0.7);
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --card-bg: rgb(28, 36, 34);
+    --sidebar-bg: rgb(28, 36, 34);
+    --input-bg: rgb(28, 36, 34);
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
 body {
     background-color: var(--primary-bg);
     color: var(--text-dark);

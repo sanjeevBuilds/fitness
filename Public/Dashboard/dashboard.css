@@ -27,6 +27,150 @@ body.dark-mode {
     --border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Dark Mode Base Styles */
+body.dark-mode {
+    background-color: rgb(18, 24, 22);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .main-content {
+    background-color: rgb(18, 24, 22);
+}
+
+body.dark-mode .coin-wallet {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .coin-balance {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .coin-label {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .gamified-header {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .level-progress {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .stat-item {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .daily-summary-section,
+body.dark-mode .smart-quests-section,
+body.dark-mode .stats-grid,
+body.dark-mode .checklist-section,
+body.dark-mode .activity-section {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .summary-card {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .checklist-item {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .quest-item {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .challenge-card {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .title-card {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .gamified-checkbox {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .gamified-checkbox:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .gamified-checkbox::before {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .quest-checkbox:checked + .gamified-checkbox {
+    background: rgb(30, 200, 120);
+    border-color: rgb(30, 200, 120);
+}
+
+body.dark-mode .quest-checkbox:checked + .gamified-checkbox::before {
+    background: rgb(240, 255, 250);
+}
+
+body.dark-mode .quest-toggle {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .quest-toggle::after {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .quest-checkbox:checked + .quest-toggle {
+    background: rgb(30, 200, 120);
+}
+
+body.dark-mode .unlock-modal .modal-content {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .modal-header {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .modal-cost {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .challenge-details,
+body.dark-mode .quest-info,
+body.dark-mode .quest-details {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .reward-xp,
+body.dark-mode .reward-coins {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .scaling-notice {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .activity-item {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    color: rgb(240, 255, 250);
+}
+
 * {
     margin: 0;
     padding: 0;

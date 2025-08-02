@@ -33,6 +33,27 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Dark Mode Variables */
+body.dark-mode {
+  --primary-bg: rgb(18, 24, 22);
+  --primary-btn: rgb(30, 200, 120);
+  --primary-btn-hover: rgb(25, 170, 100);
+  --text-dark: rgb(240, 255, 250);
+  --text-light: rgba(240, 255, 250, 0.7);
+  --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --card-bg: rgb(28, 36, 34);
+  --sidebar-bg: rgb(28, 36, 34);
+  --input-bg: rgb(28, 36, 34);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-primary: rgb(240, 255, 250);
+  --text-secondary: rgba(240, 255, 250, 0.7);
+  --bg-primary: rgb(18, 24, 22);
+  --bg-secondary: rgb(28, 36, 34);
+  --shadow-light: 0 2px 10px rgba(0,0,0,0.3);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-heavy: 0 8px 30px rgba(0,0,0,0.5);
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -40,6 +61,51 @@ body {
   color: var(--text-dark);
   line-height: 1.6;
   transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode Base Styles */
+body.dark-mode {
+  background-color: rgb(18, 24, 22);
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .notifications-main {
+  background-color: rgb(18, 24, 22);
+}
+
+body.dark-mode .notifications-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .heading {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .section-container {
+  background: rgb(28, 36, 34);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .section-title {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .friend-request-card,
+body.dark-mode .notification-item,
+body.dark-mode .activity-item {
+  background: rgb(28, 36, 34);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .friend-name,
+body.dark-mode .friend-email {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .no-requests,
+body.dark-mode .no-notifications,
+body.dark-mode .no-activity {
+  color: rgba(240, 255, 250, 0.7);
 }
 
 .container {
@@ -512,42 +578,159 @@ body {
 }
 
 /* Dark Mode Support */
-.dark-mode .notifications-main {
-  background-color: #1a1a1a;
+body.dark-mode .notifications-main {
+  background-color: rgb(18, 24, 22);
 }
 
-.dark-mode .section-container {
-  background: #2d2d2d;
-  color: #ffffff;
+body.dark-mode .notifications-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.dark-mode .section-title {
-  color: #ffffff;
-  border-bottom-color: #404040;
+body.dark-mode .heading {
+  color: rgb(240, 255, 250);
 }
 
-.dark-mode .friend-request-card,
-.dark-mode .notification-item,
-.dark-mode .activity-item {
-  background: #3d3d3d;
-  border-color: #404040;
+body.dark-mode .section-container {
+  background: rgb(28, 36, 34);
+  color: rgb(240, 255, 250);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.dark-mode .friend-name,
-.dark-mode .notif-title,
-.dark-mode .activity-details {
-  color: #ffffff;
+body.dark-mode .section-title {
+  color: rgb(240, 255, 250);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.dark-mode .friend-email,
-.dark-mode .notif-message,
-.dark-mode .notif-time,
-.dark-mode .activity-time {
-  color: #b0b0b0;
+body.dark-mode .friend-request-card,
+body.dark-mode .notification-item,
+body.dark-mode .activity-item {
+  background: rgb(28, 36, 34);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.dark-mode .no-requests,
-.dark-mode .no-notifications,
-.dark-mode .no-activity {
-  color: #b0b0b0;
+body.dark-mode .friend-request-card:hover,
+body.dark-mode .notification-item:hover,
+body.dark-mode .activity-item:hover {
+  background: rgb(32, 40, 38);
+}
+
+body.dark-mode .friend-name,
+body.dark-mode .friend-email {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .notif-title {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .notif-message {
+  color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .notif-time {
+  color: rgba(240, 255, 250, 0.6);
+}
+
+body.dark-mode .activity-details {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .activity-time {
+  color: rgba(240, 255, 250, 0.6);
+}
+
+body.dark-mode .activity-xp,
+body.dark-mode .activity-coins {
+  color: rgb(30, 200, 120);
+}
+
+body.dark-mode .friend-activity .friend-name {
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .friend-activity .activity-text {
+  color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .friend-activity .activity-xp {
+  color: rgb(30, 200, 120);
+}
+
+body.dark-mode .friend-activity .activity-time {
+  color: rgba(240, 255, 250, 0.6);
+}
+
+body.dark-mode .no-requests,
+body.dark-mode .no-notifications,
+body.dark-mode .no-activity {
+  color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .accept-btn {
+  background: rgb(30, 200, 120);
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .accept-btn:hover {
+  background: rgb(25, 170, 100);
+}
+
+body.dark-mode .decline-btn {
+  background: #ff4757;
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .decline-btn:hover {
+  background: #ff3742;
+}
+
+body.dark-mode .mark-read-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgb(240, 255, 250);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .mark-read-btn:hover {
+  background: rgb(30, 200, 120);
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode #markAllReadBtn {
+  background: linear-gradient(135deg, rgb(30, 200, 120), rgb(25, 170, 100));
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode #markAllReadBtn:hover {
+  background: linear-gradient(135deg, rgb(25, 170, 100), rgb(20, 140, 80));
+}
+
+body.dark-mode .clear-btn {
+  background: #ff4757;
+  color: rgb(240, 255, 250);
+}
+
+body.dark-mode .clear-btn:hover {
+  background: #ff3742;
+}
+
+body.dark-mode .summary-item {
+  background: rgb(28, 36, 34);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .summary-label {
+  color: rgb(240, 255, 250);
+  font-weight: 500;
+}
+
+body.dark-mode .summary-badge {
+  background: rgb(30, 200, 120);
+  color: rgb(18, 24, 22);
+  font-weight: 600;
+}
+
+body.dark-mode .total-badge {
+  background: linear-gradient(135deg, rgb(30, 200, 120), rgb(25, 170, 100));
+  color: rgb(18, 24, 22);
+  font-weight: 600;
 }

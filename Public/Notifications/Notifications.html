@@ -147,7 +147,18 @@
       </div>
     </main>
   </div>
-
+  <script>
+    // Global Dark Mode Application
+    function applyGlobalDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+        }
+    }
+    
+    // Apply dark mode immediately for faster loading
+    applyGlobalDarkMode();
+</script>
   <!-- Load shared sidebar -->
   <script src="../shared-sidebar.js"></script>
   <script src="Notifications.js"></script>

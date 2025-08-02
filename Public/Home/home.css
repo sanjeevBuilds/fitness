@@ -17,6 +17,22 @@
     --transition: all 0.3s ease;
 }
 
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-gradient: linear-gradient(135deg, rgb(30, 200, 120) 0%, rgb(25, 170, 100) 100%);
+    --secondary-gradient: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    --background-light: rgb(18, 24, 22);
+    --background-white: rgb(28, 36, 34);
+    --text-primary: rgb(240, 255, 250);
+    --text-secondary: rgba(240, 255, 250, 0.7);
+    --text-light: rgba(240, 255, 250, 0.5);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -30,6 +46,151 @@ body {
     color: var(--text-primary);
     background-color: var(--background-light);
     overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode Base Styles */
+body.dark-mode {
+    background-color: rgb(18, 24, 22);
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .header {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .nav-link {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .nav-link:hover {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .hero {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .hero-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .hero-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .feature-card {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .feature-card:hover {
+    background: rgb(32, 40, 38);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .feature-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .feature-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .progress-section {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .progress-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .progress-demo {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .progress-text {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .progress-percentage {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .progress-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .meal-card {
+    background: rgb(28, 36, 34);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .meal-card:hover {
+    background: rgb(32, 40, 38);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .meal-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .meal-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .nutrition-item {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .cta-section {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .cta-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .cta-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .footer {
+    background: rgb(28, 36, 34);
+}
+
+body.dark-mode .footer-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .footer-description {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .footer-subtitle {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .footer-link {
+    color: rgba(240, 255, 250, 0.7);
+}
+
+body.dark-mode .footer-link:hover {
+    color: rgb(30, 200, 120);
+}
+
+body.dark-mode .section-title {
+    color: rgb(240, 255, 250);
+}
+
+body.dark-mode .section-subtitle {
+    color: rgba(240, 255, 250, 0.7);
 }
 
 .container {
