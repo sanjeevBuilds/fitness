@@ -222,14 +222,7 @@ class SettingsManager {
             });
         }
 
-        // Refresh titles
-        const refreshTitlesBtn = document.getElementById('refresh-badges-titles-btn');
-        if (refreshTitlesBtn) {
-            refreshTitlesBtn.addEventListener('click', async () => {
-                await this.refreshTitles();
-                this.showToast('Titles refreshed!', 'success');
-            });
-        }
+
     }
 
     async initializeTitles() {
@@ -395,13 +388,31 @@ class SettingsManager {
         }
 
         this.selectedTitle = titleId;
-        document.getElementById('confirm-title-btn').style.display = 'block';
+        const confirmBtn = document.getElementById('confirm-title-btn');
+        confirmBtn.style.display = 'flex';
+        confirmBtn.style.opacity = '0';
+        confirmBtn.style.transform = 'scale(0.8) translateY(10px)';
+        
+        // Animate the button appearance
+        setTimeout(() => {
+            confirmBtn.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.transform = 'scale(1) translateY(0)';
+        }, 10);
     }
 
     // selectBadge function removed - only titles are used now
 
     async confirmTitleSelection() {
         if (!this.selectedTitle) return;
+
+        const confirmBtn = document.getElementById('confirm-title-btn');
+        const originalText = confirmBtn.textContent;
+        
+        // Add loading state
+        confirmBtn.textContent = 'Updating...';
+        confirmBtn.style.pointerEvents = 'none';
+        confirmBtn.style.opacity = '0.7';
 
         try {
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
@@ -415,7 +426,12 @@ class SettingsManager {
                 if (window.sharedSidebar) {
                     window.sharedSidebar.refreshDisplay();
                 }
-                document.getElementById('confirm-title-btn').style.display = 'none';
+                const confirmBtn = document.getElementById('confirm-title-btn');
+                confirmBtn.style.opacity = '0';
+                confirmBtn.style.transform = 'scale(0.8) translateY(10px)';
+                setTimeout(() => {
+                    confirmBtn.style.display = 'none';
+                }, 300);
                 this.showToast('Title updated successfully! (offline mode)', 'success');
                 return;
             }
@@ -442,8 +458,13 @@ class SettingsManager {
                     window.sharedSidebar.refreshDisplay();
                 }
                 
-                // Hide confirm button
-                document.getElementById('confirm-title-btn').style.display = 'none';
+                // Hide confirm button with animation
+                const confirmBtn = document.getElementById('confirm-title-btn');
+                confirmBtn.style.opacity = '0';
+                confirmBtn.style.transform = 'scale(0.8) translateY(10px)';
+                setTimeout(() => {
+                    confirmBtn.style.display = 'none';
+                }, 300);
                 
                 this.showToast('Title updated successfully!', 'success');
             } else {
@@ -460,8 +481,18 @@ class SettingsManager {
             if (window.sharedSidebar) {
                 window.sharedSidebar.refreshDisplay();
             }
-            document.getElementById('confirm-title-btn').style.display = 'none';
+            const confirmBtn = document.getElementById('confirm-title-btn');
+            confirmBtn.style.opacity = '0';
+            confirmBtn.style.transform = 'scale(0.8) translateY(10px)';
+            setTimeout(() => {
+                confirmBtn.style.display = 'none';
+            }, 300);
             this.showToast('Title updated successfully! (offline mode)', 'success');
+        } finally {
+            // Restore button state
+            confirmBtn.textContent = originalText;
+            confirmBtn.style.pointerEvents = 'auto';
+            confirmBtn.style.opacity = '1';
         }
     }
 
@@ -476,18 +507,7 @@ class SettingsManager {
         }
     }
 
-    // Function to refresh titles from backend
-    async refreshTitles() {
-        console.log('Refreshing titles from backend...');
-        await this.loadUserTitles();
-        this.populateTitlesGrid();
-        this.updateCurrentSelections();
-        
-        // Sync deduplicated data back to backend
-        await this.syncDeduplicatedData();
-        
-        console.log('Titles refreshed!');
-    }
+
 
     // Function to sync deduplicated data back to backend
     async syncDeduplicatedData() {
@@ -708,11 +728,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Sidebar display update removed - only titles are used now
-    
-    // Populate gamification UI (titles, XP, coins, activity log)
-    if (typeof fetchUserDataAndRenderProfile === 'function') {
-        fetchUserDataAndRenderProfile();
-    }
 });
 
 // Global function to apply dark mode (for other pages)

@@ -93,12 +93,14 @@ body {
 }
 
 #markAllReadBtn {
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
   color: white;
 }
 
 #markAllReadBtn:hover {
-  background-color: #1976D2;
+  background: linear-gradient(135deg, #45a049 0%, #388E3C 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .clear-btn {
@@ -455,6 +457,8 @@ body {
   .mark-read-btn {
     align-self: flex-end;
   }
+  
+
 }
 
 /* Dark Mode Support */

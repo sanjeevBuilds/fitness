@@ -5,6 +5,12 @@ body {
   color: #122119;
 }
 
+.container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 /* Header Styles */
 .header {
   background: #ffffff;
@@ -102,64 +108,78 @@ body {
   transform: translateY(-2px);
 }
 
-.form-wrapper {
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 1rem 1.5rem;
+  }
+  
+  .nav-links {
+    gap: 1rem;
+  }
+  
+  .nav-links a {
+    font-size: 0.85rem;
+  }
+  
+  main {
+    padding: 0 1rem;
+  }
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #0d1c14;
+  font-size: 0.95rem;
+  font-weight: normal;
+}
+
+.nav-links .signup {
+  background-color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #0d1c14;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+main {
   max-width: 500px;
-  margin: 2rem auto;
-  padding: 1rem;
-  text-align: center;
-}
-
-.step {
-  text-align: left;
-  margin-bottom: 0.3rem;
-  font-size: 0.9rem;
-  padding-left: 1rem;
-}
-
-.progress-bar {
-  background-color: #d8f0e4;
-  height: 6px;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-}
-
-.progress {
-  height: 100%;
-  width: 25%;
-  background-color: #7aee8c;
+  margin: 2rem auto 0 auto;
+  padding: 0 2rem;
 }
 
 h1 {
+  text-align: center;
   color: #0d1c14;
-  font-size: 1.4rem;
-  margin-bottom: 0.5rem;
-}
-
-.subtext {
-  font-size: 0.9rem;
-  color: #122119;
-  margin-bottom: 2rem;
 }
 
 form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 0 1rem;
 }
 
-input,
-select {
+label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #122119;
+}
+
+input {
   padding: 0.8rem;
-  font-size: 0.95rem;
   border: none;
   border-radius: 5px;
   background-color: #e8f2ed;
   color: #61a583;
+  font-size: 0.9rem;
 }
 
-.next-btn {
+.login {
   padding: 0.8rem;
   background-color: #7aee8c;
   color: #0d1c14;
@@ -169,26 +189,50 @@ select {
   cursor: pointer;
 }
 
-/* Match <select> style with input fields */
-form input,
-form select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 16px;
-  font-size: 16px;
-  border: 1px solid #ccc;
+.demo-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
   border-radius: 8px;
-  background-color: #e8f2ed;;
-  box-sizing: border-box;
-  font-family: inherit;
-  appearance: none; /* Removes default arrow on some browsers */
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
 }
 
-/* Optional: Custom dropdown arrow using background image */
-form select {
-  background-image: url("data:image/svg+xml,%3Csvg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
+.demo-info strong {
+  color: #333;
+}
+
+.divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #122119;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.social {
+  background-color: #e8f2ed;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 15px;
+  color: #122119;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.signup-text a {
+  color: #0d1c14;
+  text-decoration: none;
+  font-weight: bold;
 }
 

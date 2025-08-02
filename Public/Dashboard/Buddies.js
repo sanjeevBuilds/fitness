@@ -833,11 +833,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const USERS_PER_PAGE = 8;
     async function renderLeaderboard() {
         try {
-            const res = await fetch('http://localhost:8000/api/getUser');
+            // Add cache-busting parameter to force fresh data
+            const res = await fetch('http://localhost:8000/api/getUser?t=' + Date.now());
             if (!res.ok) throw new Error('Failed to fetch users');
             const users = await res.json();
+            
+            // Remove duplicates based on email (most unique identifier)
+            const uniqueUsers = users.filter((user, index, self) => 
+                index === self.findIndex(u => u.email === user.email)
+            );
+            
             // Sort by XP descending
-            leaderboardUsers = users.sort((a, b) => (b.exp || 0) - (a.exp || 0));
+            leaderboardUsers = uniqueUsers.sort((a, b) => (b.exp || 0) - (a.exp || 0));
             leaderboardPage = 0;
             renderLeaderboardPage();
         } catch (err) {
@@ -853,12 +860,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const end = start + USERS_PER_PAGE;
         const pageUsers = leaderboardUsers.slice(start, end);
         pageUsers.forEach((user, idx) => {
+            // Debug: Log the original profileName
+            console.log('Original profileName:', user.profileName, 'Email:', user.email);
+            
+            // Clean up the profile name to prevent duplicates
+            let displayName = user.profileName || user.email;
+            
+            // If profileName contains duplicates (like "Jamie LeeJamie Lee"), clean it up
+            if (displayName && displayName.length > 20) {
+                // Try to find a reasonable name by taking the first part
+                const nameParts = displayName.split(/(?=[A-Z])/);
+                console.log('Name parts:', nameParts);
+                if (nameParts.length > 2) {
+                    displayName = nameParts.slice(0, 2).join(' ').trim();
+                }
+            }
+            
+            // Additional check for exact duplicates like "Jamie LeeJamie Lee"
+            if (displayName && displayName.includes(displayName.substring(0, displayName.length / 2))) {
+                const halfLength = Math.floor(displayName.length / 2);
+                displayName = displayName.substring(0, halfLength).trim();
+            }
+            
+            // Fallback to email if name is still problematic
+            if (!displayName || displayName.length > 30) {
+                displayName = user.email || 'Unknown User';
+            }
+            
+            console.log('Final displayName:', displayName);
+            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${start + idx + 1}</td>
                 <td class="user-cell">
-                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${user.profileName || user.email}" class="small-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:8px;vertical-align:middle;">
-                    ${user.profileName || user.email}
+                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${displayName}" class="small-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:8px;vertical-align:middle;">
+                    ${displayName}
                 </td>
                 <td>${user.level || 1}</td>
                 <td>${user.exp || 0}</td>

@@ -532,6 +532,83 @@ body.dark-mode .avatar-choice.selected, body.dark-mode .avatar-choice:focus {
     margin-bottom: 2rem;
 }
 
+/* Confirm Title Button Styles */
+#confirm-title-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+
+
+#confirm-title-btn:hover {
+    background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+#confirm-title-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(39, 174, 96, 0.3);
+}
+
+#confirm-title-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.3), 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+/* Dark mode styles for confirm title button */
+body.dark-mode #confirm-title-btn {
+    background: linear-gradient(135deg, #1e8449 0%, #27ae60 100%);
+    box-shadow: 0 4px 15px rgba(30, 200, 120, 0.3);
+}
+
+body.dark-mode #confirm-title-btn:hover {
+    background: linear-gradient(135deg, #186a3b 0%, #229954 100%);
+    box-shadow: 0 6px 20px rgba(30, 200, 120, 0.4);
+}
+
+body.dark-mode #confirm-title-btn:focus {
+    box-shadow: 0 0 0 3px rgba(30, 200, 120, 0.3), 0 4px 15px rgba(30, 200, 120, 0.3);
+}
+
+
+
+/* Loading state for confirm title button */
+#confirm-title-btn:disabled,
+#confirm-title-btn[style*="pointer-events: none"] {
+    opacity: 0.7 !important;
+    cursor: not-allowed;
+    transform: scale(0.95);
+}
+
+
+
+/* Responsive design for confirm title button */
+@media (max-width: 768px) {
+    #confirm-title-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+
+}
+
 .titles-section, .badges-section {
     margin-bottom: 2rem;
     padding: 1.5rem;
