@@ -112,7 +112,7 @@ class SettingsManager {
                 // Clear user data and redirect after short delay
                 setTimeout(() => {
                     localStorage.clear();
-                    window.location.href = '../First_Page/FirstPage.html';
+                    window.location.href = '../Home/home.html';
                 }, 1200);
             });
         }

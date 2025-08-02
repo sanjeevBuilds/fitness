@@ -31,6 +31,53 @@ router.get('/getUser', async (req, res) => {
   }
 });
 
+// GET user rankings sorted by XP
+router.get('/rankings', async (req, res) => {
+  try {
+    const users = await UserModel.find()
+      .select('email profileName exp level')
+      .sort({ exp: -1, level: -1 }) // Sort by exp descending, then by level descending
+      .limit(100); // Limit to top 100 users
+    
+    res.json(users);
+  } catch (err) {
+    console.error('Rankings error:', err);
+    res.status(500).json({ error: 'Failed to fetch rankings' });
+  }
+});
+
+// GET user's rank by email
+router.get('/rank/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email.toLowerCase();
+    
+    // Get all users sorted by XP
+    const allUsers = await UserModel.find()
+      .select('email exp level')
+      .sort({ exp: -1, level: -1 });
+    
+    // Find the user's position (rank)
+    const userRank = allUsers.findIndex(user => user.email === userEmail) + 1;
+    
+    if (userRank === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Get user's data
+    const user = allUsers.find(user => user.email === userEmail);
+    
+    res.json({
+      rank: userRank,
+      totalUsers: allUsers.length,
+      xp: user.exp,
+      level: user.level
+    });
+  } catch (err) {
+    console.error('Get user rank error:', err);
+    res.status(500).json({ error: 'Failed to get user rank' });
+  }
+});
+
 // GET user by email (excluding password)
 router.get('/getUser/:email', async (req, res) => {
   try {

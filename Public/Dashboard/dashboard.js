@@ -189,7 +189,7 @@ class EnhancedDashboardGamification {
                 console.log('Forced smart quest UI update completed');
             }, 100);
 
-            this.updateStatsUI();
+            await this.updateStatsUI();
             
             // Force update UI after a delay to ensure DOM is ready
             setTimeout(() => {
@@ -865,7 +865,7 @@ class EnhancedDashboardGamification {
         } catch (error) {
             console.error('Error updating quest:', error);
         }
-        this.updateStatsUI();
+        await this.updateStatsUI();
     }
 
     async completeQuest(questType, isRegularQuest = false) {
@@ -957,7 +957,7 @@ class EnhancedDashboardGamification {
             console.error('Error completing quest:', error);
             this.showNotification(`Failed to complete quest: ${error.message}`, 'error');
         }
-        this.updateStatsUI();
+        await this.updateStatsUI();
     }
 
     async syncQuestWithBackend(questType, quest) {
@@ -1026,7 +1026,7 @@ class EnhancedDashboardGamification {
             console.warn('Backend sync failed:', error);
             // Continue working offline
         }
-        this.updateStatsUI();
+        await this.updateStatsUI();
     }
 
     async syncUserDataToBackend() {
@@ -1521,9 +1521,19 @@ class EnhancedDashboardGamification {
 
         const rankStatValue = document.querySelector('[data-stat="rank"]');
         if (rankStatValue) {
-            const rank = this.calculateRank(currentXP);
-            rankStatValue.textContent = `#${rank}`;
-            console.log('✅ Rank stat updated:', `#${rank}`);
+            // Show loading state first
+            rankStatValue.textContent = '...';
+            
+            // Get real rank from backend (async, but don't await here)
+            this.getRealRank(this.currentUser.email).then(realRank => {
+                rankStatValue.textContent = `#${realRank}`;
+                console.log('✅ Real rank updated:', `#${realRank}`);
+            }).catch(error => {
+                // Fallback to calculated rank
+                const fallbackRank = this.calculateRank(currentXP);
+                rankStatValue.textContent = `#${fallbackRank}`;
+                console.log('✅ Fallback rank updated:', `#${fallbackRank}`);
+            });
         } else {
             console.log('❌ Rank stat element not found');
         }
@@ -2373,6 +2383,27 @@ class EnhancedDashboardGamification {
         return 50;
     }
 
+    async getRealRank(email) {
+        console.log('🔍 Getting real rank for email:', email);
+        try {
+            const response = await fetch(`http://localhost:8000/api/rank/${encodeURIComponent(email)}`);
+            console.log('🔍 Rank API response status:', response.status);
+            if (!response.ok) {
+                throw new Error('Failed to fetch rank');
+            }
+            const data = await response.json();
+            console.log('🔍 Rank API response data:', data);
+            return data.rank;
+        } catch (error) {
+            console.error('❌ Error fetching real rank:', error);
+            // Fallback to calculated rank
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const fallbackRank = this.calculateRank(userData.xp || 0);
+            console.log('🔍 Using fallback rank:', fallbackRank);
+            return fallbackRank;
+        }
+    }
+
     getActivityIcon(type, questType = null) {
         if (type === 'quest' && questType) {
             const questIcons = {
@@ -2599,7 +2630,7 @@ class EnhancedDashboardGamification {
     }
 
     // --- Minimal Stats UI Update Function ---
-    updateStatsUI() {
+    async updateStatsUI() {
         // Coin balance
         const coinBalance = document.querySelector('.coin-balance');
         if (coinBalance) coinBalance.textContent = this.currentUser.coins || 0;
@@ -2641,7 +2672,21 @@ class EnhancedDashboardGamification {
         if (xpStatValue) xpStatValue.textContent = currentXP;
 
         const rankStatValue = document.querySelector('[data-stat="rank"]');
-        if (rankStatValue) rankStatValue.textContent = `#${this.calculateRank(currentXP)}`;
+        if (rankStatValue) {
+            // Show loading state first
+            rankStatValue.textContent = '...';
+            
+            // Get real rank from backend (async, but don't await here)
+            this.getRealRank(this.currentUser.email).then(realRank => {
+                rankStatValue.textContent = `#${realRank}`;
+                console.log('✅ Real rank updated in stats:', `#${realRank}`);
+            }).catch(error => {
+                // Fallback to calculated rank
+                const fallbackRank = this.calculateRank(currentXP);
+                rankStatValue.textContent = `#${fallbackRank}`;
+                console.log('✅ Fallback rank updated in stats:', `#${fallbackRank}`);
+            });
+        }
 
         const streakStatValue = document.querySelector('[data-stat="streak"]');
         if (streakStatValue) streakStatValue.textContent = this.currentUser.questStats?.currentStreak || 0;
