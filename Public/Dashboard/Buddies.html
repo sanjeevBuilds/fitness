@@ -70,32 +70,15 @@
             </section>
 
             <section class="recent-activity">
-                <h2>Recent Activity</h2>
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <img src="../../assets/avator6.jpeg" alt="Liam" class="activity-avatar">
-                        <div class="activity-content">
-                            <span class="activity-name">Liam</span>
-                            <span class="activity-action">completed a posture scan</span>
-                            <span class="activity-xp">+50 XP</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <img src="../../assets/avator7.jpeg" alt="Sophie" class="activity-avatar">
-                        <div class="activity-content">
-                            <span class="activity-name">Sophie</span>
-                            <span class="activity-action">reached Level 9</span>
-                            <span class="activity-xp">+100 XP</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <img src="../../assets/avator8.jpeg" alt="David" class="activity-avatar">
-                        <div class="activity-content">
-                            <span class="activity-name">David</span>
-                            <span class="activity-action">logged a meal</span>
-                            <span class="activity-xp">+20 XP</span>
-                        </div>
-                    </div>
+                <div class="activity-header">
+                    <h2>Recent Activity</h2>
+                    <button class="clear-activity-btn" id="clear-activity-btn">Clear All</button>
+                </div>
+                <div class="activity-list" id="activity-list">
+                    <!-- Activity items will be populated dynamically -->
+                </div>
+                <div class="no-activity" id="no-activity" style="display: none;">
+                    <p>No recent activity from your friends</p>
                 </div>
             </section>
         </main>

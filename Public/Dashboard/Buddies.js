@@ -43,6 +43,156 @@ console.log('Buddies.js loaded successfully');
     }
 })();
 
+// Recent Activity Management
+class ActivityManager {
+    constructor() {
+        this.activities = [];
+        this.init();
+    }
+
+    async init() {
+        await this.loadActivities();
+        this.setupEventListeners();
+        this.renderActivities();
+    }
+
+    async loadActivities() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.email) return;
+
+            const response = await fetch(`http://localhost:8000/api/activities/friends/${userData.email}`);
+            if (response.ok) {
+                const data = await response.json();
+                this.activities = data.activities || [];
+            }
+        } catch (error) {
+            console.error('Error loading activities:', error);
+        }
+    }
+
+    setupEventListeners() {
+        const clearBtn = document.getElementById('clear-activity-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => this.clearAllActivities());
+        }
+    }
+
+    renderActivities() {
+        const activityList = document.getElementById('activity-list');
+        const noActivity = document.getElementById('no-activity');
+        const clearBtn = document.getElementById('clear-activity-btn');
+
+        if (!activityList || !noActivity) return;
+
+        if (this.activities.length === 0) {
+            activityList.style.display = 'none';
+            noActivity.style.display = 'block';
+            if (clearBtn) clearBtn.disabled = true;
+        } else {
+            activityList.style.display = 'flex';
+            noActivity.style.display = 'none';
+            if (clearBtn) clearBtn.disabled = false;
+
+            activityList.innerHTML = this.activities
+                .slice(0, 10) // Show only last 10 activities
+                .map(activity => this.createActivityHTML(activity))
+                .join('');
+        }
+    }
+
+    createActivityHTML(activity) {
+        const avatarSrc = activity.avatar ? `../../assets/${activity.avatar}` : '../../assets/avator.jpeg';
+        const timeAgo = this.getTimeAgo(new Date(activity.timestamp));
+        
+        return `
+            <div class="activity-item" data-activity-id="${activity._id}">
+                <img src="${avatarSrc}" alt="${activity.friendName}" class="activity-avatar" onerror="this.src='../../assets/avator.jpeg'">
+                <div class="activity-content">
+                    <span class="activity-name">${activity.friendName}</span>
+                    <span class="activity-action">${activity.action}</span>
+                    <span class="activity-xp">+${activity.xp} XP</span>
+                    <span class="activity-time">${timeAgo}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    getTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return 'just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    }
+
+    async clearAllActivities() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.email) return;
+
+            const response = await fetch(`http://localhost:8000/api/activities/clear/${userData.email}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                this.activities = [];
+                this.renderActivities();
+                console.log('All activities cleared');
+            }
+        } catch (error) {
+            console.error('Error clearing activities:', error);
+        }
+    }
+
+    async addActivity(friendEmail, friendName, action, xp, avatar) {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.email) return;
+
+            const activity = {
+                userEmail: userData.email,
+                friendEmail: friendEmail,
+                friendName: friendName,
+                action: action,
+                xp: xp,
+                avatar: avatar,
+                timestamp: new Date().toISOString()
+            };
+
+            const response = await fetch('http://localhost:8000/api/activities/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(activity)
+            });
+
+            if (response.ok) {
+                const newActivity = await response.json();
+                this.activities.unshift(newActivity);
+                this.renderActivities();
+            }
+        } catch (error) {
+            console.error('Error adding activity:', error);
+        }
+    }
+}
+
+// Initialize activity manager
+const activityManager = new ActivityManager();
+window.activityManager = activityManager; // Make it globally accessible
+
+// Global function to refresh buddies activities
+window.refreshBuddiesActivities = async function() {
+    if (window.activityManager) {
+        await window.activityManager.loadActivities();
+        window.activityManager.renderActivities();
+    }
+};
+
 // Friend request acceptance functionality
 function acceptRequest(button) {
     const requestItem = button.closest('.request-item');

@@ -139,8 +139,14 @@ router.patch('/mark-read/:email', async (req, res) => {
       });
     }
 
+    // Clear all activity logs when marking notifications as read
+    if (user.activityLog && user.activityLog.length > 0) {
+      console.log(`Clearing ${user.activityLog.length} activity logs for user ${req.params.email}`);
+      user.activityLog = [];
+    }
+
     await user.save();
-    res.json({ success: true, message: 'Notification(s) marked as read' });
+    res.json({ success: true, message: 'Notification(s) marked as read and activity logs cleared' });
   } catch (err) {
     console.error('Error marking notification as read:', err);
     res.status(500).json({ error: 'Failed to mark notification as read' });
@@ -208,10 +214,18 @@ router.delete('/clear-all/:email', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Clear all notifications
     user.notifications = [];
+    
+    // Clear all activity logs
+    if (user.activityLog && user.activityLog.length > 0) {
+      console.log(`Clearing ${user.activityLog.length} activity logs for user ${req.params.email}`);
+      user.activityLog = [];
+    }
+    
     await user.save();
     
-    res.json({ success: true, message: 'All notifications cleared' });
+    res.json({ success: true, message: 'All notifications and activity logs cleared' });
   } catch (err) {
     console.error('Error clearing notifications:', err);
     res.status(500).json({ error: 'Failed to clear notifications' });

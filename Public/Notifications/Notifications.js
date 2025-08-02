@@ -167,18 +167,38 @@ class NotificationManager {
             const card = document.createElement('div');
             card.className = 'activity-item';
             
-            const icon = this.getActivityIcon(activity.type);
-            const timeAgo = this.getTimeAgo(activity.date);
+            // Check if it's a friend activity (has friendName property)
+            if (activity.friendName) {
+                const timeAgo = this.getTimeAgo(activity.timestamp || activity.date);
+                card.innerHTML = `
+                    <div class="friend-activity">
+                        <img src="../../assets/${activity.avatar || 'avator.jpeg'}" alt="${activity.friendName}" class="friend-avatar" onerror="this.src='../../assets/avator.jpeg'">
+                        <div class="activity-content">
+                            <div class="activity-details">
+                                <span class="friend-name">${activity.friendName}</span>
+                                <span class="activity-text">${activity.action}</span>
+                                <span class="activity-xp">+${activity.xp} XP</span>
+                            </div>
+                            <div class="activity-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Regular activity
+                const icon = this.getActivityIcon(activity.type);
+                const timeAgo = this.getTimeAgo(activity.date);
+                
+                card.innerHTML = `
+                    <span class="activity-icon">${icon}</span>
+                    <div class="activity-content">
+                        <div class="activity-details">${activity.details}</div>
+                        <div class="activity-time">${timeAgo}</div>
+                        ${activity.xpGained ? `<div class="activity-xp">+${activity.xpGained} XP</div>` : ''}
+                        ${activity.coinsGained ? `<div class="activity-coins">+${activity.coinsGained} 🪙</div>` : ''}
+                    </div>
+                `;
+            }
             
-            card.innerHTML = `
-                <span class="activity-icon">${icon}</span>
-                <div class="activity-content">
-                    <div class="activity-details">${activity.details}</div>
-                    <div class="activity-time">${timeAgo}</div>
-                    ${activity.xpGained ? `<div class="activity-xp">+${activity.xpGained} XP</div>` : ''}
-                    ${activity.coinsGained ? `<div class="activity-coins">+${activity.coinsGained} 🪙</div>` : ''}
-                </div>
-            `;
             container.appendChild(card);
         });
     }
@@ -327,6 +347,11 @@ class NotificationManager {
 
             // Refresh notifications
             await this.loadAllNotifications();
+            
+            // Refresh buddies page activities if it's open
+            if (window.refreshBuddiesActivities) {
+                window.refreshBuddiesActivities();
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -346,6 +371,12 @@ class NotificationManager {
 
             // Refresh notifications
             await this.loadAllNotifications();
+            
+            // Refresh buddies page activities if it's open
+            if (window.refreshBuddiesActivities) {
+                window.refreshBuddiesActivities();
+            }
+            
             this.showMessage('All notifications marked as read!', 'success');
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
@@ -367,6 +398,12 @@ class NotificationManager {
 
             // Refresh notifications
             await this.loadAllNotifications();
+            
+            // Refresh buddies page activities if it's open
+            if (window.refreshBuddiesActivities) {
+                window.refreshBuddiesActivities();
+            }
+            
             this.showMessage('All notifications cleared!', 'success');
         } catch (error) {
             console.error('Error clearing notifications:', error);

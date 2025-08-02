@@ -447,6 +447,52 @@ tr:hover {
     font-weight: 500;
 }
 
+.activity-time {
+    color: var(--text-light);
+    font-size: 0.8rem;
+    margin-left: auto;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.activity-header h2 {
+    margin: 0;
+}
+
+.clear-activity-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.clear-activity-btn:hover {
+    background: #ff3742;
+    transform: translateY(-1px);
+}
+
+.clear-activity-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.no-activity {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
@@ -670,4 +716,21 @@ body.dark-mode .nav-item:hover {
 body.dark-mode .nav-item.active {
     background: rgb(30, 200, 120);
     color: rgb(18, 24, 22);
+}
+
+body.dark-mode .clear-activity-btn {
+    background: #ff4757;
+    color: white;
+}
+
+body.dark-mode .clear-activity-btn:hover {
+    background: #ff3742;
+}
+
+body.dark-mode .clear-activity-btn:disabled {
+    background: #666;
+}
+
+body.dark-mode .no-activity {
+    color: var(--text-light);
 }

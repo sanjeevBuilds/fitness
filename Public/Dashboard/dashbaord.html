@@ -336,12 +336,7 @@
 
             <!-- Smart Daily Quest Scaling -->
             <section class="smart-quests-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2>🎯 Smart Daily Quests</h2>
-                    <button id="refresh-dashboard-btn" style="padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        🔄 Refresh
-                    </button>
-                </div>
+                <h2>🎯 Smart Daily Quests</h2>
                 <div class="quest-scaling-grid">
                     <div class="quest-item" data-quest="calories">
                         <div class="quest-header">
@@ -392,7 +387,7 @@
             <!-- User Titles & Ranks Section -->
             <section class="titles-section">
                 <h2>🏅 Titles & Ranks</h2>
-                <div class="titles-grid">
+                <div class="titles-grid" id="titles-grid">
                     <div class="title-card" data-title="nutrition-expert">
                         <div class="title-header">
                             <span class="title-icon">🥗</span>
@@ -450,6 +445,51 @@
                         <div class="title-actions">
                             <span class="title-cost">🪙 200</span>
                             <button class="btn btn-secondary unlock-title-btn" data-cost="200">Unlock</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Titles Section (hidden by default) -->
+                <div class="upcoming-titles-section" id="upcoming-titles-section" style="display: none;">
+                    <h3>🚀 Upcoming Titles</h3>
+                    <div class="upcoming-titles-grid">
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon">👑</span>
+                                <div class="upcoming-title-info">
+                                    <h4>Fitness Master</h4>
+                                    <p>Complete all current titles</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
+                        </div>
+                        
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon">🌟</span>
+                                <div class="upcoming-title-info">
+                                    <h4>Wellness Guru</h4>
+                                    <p>30-day perfect streak</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
+                        </div>
+                        
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon">⚡</span>
+                                <div class="upcoming-title-info">
+                                    <h4>Speed Demon</h4>
+                                    <p>Complete 10 quests in one day</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
                         </div>
                     </div>
                 </div>

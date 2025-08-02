@@ -397,6 +397,56 @@ body {
   color: var(--warning-color);
 }
 
+/* Friend Activity Styles */
+.friend-activity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.friend-activity .friend-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-btn);
+}
+
+.friend-activity .activity-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.friend-activity .activity-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.friend-activity .friend-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.friend-activity .activity-text {
+  color: var(--text-light);
+}
+
+.friend-activity .activity-xp {
+  color: var(--primary-btn);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.friend-activity .activity-time {
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
 .no-activity {
   text-align: center;
   color: var(--text-secondary);

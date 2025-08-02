@@ -782,14 +782,7 @@ class EnhancedDashboardGamification {
 
 
 
-        // Refresh dashboard button
-        const refreshBtn = document.getElementById('refresh-dashboard-btn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                console.log('Refresh button clicked');
-                this.refreshDashboardData();
-            });
-        }
+
 
         // Badge unlock buttons removed - only titles are used now
     }
@@ -1186,6 +1179,9 @@ class EnhancedDashboardGamification {
         this.saveUserDataToStorage();
         this.updateUI();
         
+        // Check if all titles are unlocked and update upcoming section
+        this.updateUpcomingTitlesSection();
+        
         // Show appropriate notification
         if (isAchievementUnlock) {
             this.showNotification(`🎉 Title achieved: ${newTitle.title}!`, 'success');
@@ -1305,6 +1301,35 @@ class EnhancedDashboardGamification {
         return this.currentUser.titles && this.currentUser.titles.some(title => title.titleId === titleId);
     }
 
+    // Check if all available titles are unlocked
+    areAllTitlesUnlocked() {
+        const availableTitleIds = ['nutrition-expert', 'protein-beast', 'streak-legend'];
+        return availableTitleIds.every(titleId => this.isTitleUnlocked(titleId));
+    }
+
+    // Show or hide upcoming titles section
+    updateUpcomingTitlesSection() {
+        const upcomingSection = document.getElementById('upcoming-titles-section');
+        const titlesGrid = document.getElementById('titles-grid');
+        
+        if (!upcomingSection || !titlesGrid) return;
+        
+        if (this.areAllTitlesUnlocked()) {
+            // Hide the main titles grid
+            titlesGrid.style.display = 'none';
+            // Show upcoming titles section
+            upcomingSection.style.display = 'block';
+            
+            // Show achievement notification
+            this.showNotification('🎉 All titles unlocked! Check out upcoming challenges!', 'success');
+        } else {
+            // Show the main titles grid
+            titlesGrid.style.display = 'grid';
+            // Hide upcoming titles section
+            upcomingSection.style.display = 'none';
+        }
+    }
+
     // Auto unlock title when requirements are met
     async autoUnlockTitle(titleId, cost) {
         console.log(`🏆 AUTO UNLOCKING TITLE: ${titleId}`);
@@ -1336,6 +1361,9 @@ class EnhancedDashboardGamification {
         // Add to page
         document.body.appendChild(notification);
         
+        // Share achievement with friends
+        this.shareAchievementWithFriends(titleName);
+        
         // Show animation
         setTimeout(() => {
             notification.classList.add('show');
@@ -1350,6 +1378,32 @@ class EnhancedDashboardGamification {
                 }
             }, 500);
         }, 5000);
+    }
+
+    async shareAchievementWithFriends(achievement) {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.email) return;
+
+            const response = await fetch('http://localhost:8000/api/activities/share-achievement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userEmail: userData.email,
+                    achievement: `unlocked ${achievement} title`,
+                    xpGained: 0
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Achievement shared with friends:', result);
+            }
+        } catch (error) {
+            console.error('Error sharing achievement with friends:', error);
+        }
     }
 
     // unlockBadge function removed - only titles are used now
@@ -1952,6 +2006,9 @@ class EnhancedDashboardGamification {
             
             console.log('[TITLE PROGRESS] Nutrition Expert updated:', { currentStreak, targetStreak, progressPercent });
         }
+        
+        // Check if all titles are unlocked and update upcoming section
+        this.updateUpcomingTitlesSection();
     }
 
     // Function to hide unlocked titles on page load
@@ -2410,11 +2467,40 @@ class EnhancedDashboardGamification {
 
         document.body.appendChild(notification);
 
+        // Share level up with friends
+        this.shareLevelUpWithFriends(newLevel);
+
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
         }, 5000);
+    }
+
+    async shareLevelUpWithFriends(newLevel) {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.email) return;
+
+            const response = await fetch('http://localhost:8000/api/activities/share-levelup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userEmail: userData.email,
+                    newLevel: newLevel,
+                    xpGained: 0 // You can calculate this if needed
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Level up shared with friends:', result);
+            }
+        } catch (error) {
+            console.error('Error sharing level up with friends:', error);
+        }
     }
 
     showUnlockModal(cost, type, onConfirm) {
