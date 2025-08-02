@@ -47,8 +47,24 @@ console.log('Buddies.js loaded successfully');
 function acceptRequest(button) {
     const requestItem = button.closest('.request-item');
     const email = requestItem && requestItem.getAttribute('data-email');
-    const userData = JSON.parse(localStorage.getItem('currentUser'));
-    if (!email || !userData) return;
+    
+    let userData = null;
+    try {
+        // Try to get current user from userData (which is what's actually stored)
+        userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData) {
+            // Fallback to currentUser if userData doesn't exist
+            userData = JSON.parse(localStorage.getItem('currentUser'));
+        }
+    } catch (e) {
+        console.log('No user data found in localStorage');
+        return;
+    }
+    
+    if (!email || !userData || !userData.email) {
+        console.log('Missing email or user data');
+        return;
+    }
     // Call backend to accept
     fetch('http://localhost:8000/api/respondFriendRequest', {
         method: 'POST',
@@ -75,8 +91,24 @@ function acceptRequest(button) {
 function rejectRequest(button) {
     const requestItem = button.closest('.request-item');
     const email = requestItem && requestItem.getAttribute('data-email');
-    const userData = JSON.parse(localStorage.getItem('currentUser'));
-    if (!email || !userData) return;
+    
+    let userData = null;
+    try {
+        // Try to get current user from userData (which is what's actually stored)
+        userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData) {
+            // Fallback to currentUser if userData doesn't exist
+            userData = JSON.parse(localStorage.getItem('currentUser'));
+        }
+    } catch (e) {
+        console.log('No user data found in localStorage');
+        return;
+    }
+    
+    if (!email || !userData || !userData.email) {
+        console.log('Missing email or user data');
+        return;
+    }
     // Call backend to reject
     fetch('http://localhost:8000/api/respondFriendRequest', {
         method: 'POST',
@@ -101,8 +133,23 @@ function rejectRequest(button) {
 
 // Reject all friend requests functionality
 function rejectAllRequests() {
-    const userData = JSON.parse(localStorage.getItem('currentUser'));
-    if (!userData || !userData.email) return;
+    let userData = null;
+    try {
+        // Try to get current user from userData (which is what's actually stored)
+        userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData) {
+            // Fallback to currentUser if userData doesn't exist
+            userData = JSON.parse(localStorage.getItem('currentUser'));
+        }
+    } catch (e) {
+        console.log('No user data found in localStorage');
+        return;
+    }
+    
+    if (!userData || !userData.email) {
+        console.log('No valid user data found');
+        return;
+    }
     fetch('http://localhost:8000/api/rejectAllFriendRequests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -306,15 +353,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide current user from search results
                 let currentUser = null;
                 try {
-                    currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                } catch (e) {}
+                    // Try to get current user from userData (which is what's actually stored)
+                    const userData = JSON.parse(localStorage.getItem('userData'));
+                    if (userData) {
+                        currentUser = userData;
+                    } else {
+                        // Fallback to currentUser if userData doesn't exist
+                        currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                    }
+                } catch (e) {
+                    console.log('No current user found in localStorage');
+                }
+                
                 if (currentUser) {
+                    console.log('Current user for filtering:', currentUser.email);
                     users = users.filter(u => {
                         // Prefer _id, fallback to email
                         if (u._id && currentUser._id) return u._id !== currentUser._id;
                         if (u.email && currentUser.email) return u.email !== currentUser.email;
                         return true;
                     });
+                    console.log(`Filtered out current user. Remaining users: ${users.length}`);
                 }
                 // Render users in searchResults (highly gamified)
                 searchResults.innerHTML = '';
@@ -647,17 +706,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render real friend requests for the logged-in user
     async function renderFriendRequests() {
-        const userData = JSON.parse(localStorage.getItem('currentUser'));
-        if (!userData || !userData.email) return;
+        let userData = null;
+        try {
+            // Try to get current user from userData (which is what's actually stored)
+            userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData) {
+                // Fallback to currentUser if userData doesn't exist
+                userData = JSON.parse(localStorage.getItem('currentUser'));
+            }
+        } catch (e) {
+            console.log('No user data found in localStorage');
+            return;
+        }
+        
+        if (!userData || !userData.email) {
+            console.log('No valid user data found');
+            return;
+        }
         try {
             const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
             const requests = user.friendRequests || [];
+            console.log('Friend requests received:', requests);
+            
             const requestList = document.getElementById('request-list');
             if (!requestList) return;
             requestList.innerHTML = '';
-            requests.filter(r => r.status === 'pending').forEach(req => {
+            
+            const pendingRequests = requests.filter(r => r.status === 'pending');
+            console.log('Pending requests:', pendingRequests);
+            
+            pendingRequests.forEach(req => {
+                console.log('Processing request:', req);
                 const reqDiv = document.createElement('div');
                 reqDiv.className = 'request-item';
                 reqDiv.setAttribute('data-email', req.fromEmail);
