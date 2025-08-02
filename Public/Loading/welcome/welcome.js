@@ -1,49 +1,44 @@
-// Confetti using Canvas
-const canvas = document.getElementById("confetti-canvas");
-const ctx = canvas.getContext("2d");
+document.addEventListener("DOMContentLoaded", () => {
+  // Add fade-in animation for content
+  const content = document.querySelector('.onboarding-content');
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(20px)';
+  
+  setTimeout(() => {
+    content.style.transition = 'all 0.6s ease';
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+  }, 100);
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+  // Handle enter dashboard button
+  const enterBtn = document.querySelector('.enter-btn');
+  enterBtn.addEventListener('click', () => {
+    // Show super animation overlay
+    const overlay = document.getElementById('super-animation-overlay');
+    overlay.classList.add('active');
+    
+    // After animation plays, redirect to dashboard
+    setTimeout(() => {
+      window.location.href = '../../Dashboard/dashbaord.html';
+    }, 3000); // 3 seconds for the super animation
+  });
 
-let particles = [];
-
-function createParticles() {
-  for (let i = 0; i < 150; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      size: Math.random() * 8 + 2,
-      speedY: Math.random() * 3 + 2,
-      color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+  // Add hover effects for welcome image
+  const welcomeImage = document.querySelector('.welcome-image');
+  if (welcomeImage) {
+    welcomeImage.addEventListener('mouseenter', () => {
+      welcomeImage.style.transform = 'scale(1.02)';
+    });
+    
+    welcomeImage.addEventListener('mouseleave', () => {
+      welcomeImage.style.transform = 'scale(1)';
     });
   }
-}
+});
 
-function drawParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let p of particles) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-    p.y += p.speedY;
-    if (p.y > canvas.height) {
-      p.y = -10;
-      p.x = Math.random() * canvas.width;
-    }
+// Keyboard navigation
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    document.querySelector('.enter-btn').click();
   }
-}
-
-function animateParticles() {
-  drawParticles();
-  requestAnimationFrame(animateParticles);
-}
-
-document.querySelector(".enter-btn").addEventListener("click", () => {
-  createParticles();
-  animateParticles();
 });

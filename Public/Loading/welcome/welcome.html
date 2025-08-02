@@ -3,27 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to HealthQuest</title>
+  <title>HealthQuest - Welcome to Your Journey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="welcome.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="container fade-in">
-    <h1 class="zoom-in">WELCOME TO HEALTHQUEST ⚔️</h1>
-    <h2 class="float-up">Your quest begins now!</h2>
-    <p class="fade-in delay">
-      Level up by completing daily quests. Earn XP, collect coins, and unlock badges.
-      Form buddy squads, rise in the leaderboard, and dominate your fitness journey — one mission at a time!
-    </p>
-
-    <div class="progress-bar">
-      <div class="progress"></div>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
+      </div>
+             <nav class="nav-links">
+         <a href="../../Home/home.html" class="nav-link">Home</a>
+         <a href="../../Home/home.html#features" class="nav-link">Features</a>
+         <a href="../../Support/Support.html" class="nav-link">Support</a>
+         <a href="../../Signup/Signup.html" class="signup">Sign Up</a>
+         <a href="../../Login/login.html" class="login">Log In</a>
+       </nav>
     </div>
+  </header>
 
-    <button class="enter-btn">Enter Dashboard 🚀</button>
+  <!-- Main Content -->
+  <main class="onboarding-main">
+    <div class="onboarding-container">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Welcome to HealthQuest! ⚔️</h1>
+          <h2 class="onboarding-subtitle">Your quest begins now!</h2>
+          <p class="welcome-description">
+            Level up by completing daily quests. Earn XP, collect coins, and unlock badges.
+            Form buddy squads, rise in the leaderboard, and dominate your fitness journey — one mission at a time!
+          </p>
+        </div>
+
+        <div class="welcome-image-section">
+          <img src="../../assets/avator.jpeg" alt="Welcome to HealthQuest" class="welcome-image" onerror="this.src='https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop'; this.onerror=null;" />
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot active"></span>
+          </div>
+        </div>
+
+                 <div class="welcome-actions">
+           <button class="btn btn-primary enter-btn">Enter Dashboard</button>
+         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Super Animation Overlay -->
+  <div id="super-animation-overlay" class="super-animation-overlay">
+    <div class="super-animation-content">
+             <h1 class="super-title">Welcome to HealthQuest!</h1>
+      <p class="super-subtitle">Your fitness journey begins now!</p>
+      <div class="loading-spinner"></div>
+    </div>
   </div>
-
-  <canvas id="confetti-canvas"></canvas>
 
   <script src="welcome.js"></script>
 </body>

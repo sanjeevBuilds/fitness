@@ -791,6 +791,38 @@ body.dark-mode .badge-item.locked {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* No titles message styling */
+.no-titles-message {
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.05), rgba(30, 200, 120, 0.05));
+    border-radius: 12px;
+    border: 2px dashed rgba(41, 236, 139, 0.3);
+}
+
+.no-titles-message p {
+    margin: 0.5rem 0;
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.no-titles-message p:first-child {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+/* Dark mode for no titles message */
+body.dark-mode .no-titles-message {
+    background: linear-gradient(135deg, rgba(30, 200, 120, 0.1), rgba(25, 170, 100, 0.1));
+    border-color: rgba(30, 200, 120, 0.4);
+}
+
+body.dark-mode .no-titles-message p:first-child {
+    color: var(--text-dark);
+}
+
 /* Mobile responsiveness for badges & titles */
 @media (max-width: 768px) {
     .titles-grid, .badges-grid {
@@ -811,5 +843,13 @@ body.dark-mode .badge-item.locked {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
+    }
+    
+    .no-titles-message {
+        padding: 1.5rem;
+    }
+    
+    .no-titles-message p:first-child {
+        font-size: 1.1rem;
     }
 }

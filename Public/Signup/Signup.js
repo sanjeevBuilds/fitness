@@ -80,7 +80,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
             authToken: localStorage.getItem('authToken')
         });
         
-        window.location.href = "../ongoing/ongoing1/ongoing.html";
+                 window.location.href = "../ongoing/ongoing1/ongoing.html";
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to create user.');

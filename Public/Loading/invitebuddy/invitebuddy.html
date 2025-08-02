@@ -4,48 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HealthQuest - Add Buddies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="invitebuddy.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 </head>
-<body id="page" class="fade-in">
-
-  <div class="container">
-    <h1>Add Your First Buddies</h1>
-    <p class="subtext">
-      Buddies help you stay consistent, cheer you on, and unlock team-based challenges.
-      Invite your friends and grow stronger together!
-    </p>
-
-    <div class="form-group">
-      <label for="buddy">Buddy Invite</label>
-      <input type="email" id="buddy" placeholder=" Enter your friend's email id e.g., sophia@example.com" />
-      <button onclick="sendInvite()">
-        <img src="https://cdn-icons-png.flaticon.com/512/786/786205.png" alt="Send" /> Send Invite
-      </button>
-      <p id="message" class="success-message" style="display: none;">✅ Invite sent! They'll join you on HealthQuest soon.</p>
-    </div>
-
-    <div class="image-group">
-      <img src="https://i.ibb.co/jzxzB5k/runners.png" alt="Running Buddies" />
-    </div>
-
-    <div class="nav-buttons">
-      <button class="skip">Skip</button>
-      <div class="dots">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
       </div>
-     <button class="next" onclick="goToLeaderboard()">Next</button>
+             <nav class="nav-links">
+         <a href="../../Home/home.html" class="nav-link">Home</a>
+         <a href="../../Home/home.html#features" class="nav-link">Features</a>
+         <a href="../../Support/Support.html" class="nav-link">Support</a>
+         <a href="../../Signup/Signup.html" class="signup">Sign Up</a>
+         <a href="../../Login/login.html" class="login">Log In</a>
+       </nav>
     </div>
-  </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="onboarding-main">
+    <div class="onboarding-container">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Add Your First Buddies</h1>
+          <p class="onboarding-subtitle">
+            Buddies help you stay consistent, cheer you on, and unlock team-based challenges.
+            Invite your friends and grow stronger together!
+          </p>
+        </div>
+
+        <div class="buddy-form-section">
+          <div class="form-group">
+            <label for="buddy">Buddy Invite</label>
+            <input type="email" id="buddy" placeholder="Enter your friend's email e.g., sophia@example.com" />
+            <button class="btn btn-primary send-btn" onclick="sendInvite()">
+              <span class="btn-icon">📧</span>
+              Send Invite
+            </button>
+            <p id="message" class="success-message" style="display: none;">
+              ✅ Invite sent! They'll join you on HealthQuest soon.
+            </p>
+          </div>
+        </div>
+
+        <div class="buddy-image-section">
+          <img src="../../assets/woman-running-vector-illustration-benefits.jpg" alt="Fitness Buddies" class="buddy-image" onerror="this.src='https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop'; this.onerror=null;" />
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-dots">
+            <span class="dot"></span>
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button class="btn btn-secondary back-btn">Go Back</button>
+          <button class="btn btn-primary next-btn" onclick="goToLeaderboard()">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script src="invitebuddy.js"></script>
-<!-- Page Loader -->
-<div id="loader">
-  <div class="spinner"></div>
-</div>
-
 </body>
 </html>

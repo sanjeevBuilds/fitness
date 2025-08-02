@@ -4,71 +4,92 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HealthQuest - Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="leaderboardfirstpage.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 </head>
-<body id="page" class="fade-in">
-
-  <div class="container">
-    <h1>Climb the Leaderboard</h1>
-    <p class="subtext">
-      Every step, scan, and healthy choice helps you rank higher.
-      Compete with buddies or global warriors. Ready to become a legend?
-    </p>
-
-    <div class="image-text-section">
-      <img src="https://i.ibb.co/MC6xbsh/leaderboard.png" alt="Leaderboard Image" />
-    </div>
-
-    <div class="benefits">
-      <h2>Leaderboard Benefits</h2>
-      <ul>
-        <li>
-          <span class="icon">🔥</span>
-          <div>
-            <strong>Track Streaks</strong><br />
-            <span class="desc">Keep your momentum going with daily and weekly streaks.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">👥</span>
-          <div>
-            <strong>Challenge Friends</strong><br />
-            <span class="desc">Challenge friends to step up their game and see who comes out on top.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">🏆</span>
-          <div>
-            <strong>Tier Rewards</strong><br />
-            <span class="desc">Unlock exclusive rewards and titles as you climb through the tiers.</span>
-          </div>
-        </li>
-        <li>
-          <span class="icon">📍</span>
-          <div>
-            <strong>Earned Titles</strong><br />
-            <span class="desc">Earn prestigious titles that showcase your dedication and achievements.</span>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <div class="nav-buttons">
-      <button class="skip" onclick="window.history.back()">Skip</button>
-      <div class="dots">
-        <span class="dot active"></span>
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
       </div>
-      <button class="next" onclick="goToStep3()">Next</button>
+             <nav class="nav-links">
+         <a href="../../Home/home.html" class="nav-link">Home</a>
+         <a href="../../Home/home.html#features" class="nav-link">Features</a>
+         <a href="../../Support/Support.html" class="nav-link">Support</a>
+         <a href="../../Signup/Signup.html" class="signup">Sign Up</a>
+         <a href="../../Login/login.html" class="login">Log In</a>
+       </nav>
     </div>
-  </div>
+  </header>
 
-  <div id="loader">
-    <div class="spinner"></div>
-  </div>
+  <!-- Main Content -->
+  <main class="onboarding-main">
+    <div class="onboarding-container">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Climb the Leaderboard</h1>
+          <p class="onboarding-subtitle">
+            Every step, scan, and healthy choice helps you rank higher.
+            Compete with buddies or global warriors. Ready to become a legend?
+          </p>
+        </div>
+
+        <div class="leaderboard-image-section">
+          <img src="../../assets/Running2.jpg" alt="Leaderboard Preview" class="leaderboard-image" onerror="this.src='https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=400&fit=crop'; this.onerror=null;" />
+        </div>
+
+        <div class="benefits-section">
+          <h2 class="benefits-title">Leaderboard Benefits</h2>
+          <div class="benefits-grid">
+            <div class="benefit-item">
+              <div class="benefit-icon">🔥</div>
+              <div class="benefit-content">
+                <h3 class="benefit-title">Track Streaks</h3>
+                <p class="benefit-description">Keep your momentum going with daily and weekly streaks.</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">👥</div>
+              <div class="benefit-content">
+                <h3 class="benefit-title">Challenge Friends</h3>
+                <p class="benefit-description">Challenge friends to step up their game and see who comes out on top.</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">🏆</div>
+              <div class="benefit-content">
+                <h3 class="benefit-title">Tier Rewards</h3>
+                <p class="benefit-description">Unlock exclusive rewards and titles as you climb through the tiers.</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">📍</div>
+              <div class="benefit-content">
+                <h3 class="benefit-title">Earned Titles</h3>
+                <p class="benefit-description">Earn prestigious titles that showcase your dedication and achievements.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot active"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button class="btn btn-secondary back-btn">Go Back</button>
+          <button class="btn btn-primary next-btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script src="leaderboardfirstpage.js"></script>
 </body>

@@ -58,8 +58,8 @@ document.getElementById("account-form").addEventListener("submit", async functio
       alert(data.error || 'Failed to update user.');
       return;
     }
-    // Redirect to dashboard after setup
-    window.location.href = "../../Dashboard/dashbaord.html";
+    // Redirect to onboarding flow after setup
+    window.location.href = "../../Loading/firstpagexp/firstpageexp.html";
   } catch (err) {
     alert('Server error. Please try again.');
   }

@@ -3,29 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eat Right - HealthQuest</title>
+  <title>HealthQuest - Welcome to Your Fitness Journey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="firstpageexp.css" />
 </head>
 <body>
-  <section class="food-section">
-    <h1 class="fade eat">Eat Right.</h1>
-    <h2 class="fade xp">Earn XP.</h2>
-
-    <div class="lightbulb-glow"></div>
-
-    <div class="bottom-nav">
-      <button class="nav-btn skip">Skip</button>
-
-      <div class="dots">
-        <span class="active"></span>
-        <span class="active"></span>
-        <span class="active"></span>
-        <span></span>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
       </div>
-
-      <button class="nav-btn next">Next</button>
+             <nav class="nav-links">
+         <a href="../../Home/home.html" class="nav-link">Home</a>
+         <a href="../../Home/home.html#features" class="nav-link">Features</a>
+         <a href="../../Support/Support.html" class="nav-link">Support</a>
+         <a href="../../Signup/Signup.html" class="signup">Sign Up</a>
+         <a href="../../Login/login.html" class="login">Log In</a>
+       </nav>
     </div>
-  </section>
+  </header>
+
+  <!-- Main Content -->
+  <main class="onboarding-main">
+    <div class="onboarding-container">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Welcome to Your Fitness Journey!</h1>
+          <p class="onboarding-subtitle">Let's get you started with the basics of HealthQuest</p>
+        </div>
+
+        <div class="feature-highlight">
+          <div class="feature-icon">🍎</div>
+          <h2 class="feature-title">Eat Right</h2>
+          <p class="feature-description">Track your nutrition and get personalized food suggestions to fuel your workouts.</p>
+        </div>
+
+        <div class="feature-highlight">
+          <div class="feature-icon">🏆</div>
+          <h2 class="feature-title">Earn XP</h2>
+          <p class="feature-description">Complete challenges and earn experience points to level up your fitness game.</p>
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button class="btn btn-secondary back-btn">Go Back</button>
+          <button class="btn btn-primary next-btn">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script src="firstpageexp.js"></script>
 </body>

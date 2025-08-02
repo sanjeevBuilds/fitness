@@ -294,6 +294,21 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-secondary.disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-secondary.disabled:hover {
+    background: #ccc;
+    color: #666;
+    transform: none;
+    box-shadow: none;
+}
+
 /* Smart Quest Scaling Section */
 .smart-quests-section {
     background: var(--card-bg);
@@ -1335,4 +1350,62 @@ body.dark-mode .level-badge {
     60% {
         transform: translateY(-5px);
     }
+}
+
+/* Achievement Notification */
+.achievement-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    max-width: 300px;
+}
+
+.achievement-notification.show {
+    transform: translateX(0);
+}
+
+.achievement-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.achievement-icon {
+    font-size: 2rem;
+    animation: achievementPulse 2s infinite;
+}
+
+.achievement-text h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.achievement-text p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+@keyframes achievementPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Dark mode for achievement notification */
+body.dark-mode .achievement-notification {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
 }

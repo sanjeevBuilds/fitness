@@ -235,6 +235,14 @@ class SettingsManager {
         }
     }
 
+    // Function to refresh titles display (can be called from dashboard)
+    async refreshTitlesDisplay() {
+        await this.loadUserTitles();
+        this.populateTitlesGrid();
+        this.updateCurrentSelections();
+        console.log('Titles display refreshed');
+    }
+
     async loadUserTitles() {
         let userData = null;
         
@@ -299,20 +307,19 @@ class SettingsManager {
             }
         }
         
-        // Sample badges and titles data (in a real app, this would come from the server)
+        // Available titles with proper requirements and unlock status
         this.availableTitles = [
-            { id: 'meal-master', name: 'Meal Master', icon: '👨‍🍳', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: true },
+            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: 'Deep knowledge of nutrition', requirement: '5+ day calorie streak', unlocked: false },
+            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: 'Avg. 100g protein/day', requirement: '5+ day protein streak', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '14-day perfect activity streak', requirement: '7+ day quest streak', unlocked: false },
+            { id: 'meal-master', name: 'Meal Master', icon: '👨‍🍳', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: false },
             { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
             { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
             { id: 'yoga-guru', name: 'Yoga Guru', icon: '🧘‍♀️', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
-            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: 'Deep knowledge of nutrition', requirement: 'Track nutrition for 30 days', unlocked: true },
-            { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
+            { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: false },
             { id: 'goal-crusher', name: 'Goal Crusher', icon: '🎯', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
             { id: 'fitness-legend', name: 'Fitness Legend', icon: '👑', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
-            // Dashboard titles
-            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: 'Avg. 100g protein/day', requirement: 'Achieve protein goals', unlocked: false },
-            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '14-day perfect activity streak', requirement: 'Maintain 14-day streak', unlocked: false }
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: false }
         ];
 
         // Badges removed - only titles are used now
@@ -326,17 +333,11 @@ class SettingsManager {
         
         // Ensure user has some titles for display (for testing purposes)
         if (!userData || !userData.titles || userData.titles.length === 0) {
-            console.log('User has no titles, adding some default ones for display');
-            const defaultTitles = [
-                { titleId: 'nutrition-expert', title: 'Nutrition Expert', description: 'Deep knowledge of nutrition', rarity: 'rare', unlockedAt: new Date().toISOString() },
-                { titleId: 'consistency-champion', title: 'Consistency Champion', description: 'Unwavering dedication to fitness', rarity: 'uncommon', unlockedAt: new Date().toISOString() },
-                { titleId: 'wellness-guru', title: 'Wellness Guru', description: 'Master of holistic wellness', rarity: 'epic', unlockedAt: new Date().toISOString() }
-            ];
-            
+            console.log('User has no titles, starting with empty list');
             if (userData) {
-                userData.titles = defaultTitles;
+                userData.titles = [];
                 localStorage.setItem('userData', JSON.stringify(userData));
-                console.log('Added default titles to user data');
+                console.log('Initialized empty titles list for user');
             }
         }
     }
@@ -353,6 +354,7 @@ class SettingsManager {
         const userTitles = userData.titles || [];
         const userTitleIds = userTitles.map(t => t.titleId);
 
+        // Show all titles but mark them as locked/unlocked
         const html = this.availableTitles.map(title => {
             const isUnlocked = userTitleIds.includes(title.id);
             return `
@@ -729,6 +731,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Sidebar display update removed - only titles are used now
 });
+
+// Global function to refresh titles in settings page
+window.refreshSettingsTitles = async function() {
+    if (window.settingsManager) {
+        await window.settingsManager.refreshTitlesDisplay();
+    }
+};
 
 // Global function to apply dark mode (for other pages)
 function applyGlobalDarkMode() {

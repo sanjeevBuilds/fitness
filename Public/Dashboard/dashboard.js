@@ -765,6 +765,12 @@ class EnhancedDashboardGamification {
         document.querySelectorAll('.unlock-title-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                
+                // Check if button is disabled
+                if (e.target.disabled || e.target.classList.contains('disabled')) {
+                    return;
+                }
+                
                 const cost = parseInt(e.target.dataset.cost);
                 const titleCard = e.target.closest('.title-card');
                 const titleId = titleCard.dataset.title;
@@ -1129,17 +1135,28 @@ class EnhancedDashboardGamification {
 
     // unlockChallenge function removed - only titles are used now
 
-    async unlockTitle(titleId, cost) {
-        console.log('🏆 UNLOCK TITLE CALLED:', titleId, 'Cost:', cost);
+    async unlockTitle(titleId, cost, isAutoUnlock = false) {
+        console.log('🏆 UNLOCK TITLE CALLED:', titleId, 'Cost:', cost, 'Auto Unlock:', isAutoUnlock);
         
-        if (this.currentUser.coins < cost) {
-            this.showNotification('Not enough coins!', 'error');
+        // Check if user can unlock this title
+        const canUnlock = this.canUnlockTitle(titleId, cost);
+        if (!canUnlock.allowed) {
+            this.showNotification(canUnlock.message, 'error');
             return;
         }
 
-        // Deduct coins
-        this.currentUser.coins -= cost;
-        console.log('🏆 Coins deducted. New balance:', this.currentUser.coins);
+        // Determine if this is a coin purchase or achievement unlock
+        const isCoinPurchase = !isAutoUnlock && canUnlock.reason === 'coins_purchase';
+        const isAchievementUnlock = isAutoUnlock || canUnlock.reason === 'requirements_met';
+
+        // Handle coin deduction
+        if (isCoinPurchase) {
+            // Deduct coins for manual coin purchases
+            this.currentUser.coins -= cost;
+            console.log('🏆 Coins deducted for coin purchase. New balance:', this.currentUser.coins);
+        } else {
+            console.log('🏆 Achievement unlock - no coins deducted');
+        }
 
         // Add title
         const newTitle = {
@@ -1154,8 +1171,6 @@ class EnhancedDashboardGamification {
         this.currentUser.selectedTitle = titleId;
         console.log('🏆 Set newly unlocked title as active:', titleId);
 
-        // Badge unlock removed - only titles are used now
-
         // Update UI
         this.updateTitleUI(titleId);
 
@@ -1163,18 +1178,29 @@ class EnhancedDashboardGamification {
         const activity = {
             type: 'title',
             date: new Date(),
-            details: `Unlocked title: ${newTitle.title}`,
-            coinsSpent: cost
+            details: isAchievementUnlock ? `Achieved title: ${newTitle.title}` : `Purchased title: ${newTitle.title}`,
+            coinsSpent: isCoinPurchase ? cost : 0
         };
         this.currentUser.activityLog.unshift(activity);
 
         this.saveUserDataToStorage();
         this.updateUI();
-        this.showNotification(`Title unlocked! -${cost} coins`, 'success');
+        
+        // Show appropriate notification
+        if (isAchievementUnlock) {
+            this.showNotification(`🎉 Title achieved: ${newTitle.title}!`, 'success');
+        } else {
+            this.showNotification(`Title purchased! -${cost} coins`, 'success');
+        }
 
         // Update sidebar to show the new title
         if (window.sharedSidebar) {
             window.sharedSidebar.refreshDisplay();
+        }
+
+        // Refresh settings page titles if it's open
+        if (window.refreshSettingsTitles) {
+            window.refreshSettingsTitles();
         }
 
         // Sync with backend
@@ -1186,11 +1212,8 @@ class EnhancedDashboardGamification {
                     titles: this.currentUser.titles,
                     activityLog: this.currentUser.activityLog,
                     selectedTitle: this.currentUser.selectedTitle,
-                    // Badges removed from request body
                 };
                 console.log('🏆 Sending title unlock to backend:', requestBody);
-                console.log('🏆 Request body keys:', Object.keys(requestBody));
-                console.log('🏆 User badges count:', this.currentUser.badges ? this.currentUser.badges.length : 0);
                 
                 const response = await fetch(`${this.API_BASE}/updateUser`, {
                     method: 'PATCH',
@@ -1204,7 +1227,6 @@ class EnhancedDashboardGamification {
                 if (response.ok) {
                     const result = await response.json();
                     console.log('🏆 Title unlock backend sync successful:', result);
-                    // Title card is already removed by updateTitleUI()
                 } else {
                     const errorText = await response.text();
                     console.warn('🏆 Title unlock backend sync failed:', response.statusText, errorText);
@@ -1213,8 +1235,121 @@ class EnhancedDashboardGamification {
         } catch (error) {
             console.error('🏆 Title unlock backend sync error:', error);
         }
+    }
+
+    // Check if user meets requirements for a specific title
+    checkTitleRequirements(titleId) {
+        const questStats = this.currentUser.questStats || {};
         
-        // Badge sync removed - only titles are used now
+        switch (titleId) {
+            case 'nutrition-expert':
+                const calorieStreak = questStats.calorieStreak || 0;
+                if (calorieStreak < 5) {
+                    return {
+                        allowed: false,
+                        message: `Need 5+ day calorie streak! Current: ${calorieStreak} days`
+                    };
+                }
+                break;
+                
+            case 'protein-beast':
+                const proteinStreak = questStats.proteinStreak || 0;
+                if (proteinStreak < 5) {
+                    return {
+                        allowed: false,
+                        message: `Need 5+ day protein streak! Current: ${proteinStreak} days`
+                    };
+                }
+                break;
+                
+            case 'streak-legend':
+                const questStreak = questStats.currentStreak || 0;
+                if (questStreak < 7) {
+                    return {
+                        allowed: false,
+                        message: `Need 7+ day quest streak! Current: ${questStreak} days`
+                    };
+                }
+                break;
+                
+            default:
+                return { allowed: true, message: 'Requirements met' };
+        }
+        
+        return { allowed: true, message: 'Requirements met' };
+    }
+
+    // Check if user can unlock title (either by meeting requirements or having coins)
+    canUnlockTitle(titleId, cost) {
+        // First check if requirements are met (for auto unlock)
+        const requirementsCheck = this.checkTitleRequirements(titleId);
+        if (requirementsCheck.allowed) {
+            return { allowed: true, reason: 'requirements_met', message: 'Requirements met' };
+        }
+        
+        // If requirements not met, check if user has enough coins
+        if (this.currentUser.coins >= cost) {
+            return { allowed: true, reason: 'coins_purchase', message: 'Can unlock with coins' };
+        }
+        
+        // Neither requirements met nor enough coins
+        return { 
+            allowed: false, 
+            reason: 'insufficient_resources', 
+            message: `Need ${cost} coins or meet requirements: ${requirementsCheck.message}` 
+        };
+    }
+
+    // Check if a title is already unlocked
+    isTitleUnlocked(titleId) {
+        return this.currentUser.titles && this.currentUser.titles.some(title => title.titleId === titleId);
+    }
+
+    // Auto unlock title when requirements are met
+    async autoUnlockTitle(titleId, cost) {
+        console.log(`🏆 AUTO UNLOCKING TITLE: ${titleId}`);
+        
+        // Call unlockTitle with isAutoUnlock = true
+        await this.unlockTitle(titleId, cost, true);
+        
+        // Show special achievement notification
+        this.showAchievementNotification(titleId);
+    }
+
+    // Show special achievement notification
+    showAchievementNotification(titleId) {
+        const titleName = this.getTitleName(titleId);
+        
+        // Create achievement notification
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-content">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-text">
+                    <h3>Achievement Unlocked!</h3>
+                    <p>${titleName}</p>
+                </div>
+            </div>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Show animation
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 500);
+        }, 5000);
     }
 
     // unlockBadge function removed - only titles are used now
@@ -1715,9 +1850,32 @@ class EnhancedDashboardGamification {
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = streakLegendCard.querySelector('.progress-fill');
             const progressText = streakLegendCard.querySelector('.progress-text');
+            const unlockBtn = streakLegendCard.querySelector('.unlock-title-btn');
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            
+            // Check if title should be auto-unlocked
+            if (currentStreak >= targetStreak && !this.isTitleUnlocked('streak-legend')) {
+                this.autoUnlockTitle('streak-legend', 200);
+            }
+            
+            // Update unlock button state
+            if (unlockBtn) {
+                const cost = parseInt(unlockBtn.dataset.cost);
+                const hasEnoughCoins = this.currentUser.coins >= cost;
+                
+                if (hasEnoughCoins) {
+                    unlockBtn.textContent = 'Unlock';
+                    unlockBtn.disabled = false;
+                    unlockBtn.classList.remove('disabled');
+                } else {
+                    unlockBtn.textContent = 'Locked';
+                    unlockBtn.disabled = true;
+                    unlockBtn.classList.add('disabled');
+                }
+            }
+            
             console.log('[TITLE PROGRESS] Streak Legend updated:', { currentStreak, targetStreak, progressPercent });
         }
 
@@ -1729,9 +1887,32 @@ class EnhancedDashboardGamification {
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = proteinBeastCard.querySelector('.progress-fill');
             const progressText = proteinBeastCard.querySelector('.progress-text');
+            const unlockBtn = proteinBeastCard.querySelector('.unlock-title-btn');
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            
+            // Check if title should be auto-unlocked
+            if (currentStreak >= targetStreak && !this.isTitleUnlocked('protein-beast')) {
+                this.autoUnlockTitle('protein-beast', 100);
+            }
+            
+            // Update unlock button state
+            if (unlockBtn) {
+                const cost = parseInt(unlockBtn.dataset.cost);
+                const hasEnoughCoins = this.currentUser.coins >= cost;
+                
+                if (hasEnoughCoins) {
+                    unlockBtn.textContent = 'Unlock';
+                    unlockBtn.disabled = false;
+                    unlockBtn.classList.remove('disabled');
+                } else {
+                    unlockBtn.textContent = 'Locked';
+                    unlockBtn.disabled = true;
+                    unlockBtn.classList.add('disabled');
+                }
+            }
+            
             console.log('[TITLE PROGRESS] Protein Beast updated:', { currentStreak, targetStreak, progressPercent });
         }
 
@@ -1743,9 +1924,32 @@ class EnhancedDashboardGamification {
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = nutritionExpertCard.querySelector('.progress-fill');
             const progressText = nutritionExpertCard.querySelector('.progress-text');
+            const unlockBtn = nutritionExpertCard.querySelector('.unlock-title-btn');
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            
+            // Check if title should be auto-unlocked
+            if (currentStreak >= targetStreak && !this.isTitleUnlocked('nutrition-expert')) {
+                this.autoUnlockTitle('nutrition-expert', 100);
+            }
+            
+            // Update unlock button state
+            if (unlockBtn) {
+                const cost = parseInt(unlockBtn.dataset.cost);
+                const hasEnoughCoins = this.currentUser.coins >= cost;
+                
+                if (hasEnoughCoins) {
+                    unlockBtn.textContent = 'Unlock';
+                    unlockBtn.disabled = false;
+                    unlockBtn.classList.remove('disabled');
+                } else {
+                    unlockBtn.textContent = 'Locked';
+                    unlockBtn.disabled = true;
+                    unlockBtn.classList.add('disabled');
+                }
+            }
+            
             console.log('[TITLE PROGRESS] Nutrition Expert updated:', { currentStreak, targetStreak, progressPercent });
         }
     }

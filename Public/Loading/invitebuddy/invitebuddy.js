@@ -1,3 +1,41 @@
+document.addEventListener("DOMContentLoaded", () => {
+  // Add fade-in animation for content
+  const content = document.querySelector('.onboarding-content');
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(20px)';
+  
+  setTimeout(() => {
+    content.style.transition = 'all 0.6s ease';
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+  }, 100);
+
+  // Handle navigation buttons
+  const backBtn = document.querySelector('.back-btn');
+  const nextBtn = document.querySelector('.next-btn');
+
+  backBtn.addEventListener('click', () => {
+    // Go back to previous page
+    window.location.href = '../firstpagexp/firstpageexp.html';
+  });
+
+  nextBtn.addEventListener('click', () => {
+    goToLeaderboard();
+  });
+
+  // Add hover effects for buddy image
+  const buddyImage = document.querySelector('.buddy-image');
+  if (buddyImage) {
+    buddyImage.addEventListener('mouseenter', () => {
+      buddyImage.style.transform = 'scale(1.02)';
+    });
+    
+    buddyImage.addEventListener('mouseleave', () => {
+      buddyImage.style.transform = 'scale(1)';
+    });
+  }
+});
+
 function sendInvite() {
   const input = document.getElementById("buddy");
   const message = document.getElementById("message");
@@ -7,26 +45,34 @@ function sendInvite() {
     return;
   }
 
+  // Show success message with animation
   message.style.display = "block";
-  message.classList.add("fade-in");
+  message.style.opacity = "0";
+  message.style.transform = "translateY(10px)";
+  
+  setTimeout(() => {
+    message.style.transition = "all 0.3s ease";
+    message.style.opacity = "1";
+    message.style.transform = "translateY(0)";
+  }, 100);
+
+  // Clear input
+  input.value = "";
 }
 
 function goToLeaderboard() {
-  const page = document.getElementById("page");
-  page.classList.add("fade-out");
+  // Add fade-out animation
+  const content = document.querySelector('.onboarding-content');
+  content.style.transition = 'all 0.4s ease';
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(-20px)';
 
   setTimeout(() => {
-    window.location.href = "../leaderboardfirstpage/leaderboardfirstpage.html";
-  }, 400); // match CSS fade timing
+    window.location.href = "../leaderboardfirstpage/leaderboradfirstpage.html";
+  }, 400);
 }
 
-window.addEventListener("load", () => {
-  const loader = document.getElementById("loader");
-  if (loader) {
-    loader.style.display = "none";
-  }
-});
-
+// Keyboard navigation
 document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") {
     goToLeaderboard();
