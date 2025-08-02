@@ -3,67 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HealthQuest Sign Up</title>
+  <title>HealthQuest - Join the Fitness Revolution</title>
 
   <!-- Link to custom font -->
-  <link href="https://fonts.cdnfonts.com/css/hurme-geometric-sans-1" rel="stylesheet">
-  <link rel="stylesheet" href="signup.css" />
-  <style>
-    body {
-      font-family: 'Hurme Geometric Sans 1', sans-serif;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Signup.css" />
 </head>
 <body>
   <div class="container">
-  <header class="header">
-    <div class="nav-container">
-      <div class="logo">
-        <span class="logo-text">HealthQuest</span>
+    <header class="header">
+      <div class="nav-container">
+        <div class="logo">
+          <span class="logo-text">HealthQuest</span>
+        </div>
+        <nav class="nav-links">
+          <a href="../Home/home.html" class="nav-link">Home</a>
+          <a href="../Home/home.html#features" class="nav-link">Features</a>
+          <a href="../Support/Support.html" class="nav-link">Support</a>
+          <a href="../Signup/Signup.html" class="signup">Sign Up</a>
+          <a href="../Login/login.html" class="login">Log In</a>
+        </nav>
       </div>
-                      <nav class="nav-links">
-                    <a href="../Home/home.html" class="nav-link">Home</a>
-                    <a href="../Home/home.html#features" class="nav-link">Features</a>
-                    <a href="../Support/Support.html" class="nav-link">Support</a>
-                    <a href="../Signup/Signup.html" class="signup">Sign Up</a>
-                    <a href="../Login/login.html" class="login">Log In</a>
-                </nav>
-    </div>
-  </header>
+    </header>
+
+    <main class="signup-main">
+      <div class="signup-container">
+        <div class="signup-content">
+          <div class="signup-header">
+            <h1 class="signup-title">Join the Fitness Revolution!</h1>
+            <p class="signup-subtitle">Start your journey to a healthier, stronger you with AI-powered fitness tracking and gamification.</p>
+          </div>
+
+          <div class="signup-form-container">
+            <form class="signup-form">
+              <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" placeholder="Enter your full name" required>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+              </div>
+
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Create a strong password" required>
+              </div>
+
+              <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+              </div>
+
+              <button type="submit" class="signup-btn">Create Account</button>
+            </form>
+
+            <button id="random-fill-btn" type="button" class="demo-btn">
+              <span class="demo-icon">🎯</span>
+              Fill Demo Data
+            </button>
+
+            <div class="divider">
+              <span class="divider-text">or continue with</span>
+            </div>
+
+            <div class="social-buttons">
+              <button class="social-btn google-btn">
+                <span class="social-icon">🔍</span>
+                Continue with Google
+              </button>
+              <button class="social-btn apple-btn">
+                <span class="social-icon">🍎</span>
+                Continue with Apple
+              </button>
+            </div>
+
+            <div class="login-prompt">
+              <p>Already have an account? <a href="../Login/login.html" class="login-link">Log in</a></p>
+            </div>
+          </div>
+        </div>
 
 
-
-
-
-
-    <main>
-      <h1>Create your account</h1>
-      <form>
-        <label>Full Name</label>
-        <input type="text" placeholder="Enter your full name">
-
-        <label>Email</label>
-        <input type="email" placeholder="Enter your email">
-
-        <label>Password</label>
-        <input type="password" placeholder="Enter your password">
-
-        <label>Confirm Password</label>
-        <input type="password" placeholder="Confirm your password">
-
-        <button type="submit" class="signup">Sign Up</button>
-      </form>
-
-      <button id="random-fill-btn" type="button" style="margin-top: 1rem; margin-bottom: 1rem; background: #7aee8c; color: #0d1c14; border: none; border-radius: 20px; padding: 0.8rem; font-weight: bold; cursor: pointer;">Fill Random Demo User</button>
-
-      <div class="divider">Or sign up with</div>
-
-      <div class="social-buttons">
-        <button class="social">Continue with SocialApp</button>
-        <button class="social">Continue with EmailApp</button>
       </div>
-
-      <p class="login-text">Already have an account? <a href="../Login/login.html">Log in</a></p>
     </main>
   </div>
 

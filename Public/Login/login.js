@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
             errorDiv.textContent = '';
         }
         // Disable button during request
-        const submitBtn = loginForm.querySelector('.login');
+        const submitBtn = loginForm.querySelector('.login-btn');
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Logging in...';
         submitBtn.disabled = true;
