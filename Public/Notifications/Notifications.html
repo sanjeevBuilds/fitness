@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - FitWarrior</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-      <link rel="stylesheet" href="../Dashboard/dashboard.css">
-    <link rel="stylesheet" href="../Dashboard/Buddies.css">
-    <link rel="stylesheet" href="Notifications.css">
-    <link rel="stylesheet" href="../shared-sidebar.css">
+  <link rel="stylesheet" href="../Dashboard/dashboard.css">
+  <link rel="stylesheet" href="../Dashboard/Buddies.css">
+  <link rel="stylesheet" href="Notifications.css">
+  <link rel="stylesheet" href="../shared-sidebar.css">
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
   <style>
     * {
@@ -77,101 +77,80 @@
       margin-bottom: 25px;
       float: right;
     }
+
+    /* Toast animations */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
-      <aside class="sidebar">
-    <!-- Shared sidebar will be populated by shared-sidebar.js -->
-  </aside>
+    <aside class="sidebar">
+      <!-- Shared sidebar will be populated by shared-sidebar.js -->
+    </aside>
+    
     <main class="main-content notifications-main">
-      <h1 class="heading">Notifications</h1>
-      <div class="notification-actions">
-        <button id="clearBtn">Clear All</button>
+      <div class="notifications-header">
+        <h1 class="heading">Notifications</h1>
+        <div class="notification-actions">
+          <button id="markAllReadBtn" class="action-btn">Mark All Read</button>
+          <button id="clearBtn" class="action-btn clear-btn">Clear All</button>
+        </div>
       </div>
+
+      <!-- Unread Counts Summary -->
+      <div class="unread-summary">
+        <div class="summary-item">
+          <span class="summary-label">Friend Requests:</span>
+          <span id="friend-requests-badge" class="summary-badge">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Notifications:</span>
+          <span id="notifications-badge" class="summary-badge">0</span>
+        </div>
+        <div class="summary-item total">
+          <span class="summary-label">Total Unread:</span>
+          <span id="total-unread-badge" class="summary-badge total-badge">0</span>
+        </div>
+      </div>
+
       <!-- Friend Requests Section -->
-      <div class="friend-requests" id="friend-requests"></div>
-      <!-- Gamified Notification List -->
-      <div class="notification-list" id="notification-list">
-        <!-- Example Notification Card -->
-        <div class="notification-item">
-          <span class="notif-icon">⭐</span>
-          <div class="notif-content">
-            <div class="notif-title">XP Earned <span class="level badge">+50 XP</span></div>
-            <div class="notif-desc">You earned 50 XP for completing your daily posture check</div>
-          </div>
-          <div class="notif-time">4h</div>
-          <button class="mark-read-btn">Mark as Read</button>
+      <div class="section-container">
+        <h2 class="section-title">👥 Friend Requests</h2>
+        <div class="friend-requests" id="friend-requests">
+          <!-- Friend requests will be populated here -->
         </div>
-        <div class="notification-item">
-          <span class="notif-icon">💰</span>
-          <div class="notif-content">
-            <div class="notif-title">Coin Balance Update <span class="level badge">+300 Coins</span></div>
-            <div class="notif-desc">You have 300 coins to spend in the rewards store</div>
-          </div>
-          <div class="notif-time">6h</div>
-          <button class="mark-read-btn">Mark as Read</button>
+      </div>
+
+      <!-- Notifications Section -->
+      <div class="section-container">
+        <h2 class="section-title">📢 Notifications</h2>
+        <div class="notification-list" id="notification-list">
+          <!-- Notifications will be populated here -->
         </div>
-        <div class="notification-item">
-          <span class="notif-icon">🔥</span>
-          <div class="notif-content">
-            <div class="notif-title">Streak Achievement <span class="level badge">7 Day Streak</span></div>
-            <div class="notif-desc">You've maintained your daily streak for 7 days!</div>
-          </div>
-          <div class="notif-time">10h</div>
-          <button class="mark-read-btn">Mark as Read</button>
-        </div>
-        <div class="notification-item">
-          <span class="notif-icon">🏅</span>
-          <div class="notif-content">
-            <div class="notif-title">Badge Unlocked <span class="level badge">"Early Bird"</span></div>
-            <div class="notif-desc">You unlocked the Early Bird badge for logging breakfast 5 days in a row!</div>
-          </div>
-          <div class="notif-time">12h</div>
-          <button class="mark-read-btn">Mark as Read</button>
-        </div>
-        <div class="notification-item">
-          <span class="notif-icon">👥</span>
-          <div class="notif-content">
-            <div class="notif-title">Buddy Challenge</div>
-            <div class="notif-desc">Join the 'Healthy Habits' challenge with your buddies</div>
-          </div>
-          <div class="notif-time">18h</div>
-          <button class="mark-read-btn">Mark as Read</button>
+      </div>
+
+      <!-- Activity Logs Section -->
+      <div class="section-container">
+        <h2 class="section-title">📝 Recent Activity</h2>
+        <div class="activity-logs" id="activity-logs">
+          <!-- Activity logs will be populated here -->
         </div>
       </div>
     </main>
   </div>
 
-  <script src="Notifications.js"></script>
+  <!-- Load shared sidebar -->
   <script src="../shared-sidebar.js"></script>
-  <script>
-    // Mark as Read functionality
-    document.querySelectorAll('.mark-read-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const notif = this.closest('.notification-item');
-        notif.classList.add('read');
-        this.disabled = true;
-        this.textContent = 'Read';
-      });
-    });
-    // Clear All functionality
-    document.getElementById('clearBtn').addEventListener('click', function() {
-      document.getElementById('notification-list').innerHTML = '';
-    });
-    // Sidebar is now handled by shared-sidebar.js
-    // Dark mode application (same as Dashboard)
-    function applyGlobalDarkMode() {
-      const isDark = localStorage.getItem('darkMode') === 'true';
-      if (isDark) {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
-    }
-    applyGlobalDarkMode();
-  </script>
+  <script src="Notifications.js"></script>
 </body>
 
 </html>

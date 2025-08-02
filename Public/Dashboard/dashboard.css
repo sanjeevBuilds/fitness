@@ -308,6 +308,8 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-top: 1.5rem;
+    /* Prevent layout shifts when items are hidden */
+    grid-auto-rows: min-content;
 }
 
 .quest-item {
@@ -326,6 +328,25 @@ body {
 .quest-item.exceeded {
     border-color: var(--primary-btn);
     background: rgba(41, 236, 139, 0.05);
+}
+
+/* Prevent layout shifts when quests are hidden */
+.quest-item.quest-completed,
+.quest-item.reward-collected {
+    display: none !important;
+    /* Use !important to ensure it overrides any other display properties */
+}
+
+/* Alternative: Use visibility and height to prevent layout shifts */
+.quest-item.hidden {
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
 }
 
 .quest-header {

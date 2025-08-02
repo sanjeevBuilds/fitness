@@ -321,12 +321,12 @@ router.post('/createUser', async (req, res) => {
     // Initialize gamification arrays
     newUser.notifications = [];
     newUser.friendRequests = [];
-    newUser.dailyQuests = [];
+    // dailyQuests removed - using questStats for tracking instead
     newUser.miniChallenges = [];
     newUser.foodLogs = [];
     newUser.mealPlan = undefined;
     newUser.postureScans = [];
-    newUser.insights = [];
+
     // Badges removed - only titles are used now
     newUser.titles = [];
     newUser.activityLog = [];
@@ -379,7 +379,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Reset daily quests on login
-    await resetDailyQuests(user);
+    // resetDailyQuests removed - dailyQuests no longer used
     
     // Update last login
     user.lastLogin = new Date();
@@ -414,7 +414,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// PATCH update daily quest progress
+// PATCH update daily quest progress - Simplified version
 router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
   try {
     const { questType, progress, completed } = req.body;
@@ -426,54 +426,119 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    let quest = user.dailyQuests.find(q => q.date === today && q.questType === questType);
-
-    if (!quest) {
-      // Create new quest if it doesn't exist
-      quest = {
-        date: today,
-        questType: questType,
-        questName: getQuestName(questType),
-        target: getQuestTarget(questType, user),
-        currentProgress: 0,
-        completed: false
+    // Initialize questStats if it doesn't exist
+    if (!user.questStats) {
+      user.questStats = {
+        totalQuestsCompleted: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastQuestDate: null,
+        stepGoalHistory: [],
+        proteinStreak: 0,
+        proteinLongestStreak: 0,
+        proteinLastCompletedDate: null,
+        calorieStreak: 0,
+        calorieLongestStreak: 0,
+        calorieLastCompletedDate: null
       };
-      user.dailyQuests.push(quest);
     }
 
-    // Update quest progress
-    if (progress !== undefined) {
-      quest.currentProgress = progress;
-    }
-
-    // NEW LOGIC: Reset quest completion if toggled OFF
-    if (completed === false && quest.completed) {
-      quest.completed = false;
-      // Optionally, you could also reset currentProgress if you want
-      // quest.currentProgress = 0;
-      console.log(`[updateDailyQuest] Quest ${questType} reset to not completed.`);
-    }
+    const today = new Date().toISOString().slice(0, 10);
+    let unlockedTitles = [];
 
     // Check if quest should be completed
-    // For regular quests (water, sleep, exercise, etc.), progress of 1 means completed
-    // For smart quests (calories, protein), check if progress >= target
     const isRegularQuest = ['water', 'sleep', 'exercise', 'meal'].includes(questType);
     const shouldComplete = isRegularQuest ? 
-      (quest.currentProgress >= 1) : 
-      (quest.currentProgress >= quest.target);
+      (progress >= 1) : 
+      (progress >= getQuestTarget(questType, user));
     
-    if (shouldComplete && !quest.completed) {
-      quest.completed = true;
-      quest.completedAt = new Date();
+    if (shouldComplete && completed !== false) {
+      console.log(`[updateDailyQuest] Marking quest as completed: ${questType}, progress: ${progress}`);
       
-      console.log(`[updateDailyQuest] Marking quest as completed: ${questType}, progress: ${quest.currentProgress}, target: ${quest.target}`);
+      // Check if already completed today to prevent duplicate awards
+      const alreadyCompleted = user.dailyQuestCompletions?.[today]?.[questType];
+      if (alreadyCompleted) {
+        console.log(`[updateDailyQuest] Quest ${questType} already completed today, skipping award`);
+        return res.json({
+          success: true,
+          questType: questType,
+          progress: progress,
+          completed: true,
+          xp: user.exp,
+          level: user.level,
+          coins: user.coins,
+          leveledUp: false,
+          unlockedTitles: [],
+          questStats: user.questStats
+        });
+      }
+      
+      // Track daily quest completion
+      if (isRegularQuest) {
+        if (!user.dailyQuestCompletions) user.dailyQuestCompletions = {};
+        if (!user.dailyQuestCompletions[today]) user.dailyQuestCompletions[today] = {};
+        user.dailyQuestCompletions[today][questType] = true;
+        user.markModified('dailyQuestCompletions');
+        console.log(`[updateDailyQuest] Updated dailyQuestCompletions for ${questType}:`, user.dailyQuestCompletions[today]);
+      }
+      
+      // Update questStats
+      if (!user.questStats) {
+        user.questStats = {
+          totalQuestsCompleted: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          lastQuestDate: null,
+          stepGoalHistory: [],
+          proteinStreak: 0,
+          proteinLongestStreak: 0,
+          proteinLastCompletedDate: null,
+          calorieStreak: 0,
+          calorieLongestStreak: 0,
+          calorieLastCompletedDate: null
+        };
+      }
+      
+      // Update totalQuestsCompleted
+      user.questStats.totalQuestsCompleted = (user.questStats.totalQuestsCompleted || 0) + 1;
+      user.markModified('questStats');
+      
+      // Update streak
+      if (user.questStats.lastQuestDate === today) {
+        // Already completed a quest today, don't change streak
+      } else {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        
+        if (user.questStats.lastQuestDate === yesterdayStr) {
+          // Continuing streak
+          user.questStats.currentStreak = (user.questStats.currentStreak || 0) + 1;
+        } else {
+          // New streak starts
+          user.questStats.currentStreak = 1;
+        }
+        
+        // Update longest streak
+        if (user.questStats.currentStreak > (user.questStats.longestStreak || 0)) {
+          user.questStats.longestStreak = user.questStats.currentStreak;
+        }
+        
+        user.questStats.lastQuestDate = today;
+      }
+      
+      console.log(`[updateDailyQuest] Updated questStats:`, {
+        totalQuestsCompleted: user.questStats.totalQuestsCompleted,
+        currentStreak: user.questStats.currentStreak,
+        longestStreak: user.questStats.longestStreak,
+        lastQuestDate: user.questStats.lastQuestDate
+      });
       
       // Award XP and coins
       const xpGained = calculateQuestXP(questType);
       const coinsGained = calculateQuestCoins(questType);
       
-      console.log(`[updateDailyQuest] Quest ${questType} completed! Progress: ${quest.currentProgress}, Target: ${quest.target}`);
+      console.log(`[updateDailyQuest] Quest ${questType} completed! Progress: ${progress}`);
       console.log(`[updateDailyQuest] Awarding XP: ${xpGained}, Coins: ${coinsGained}`);
       console.log(`[updateDailyQuest] User coins before: ${user.coins}, after: ${(user.coins || 0) + coinsGained}`);
       
@@ -502,43 +567,125 @@ router.patch('/updateDailyQuest', authenticateToken, async (req, res) => {
         type: 'quest',
         questType: questType,
         date: new Date(),
-        details: `Completed ${quest.questName}`,
+        details: `Completed ${getQuestName(questType)}`,
         xpGained: xpGained
       });
       
       // Keep only last 20 activities
       user.activityLog = user.activityLog.slice(0, 20);
-      
-      // Check and unlock titles based on streaks
-      const unlockedTitles = await checkAndUnlockStreakTitles(user);
-      
-      // Badge unlocks removed - only titles are used now
-    }
-
+    
+    // Save first to trigger the pre('save') middleware for streak calculation
     await user.save();
     
-    console.log(`[updateDailyQuest] Quest saved. Final state: questType=${quest.questType}, progress=${quest.currentProgress}, completed=${quest.completed}, userCoins=${user.coins}`);
+    // Check and unlock titles based on streaks (after streak calculation)
+    console.log(`[updateDailyQuest] Before checkAndUnlockStreakTitles - questStats:`, user.questStats);
+    unlockedTitles = await checkAndUnlockStreakTitles(user);
+    console.log(`[updateDailyQuest] After checkAndUnlockStreakTitles - unlockedTitles:`, unlockedTitles);
+    
+    // Save again if titles were unlocked
+    if (unlockedTitles.length > 0) {
+        await user.save();
+    }
+    
+    // Badge unlocks removed - only titles are used now
+  } else if (completed === false && isRegularQuest) {
+    // Handle quest uncompletion
+    if (user.dailyQuestCompletions?.[today]?.[questType]) {
+      delete user.dailyQuestCompletions[today][questType];
+      user.markModified('dailyQuestCompletions');
+      console.log(`[updateDailyQuest] Quest ${questType} unchecked`);
+    }
+  }
+    
+    console.log(`[updateDailyQuest] Quest saved. Final state: questType=${questType}, progress=${progress}, completed=${shouldComplete}, userCoins=${user.coins}`);
     console.log(`[updateDailyQuest] User questStats after save:`, {
       totalQuestsCompleted: user.questStats?.totalQuestsCompleted,
       currentStreak: user.questStats?.currentStreak,
       longestStreak: user.questStats?.longestStreak,
       lastQuestDate: user.questStats?.lastQuestDate
     });
-    console.log(`[updateDailyQuest] Total dailyQuests in DB: ${user.dailyQuests.length}, Completed: ${user.dailyQuests.filter(q => q.completed).length}`);
     
     res.json({
       success: true,
-      quest: quest,
+      questType: questType,
+      progress: progress,
+      completed: shouldComplete,
       xp: user.exp,
       level: user.level,
       coins: user.coins,
-      leveledUp: quest.completed,
-      unlockedTitles: unlockedTitles || []
+      leveledUp: shouldComplete,
+      unlockedTitles: unlockedTitles || [],
+      questStats: user.questStats // Include updated quest stats
     });
 
   } catch (err) {
     console.error('Update daily quest error:', err);
     res.status(500).json({ error: 'Failed to update daily quest' });
+  }
+});
+
+// GET daily quest completion status
+router.get('/getDailyQuestStatus/:email', authenticateToken, async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ email: req.params.email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // Get today's quest completions
+    const todayCompletions = user.dailyQuestCompletions?.[today] || {};
+    
+    // Define quest details
+    const questDetails = {
+      water: {
+        name: 'Hydration Master',
+        description: 'Log 2L water',
+        xpReward: 25,
+        icon: '💧'
+      },
+      sleep: {
+        name: 'Sleep Warrior',
+        description: 'Sleep 7+ hours',
+        xpReward: 30,
+        icon: '😴'
+      },
+      meal: {
+        name: 'Nutrition Tracker',
+        description: 'Log today\'s meal',
+        xpReward: 20,
+        icon: '🍽️'
+      },
+      exercise: {
+        name: 'Fitness Fanatic',
+        description: '30 min workout',
+        xpReward: 60,
+        icon: '💪'
+      }
+    };
+
+    // Build response with completion status
+    const questStatus = {};
+    Object.keys(questDetails).forEach(questType => {
+      questStatus[questType] = {
+        ...questDetails[questType],
+        completed: todayCompletions[questType] || false,
+        completedAt: todayCompletions[questType] ? new Date().toISOString() : null
+      };
+    });
+
+    res.json({
+      success: true,
+      date: today,
+      quests: questStatus,
+      totalCompleted: Object.values(todayCompletions).filter(Boolean).length,
+      totalQuests: Object.keys(questDetails).length
+    });
+
+  } catch (err) {
+    console.error('Get daily quest status error:', err);
+    res.status(500).json({ error: 'Failed to get daily quest status' });
   }
 });
 
@@ -565,8 +712,7 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
       return totals;
     }, { calories: 0, protein: 0 });
 
-    // Get daily quests for today
-    const todayQuests = user.dailyQuests.filter(q => q.date === today);
+    // dailyQuests removed - using questStats for tracking instead
 
     // Calculate dynamic goals based on user profile and recent performance
     const caloriesGoal = calculateCaloriesGoal(user);
@@ -881,10 +1027,7 @@ router.patch('/updateUser', authenticateToken, async (req, res) => {
       user.questStats = updateData.questStats;
       console.log('[UPDATE USER] Updated questStats');
     }
-    if (updateData.dailyQuests !== undefined) {
-      user.dailyQuests = updateData.dailyQuests;
-      console.log('[UPDATE USER] Updated dailyQuests');
-    }
+    // dailyQuests removed - using questStats for tracking instead
     if (updateData.miniChallenges !== undefined) {
       user.miniChallenges = updateData.miniChallenges;
       console.log('[UPDATE USER] Updated miniChallenges');
@@ -972,13 +1115,28 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
     const coinsGained = calculateQuestCoins(questType);
     user.exp = (user.exp || 0) + xpGained;
     user.coins = (user.coins || 0) + coinsGained;
+    
+    // Update smart quest claims and mark as modified
+    if (!user.smartQuestClaims) user.smartQuestClaims = {};
+    if (!user.smartQuestClaims[today]) user.smartQuestClaims[today] = {};
     user.smartQuestClaims[today][questType] = true;
+    user.markModified('smartQuestClaims'); // Explicitly mark as modified
 
-    // Check and unlock titles based on streaks
+    console.log(`[CLAIM REWARD] Before save - smartQuestClaims:`, user.smartQuestClaims);
+    console.log(`[CLAIM REWARD] Before save - questStats:`, user.questStats);
+
+    // Save first to trigger the pre('save') middleware for streak calculation
+    await user.save();
+
+    // Check and unlock titles based on streaks (after streak calculation)
     const unlockedTitles = await checkAndUnlockStreakTitles(user);
 
-    // Save and respond
-    await user.save();
+    // Save again if titles were unlocked
+    if (unlockedTitles.length > 0) {
+        await user.save();
+    }
+    
+    console.log(`[CLAIM REWARD] After save - questStats:`, user.questStats);
     res.json({
       success: true,
       xp: user.exp,
@@ -986,7 +1144,8 @@ router.patch('/claimSmartQuestReward', authenticateToken, async (req, res) => {
       questType,
       xpGained,
       coinsGained,
-      unlockedTitles: unlockedTitles
+      unlockedTitles: unlockedTitles,
+      questStats: user.questStats // Include updated quest stats
     });
 
   } catch (err) {
@@ -1107,7 +1266,7 @@ function calculateProteinGoal(user) {
 
 function getTitleName(titleId) {
   const titles = {
-    'fitness-novice': 'Fitness Novice',
+    
     'meal-master': 'Meal Master',
     'strength-warrior': 'Strength Warrior',
     'cardio-king': 'Cardio King',
@@ -1125,6 +1284,7 @@ function getTitleName(titleId) {
 
 // Function to check and unlock titles based on streaks
 async function checkAndUnlockStreakTitles(user) {
+  console.log(`[checkAndUnlockStreakTitles] Starting with questStats:`, user.questStats);
   const unlockedTitles = [];
   
   // Check for Streak Legend title (7+ days overall quest streak)
@@ -1209,42 +1369,6 @@ async function checkAndUnlockStreakTitles(user) {
 
 // checkAndUnlockBadges function removed - only titles are used now
 
-async function resetDailyQuests(user) {
-  const today = new Date().toISOString().slice(0, 10);
-  const existingQuests = user.dailyQuests.filter(q => q.date === today);
-  
-  // If no quests exist for today, create default ones
-  if (existingQuests.length === 0) {
-    const defaultQuests = [
-      {
-        date: today,
-        questType: 'water',
-        questName: 'Hydration Hero',
-        target: user.waterIntake || 8,
-        currentProgress: 0,
-        completed: false
-      },
-      {
-        date: today,
-        questType: 'sleep',
-        questName: 'Sleep Master',
-        target: user.averageSleep || 8,
-        currentProgress: 0,
-        completed: false
-      },
-      {
-        date: today,
-        questType: 'exercise',
-        questName: 'Fitness Champion',
-        target: 30,
-        currentProgress: 0,
-        completed: false
-      }
-    ];
-    
-    user.dailyQuests.push(...defaultQuests);
-    await user.save();
-  }
-}
+// resetDailyQuests function removed - dailyQuests no longer used
 
 module.exports = router;

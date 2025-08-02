@@ -22,7 +22,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-top: auto;
+    margin-top: 2rem;
 }
 
 /* Navigation Items */
@@ -35,6 +35,7 @@
     border-radius: var(--border-radius, 16px);
     transition: all 0.3s ease;
     font-weight: 500;
+    position: relative; /* For notification badge positioning */
 }
 
 .nav-item:hover {
@@ -55,6 +56,39 @@
     font-size: 1.2rem;
     width: 20px;
     text-align: center;
+}
+
+/* Notification Badge */
+.notification-badge {
+    background: linear-gradient(135deg, var(--primary-btn, rgb(41, 236, 139)), var(--primary-btn-hover, rgb(35, 201, 118)));
+    color: white;
+    border-radius: 50%;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 1.5rem;
+    text-align: center;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: none;
+    animation: pulse 2s infinite;
+    box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(41, 236, 139, 0.5);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+    }
 }
 
 /* User Info Container */
@@ -100,75 +134,73 @@
     box-shadow: 0 2px 8px rgba(41, 236, 139, 0.2);
 }
 
-/* Username should never have title styling */
+/* Override any inline styles that might interfere */
 .user-name[style*="background"] {
     background: none !important;
     padding: 0 !important;
-    border-radius: 0 !important;
     border: none !important;
-    font-weight: 600 !important;
-    font-size: 1.1rem !important;
-    text-align: center !important;
-    margin: 0 !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
 }
 
-/* Dark mode support */
+/* Dark Mode Styles */
 body.dark-mode .sidebar {
-    background: var(--sidebar-bg, rgb(28, 36, 34));
-    box-shadow: var(--card-shadow, 2px 0 10px rgba(0, 0, 0, 0.3));
+    background: var(--sidebar-bg-dark, #1a1a1a);
+    color: var(--text-light, #ffffff);
 }
 
 body.dark-mode .nav-item {
-    color: var(--text-dark, rgb(240, 255, 250));
+    color: var(--text-light, #ffffff);
 }
 
 body.dark-mode .nav-item:hover {
-    background: rgba(30, 200, 120, 0.1);
+    background: rgba(41, 236, 139, 0.2);
 }
 
 body.dark-mode .nav-item.active {
-    background: var(--primary-btn, rgb(30, 200, 120));
+    background: var(--primary-btn, rgb(41, 236, 139));
     color: rgb(18, 24, 22);
 }
 
 body.dark-mode .user-name {
-    color: var(--text-dark, rgb(240, 255, 250));
+    color: var(--text-light, #ffffff);
 }
 
 body.dark-mode .title-display {
-    color: var(--text-dark, rgb(240, 255, 250));
-    background: linear-gradient(135deg, rgba(30, 200, 120, 0.15), rgba(25, 170, 100, 0.15));
-    border-color: rgba(30, 200, 120, 0.4);
-    box-shadow: 0 2px 8px rgba(30, 200, 120, 0.3);
+    background: linear-gradient(135deg, rgba(41, 236, 139, 0.2), rgba(30, 200, 120, 0.2));
+    color: var(--text-light, #ffffff);
+    border-color: rgba(41, 236, 139, 0.5);
 }
 
 body.dark-mode .user-name[style*="background"] {
-    background: linear-gradient(135deg, rgba(30, 200, 120, 0.15), rgba(25, 170, 100, 0.15)) !important;
-    border-color: rgba(30, 200, 120, 0.4) !important;
-    box-shadow: 0 2px 8px rgba(30, 200, 120, 0.3) !important;
+    background: none !important;
+    color: var(--text-light, #ffffff) !important;
 }
 
 /* Level Badge */
 .level-badge {
     background: linear-gradient(135deg, var(--primary-btn, rgb(41, 236, 139)), var(--primary-btn-hover, rgb(35, 201, 118)));
     color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(41, 236, 139, 0.3);
+    margin-top: 0.5rem;
 }
 
-/* Avatar styling */
+/* Avatar */
 .avatar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--primary-btn, rgb(41, 236, 139));
     box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
     transition: all 0.3s ease;
+    margin-bottom: 1rem;
 }
 
 .avatar:hover {
@@ -178,42 +210,43 @@ body.dark-mode .user-name[style*="background"] {
 
 /* User Profile Container */
 .user-profile {
-    text-align: center;
-    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 1rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    background: rgba(41, 236, 139, 0.05);
     border: 1px solid rgba(41, 236, 139, 0.1);
+    margin-bottom: 1rem;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
-        position: relative;
         width: 100%;
         height: auto;
-        max-height: 80px;
-        padding: 0.5rem 1rem;
-        overflow: hidden;
+        position: relative;
+        padding: 1rem;
     }
 
     .user-profile {
-        display: none;
+        flex-direction: row;
+        gap: 1rem;
+        text-align: left;
     }
 
     .nav-menu {
+        margin-top: 1rem;
         flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-        gap: 0.25rem;
-        margin-top: 0;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .nav-item {
-        flex: 0 0 auto;
-        padding: 0.5rem 0.75rem;
+        flex: 1;
+        min-width: 120px;
+        padding: 0.75rem;
         font-size: 0.9rem;
-        white-space: nowrap;
     }
 
     .nav-icon {
@@ -225,36 +258,38 @@ body.dark-mode .user-name[style*="background"] {
         font-size: 1rem;
         max-width: 150px;
     }
-    
+
     .title-display {
         font-size: 0.9rem;
         max-width: 150px;
         padding: 0.4rem 0.8rem;
     }
-    
+
     .user-name[style*="background"] {
-        font-size: 0.9rem !important;
-        padding: 0.4rem 0.8rem !important;
+        background: none !important;
+        color: var(--text-dark, #333) !important;
     }
-    
+
     .avatar {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
+        margin-bottom: 0;
     }
-    
+
     .user-info {
-        gap: 0.3rem;
+        align-items: flex-start;
+        text-align: left;
     }
 }
 
 @media (max-width: 480px) {
     .sidebar {
-        max-height: 70px;
-        padding: 0.25rem 0.5rem;
+        padding: 0.5rem;
     }
 
     .nav-item {
-        padding: 0.4rem 0.6rem;
+        min-width: 100px;
+        padding: 0.5rem;
         font-size: 0.8rem;
     }
 
@@ -263,30 +298,28 @@ body.dark-mode .user-name[style*="background"] {
     }
 }
 
-/* Main Content Spacing */
+/* Main Content Adjustment */
 .main-content {
     margin-left: 280px;
     padding: 2rem;
     min-height: 100vh;
-    background-color: var(--primary-bg, #f7fefc);
+    background-color: var(--primary-bg, #f8f9fa);
 }
 
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
-        margin-top: 80px;
         padding: 1rem;
     }
 }
 
 @media (max-width: 480px) {
     .main-content {
-        margin-top: 70px;
         padding: 0.5rem;
     }
 }
 
-/* Animation for title display only */
+/* Title Glow Animation */
 @keyframes titleGlow {
     0%, 100% {
         box-shadow: 0 2px 8px rgba(41, 236, 139, 0.2);
@@ -296,17 +329,15 @@ body.dark-mode .user-name[style*="background"] {
     }
 }
 
-/* Title display should have the glow animation */
 .title-display {
     animation: titleGlow 3s ease-in-out infinite;
 }
 
-/* Dark mode animation for title display */
 @keyframes titleGlow {
     0%, 100% {
-        box-shadow: 0 2px 8px rgba(30, 200, 120, 0.3);
+        box-shadow: 0 2px 8px rgba(41, 236, 139, 0.2);
     }
     50% {
-        box-shadow: 0 4px 16px rgba(30, 200, 120, 0.5);
+        box-shadow: 0 4px 16px rgba(41, 236, 139, 0.4);
     }
 } 

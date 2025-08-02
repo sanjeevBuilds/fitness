@@ -37,6 +37,9 @@ class EnhancedDashboardGamification {
     async init() {
         console.log('[DASHBOARD] Init function called...');
         try {
+            // First, check if the Smart Daily Quests section exists in the DOM
+            this.checkSmartQuestsSectionExists();
+            
             console.log('[DASHBOARD] Loading user data...');
             await this.loadUserData();
             console.log('[DASHBOARD] User data loaded successfully');
@@ -57,6 +60,31 @@ class EnhancedDashboardGamification {
             this.startDataSync();
             console.log('[DASHBOARD] Data sync started successfully');
             
+            // Ensure Smart Daily Quests section is visible and properly initialized
+            console.log('[DASHBOARD] Ensuring Smart Daily Quests section is visible...');
+            this.ensureSmartQuestsSectionVisible();
+            this.updateSmartQuestUI();
+            
+            // Force a second check after a delay to ensure it's visible
+            setTimeout(() => {
+                console.log('[DASHBOARD] Second check for Smart Daily Quests visibility...');
+                this.ensureSmartQuestsSectionVisible();
+                this.updateSmartQuestUI();
+                
+                // Log the current state
+                const smartQuestsSection = document.querySelector('.smart-quests-section');
+                if (smartQuestsSection) {
+                    console.log('[DASHBOARD] Smart quests section found:', {
+                        display: smartQuestsSection.style.display,
+                        visibility: smartQuestsSection.style.visibility,
+                        opacity: smartQuestsSection.style.opacity,
+                        offsetHeight: smartQuestsSection.offsetHeight
+                    });
+                } else {
+                    console.error('[DASHBOARD] Smart quests section still not found!');
+                }
+            }, 500);
+            
             console.log('[DASHBOARD] Initialization completed successfully!');
         } catch (error) {
             console.error('[DASHBOARD] Failed to initialize dashboard:', error);
@@ -73,6 +101,9 @@ class EnhancedDashboardGamification {
 
             const decoded = window.jwt_decode(token);
             const email = decoded.email;
+            
+            // Clear any cached quest data to ensure fresh data for new users
+            this.clearCachedQuestData();
             
             // Clear any localStorage mini challenge data to ensure we only use backend data
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -122,7 +153,7 @@ class EnhancedDashboardGamification {
             this.currentUser.titles = this.currentUser.titles || [];
             this.currentUser.selectedTitle = this.currentUser.selectedTitle || null;
             this.currentUser.activityLog = this.currentUser.activityLog || [];
-            this.currentUser.dailyQuests = this.currentUser.dailyQuests || [];
+            // dailyQuests removed - using questStats for tracking instead
             this.currentUser.miniChallenges = this.currentUser.miniChallenges || [];
             this.currentUser.questStats = this.currentUser.questStats || {
                 totalQuestsCompleted: 0,
@@ -134,6 +165,11 @@ class EnhancedDashboardGamification {
 
             // Load smart quest data from backend
             await this.loadSmartQuestData(email, token);
+
+            // Load daily quest status from backend
+            await this.loadDailyQuestStatus(email, token);
+
+            // dailyQuests removed - using questStats for tracking instead
 
             // Badge sync removed - only titles are used now
             
@@ -171,13 +207,17 @@ class EnhancedDashboardGamification {
 
     async loadSmartQuestData(email, token) {
         try {
+            console.log('[LOAD SMART QUEST DATA] Loading smart quest data for email:', email);
             const response = await fetch(`${this.API_BASE}/getSmartQuestData/${email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
+            
             if (response.ok) {
                 const questData = await response.json();
+                console.log('[LOAD SMART QUEST DATA] Backend response:', questData);
+                
                 // Ensure xpReward and coinReward are set for all smart quests
                 if (questData.quests) {
                     this.smartQuests = {
@@ -192,18 +232,73 @@ class EnhancedDashboardGamification {
                             coinReward: questData.quests.protein?.coinReward ?? 8
                         }
                     };
+                    
+                    // Check if quests have been claimed today from backend
+                    if (this.currentUser && this.currentUser.smartQuestClaims) {
+                        const today = new Date().toISOString().slice(0, 10);
+                        const todayClaims = this.currentUser.smartQuestClaims[today] || {};
+                        
+                        Object.keys(this.smartQuests).forEach(questType => {
+                            if (todayClaims[questType]) {
+                                console.log(`[LOAD SMART QUEST DATA] Quest ${questType} already claimed today, marking as collected`);
+                                this.smartQuests[questType].rewardCollected = true;
+                                this.smartQuests[questType].completed = true;
+                            }
+                        });
+                    }
+                    
+                    console.log('[LOAD SMART QUEST DATA] Smart quests initialized from backend:', this.smartQuests);
                 } else {
+                    console.log('[LOAD SMART QUEST DATA] No quests data from backend, using defaults');
                     this.initializeDefaultQuests();
                 }
             } else {
+                console.log('[LOAD SMART QUEST DATA] Backend response not ok, using defaults');
                 this.initializeDefaultQuests();
             }
         } catch (error) {
+            console.error('[LOAD SMART QUEST DATA] Error loading smart quest data:', error);
             this.initializeDefaultQuests();
+        }
+        
+        // Always ensure smart quests section is visible
+        this.ensureSmartQuestsSectionVisible();
+    }
+
+    async loadDailyQuestStatus(email, token) {
+        try {
+            console.log('Loading daily quest status for:', email);
+            
+            const response = await fetch(`${this.API_BASE}/getDailyQuestStatus/${email}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const questData = await response.json();
+                console.log('Daily quest status loaded:', questData);
+                
+                // Update quest completion status based on backend data
+                this.questCompletionStatus = {};
+                Object.keys(questData.quests).forEach(questType => {
+                    this.questCompletionStatus[questType] = questData.quests[questType].completed;
+                });
+                
+                // Save the quest states to localStorage
+                this.saveQuestStates();
+                
+                console.log('Updated quest completion status:', this.questCompletionStatus);
+            } else {
+                console.warn('Failed to load daily quest status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error loading daily quest status:', error);
         }
     }
 
     initializeDefaultQuests() {
+        console.log('[INITIALIZE DEFAULT QUESTS] Setting up default smart quests');
         this.smartQuests = {
             calories: {
                 questType: 'calories',
@@ -226,6 +321,160 @@ class EnhancedDashboardGamification {
                 scaling: false
             }
         };
+        console.log('[INITIALIZE DEFAULT QUESTS] Default smart quests set:', this.smartQuests);
+    }
+
+    ensureSmartQuestsSectionVisible() {
+        const smartQuestsSection = document.querySelector('.smart-quests-section');
+        if (smartQuestsSection) {
+            // Force all visibility properties
+            smartQuestsSection.style.display = 'block';
+            smartQuestsSection.style.visibility = 'visible';
+            smartQuestsSection.style.opacity = '1';
+            smartQuestsSection.style.height = 'auto';
+            smartQuestsSection.style.overflow = 'visible';
+            smartQuestsSection.style.position = 'static';
+            smartQuestsSection.style.zIndex = '1';
+            console.log('[ENSURE VISIBLE] Smart quests section is now visible');
+            
+            // Also ensure all quest items are visible
+            const questItems = smartQuestsSection.querySelectorAll('.quest-item');
+            questItems.forEach((item, index) => {
+                item.style.display = 'block';
+                item.style.visibility = 'visible';
+                item.style.opacity = '1';
+                item.style.height = 'auto';
+                item.style.overflow = 'visible';
+                console.log(`[ENSURE VISIBLE] Quest item ${index + 1} is now visible`);
+            });
+            
+            // Check if the section is actually visible
+            const rect = smartQuestsSection.getBoundingClientRect();
+            console.log('[ENSURE VISIBLE] Smart quests section bounds:', {
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                visible: rect.width > 0 && rect.height > 0
+            });
+        } else {
+            console.error('[ENSURE VISIBLE] Smart quests section not found in DOM');
+            
+            // Try to find it with different selectors
+            const alternativeSelectors = [
+                '[data-quest="calories"]',
+                '[data-quest="protein"]',
+                '.quest-scaling-grid',
+                'section h2:contains("Smart Daily Quests")'
+            ];
+            
+            alternativeSelectors.forEach(selector => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    console.log(`[ENSURE VISIBLE] Found element with selector: ${selector}`);
+                }
+            });
+            
+            // Log all sections to see what's available
+            const allSections = document.querySelectorAll('section');
+            console.log('[ENSURE VISIBLE] All sections found:', Array.from(allSections).map(s => ({
+                className: s.className,
+                id: s.id,
+                textContent: s.textContent.substring(0, 50)
+            })));
+        }
+    }
+
+    clearCachedQuestData() {
+        console.log('[CLEAR CACHE] Starting cache cleanup...');
+        
+        // Clear any cached quest data from localStorage
+        const keysToRemove = [
+            'questCompletionStatus',
+            'smartQuestData',
+            'dailyQuestData',
+            'questStates',
+            'smartQuestStates',
+            'dailyQuestStates'
+        ];
+        
+        keysToRemove.forEach(key => {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`[CLEAR CACHE] Removed cached data: ${key}`);
+            }
+        });
+        
+        // Reset quest completion status
+        this.questCompletionStatus = {};
+        console.log('[CLEAR CACHE] Reset quest completion status');
+        
+        // Force clear any remaining quest-related data
+        const allKeys = Object.keys(localStorage);
+        const questRelatedKeys = allKeys.filter(key => 
+            key.toLowerCase().includes('quest') || 
+            key.toLowerCase().includes('smart') || 
+            key.toLowerCase().includes('daily')
+        );
+        
+        questRelatedKeys.forEach(key => {
+            if (!key.includes('userData') && !key.includes('authToken')) {
+                localStorage.removeItem(key);
+                console.log(`[CLEAR CACHE] Removed quest-related data: ${key}`);
+            }
+        });
+        
+        console.log('[CLEAR CACHE] Cache cleanup completed');
+    }
+
+    checkSmartQuestsSectionExists() {
+        console.log('[CHECK SECTION] Checking if Smart Daily Quests section exists...');
+        
+        // Check for the main section
+        const smartQuestsSection = document.querySelector('.smart-quests-section');
+        if (smartQuestsSection) {
+            console.log('[CHECK SECTION] ✅ Smart quests section found!');
+            console.log('[CHECK SECTION] Section details:', {
+                className: smartQuestsSection.className,
+                id: smartQuestsSection.id,
+                textContent: smartQuestsSection.textContent.substring(0, 100),
+                children: smartQuestsSection.children.length
+            });
+        } else {
+            console.error('[CHECK SECTION] ❌ Smart quests section NOT found!');
+        }
+        
+        // Check for individual quest items
+        const caloriesQuest = document.querySelector('[data-quest="calories"]');
+        const proteinQuest = document.querySelector('[data-quest="protein"]');
+        
+        if (caloriesQuest) {
+            console.log('[CHECK SECTION] ✅ Calories quest found!');
+        } else {
+            console.error('[CHECK SECTION] ❌ Calories quest NOT found!');
+        }
+        
+        if (proteinQuest) {
+            console.log('[CHECK SECTION] ✅ Protein quest found!');
+        } else {
+            console.error('[CHECK SECTION] ❌ Protein quest NOT found!');
+        }
+        
+        // Check for the quest grid
+        const questGrid = document.querySelector('.quest-scaling-grid');
+        if (questGrid) {
+            console.log('[CHECK SECTION] ✅ Quest grid found!');
+        } else {
+            console.error('[CHECK SECTION] ❌ Quest grid NOT found!');
+        }
+        
+        // Log all sections to see what's available
+        const allSections = document.querySelectorAll('section');
+        console.log('[CHECK SECTION] All sections found:', Array.from(allSections).map(s => ({
+            className: s.className,
+            id: s.id,
+            textContent: s.textContent.substring(0, 50)
+        })));
     }
 
     initializeQuests() {
@@ -289,15 +538,6 @@ class EnhancedDashboardGamification {
 
         // Initialize titles
         this.availableTitles = {
-            'fitness-novice': {
-                name: 'Fitness Novice',
-                description: 'Just starting your fitness journey',
-                cost: 50,
-                icon: '🏃‍♂️',
-                progress: 0,
-                target: 1,
-                unlocked: true
-            },
             'meal-master': {
                 name: 'Meal Master',
                 description: 'Expert at planning healthy meals',
@@ -590,7 +830,8 @@ class EnhancedDashboardGamification {
                 if (result.level !== undefined) this.currentUser.level = result.level;
 
                 if (isCompleted) {
-                    await this.completeQuest(questType, true);
+                    // Mark as completed in local state
+                    this.questCompletionStatus[questType] = true;
                     
                     // Immediately hide the completed quest
                     const questItem = document.querySelector(`[data-quest="${questType}"]`);
@@ -598,6 +839,22 @@ class EnhancedDashboardGamification {
                         questItem.style.display = 'none';
                         questItem.classList.add('quest-completed');
                     }
+                    
+                    // Save quest states to localStorage
+                    this.saveQuestStates();
+                } else {
+                    // Quest unchecked - show it again and remove from completion status
+                    this.questCompletionStatus[questType] = false;
+                    
+                    // Show the quest again
+                    const questItem = document.querySelector(`[data-quest="${questType}"]`);
+                    if (questItem) {
+                        questItem.style.display = 'flex';
+                        questItem.classList.remove('quest-completed');
+                    }
+                    
+                    // Save quest states to localStorage
+                    this.saveQuestStates();
                 }
 
                 // Refresh smart quest data to get updated progress
@@ -742,6 +999,10 @@ class EnhancedDashboardGamification {
                     console.log('[SYNC QUEST] Updating level from backend:', result.level);
                     this.currentUser.level = result.level;
                 }
+                if (result.questStats) {
+                    console.log('[SYNC QUEST] Updating quest stats from backend:', result.questStats);
+                    this.currentUser.questStats = result.questStats;
+                }
 
                 // Handle unlocked titles from backend
                 if (result.unlockedTitles && result.unlockedTitles.length > 0) {
@@ -757,6 +1018,7 @@ class EnhancedDashboardGamification {
 
                 // Force UI update to reflect the backend changes
                 this.updateUI();
+                this.updateTitleProgress(); // Update title progress after quest stats change
                 console.log('[SYNC QUEST] UI updated with backend data. XP:', this.currentUser.exp, 'Level:', this.currentUser.level, 'Coins:', this.currentUser.coins);
             } else {
                 console.warn('Failed to sync quest with backend:', response.statusText);
@@ -1126,6 +1388,9 @@ class EnhancedDashboardGamification {
             return;
         }
 
+        // Ensure the smart quests section is visible
+        this.ensureSmartQuestsSectionVisible();
+
         console.log('Updating smart quest UI with data:', this.smartQuests);
 
         Object.keys(this.smartQuests).forEach(questType => {
@@ -1141,6 +1406,31 @@ class EnhancedDashboardGamification {
             if (!questItem) {
                 console.error(`Quest item not found for: ${questType}`);
                 return;
+            }
+
+            // Hide quest if reward has been collected today
+            if (quest.rewardCollected) {
+                console.log(`Hiding ${questType} quest - reward already collected today`);
+                
+                // Add classes for styling
+                questItem.classList.add('quest-completed');
+                questItem.classList.add('reward-collected');
+                
+                // Smooth hide animation to prevent layout shifts
+                questItem.style.transition = 'all 0.3s ease';
+                questItem.style.opacity = '0';
+                questItem.style.transform = 'scale(0.8)';
+                
+                // After animation, hide completely
+                setTimeout(() => {
+                    questItem.style.display = 'none';
+                    questItem.style.height = '0';
+                    questItem.style.margin = '0';
+                    questItem.style.padding = '0';
+                    questItem.style.overflow = 'hidden';
+                }, 300);
+                
+                return; // Skip updating this quest's UI
             }
 
             if (questItem) {
@@ -1224,47 +1514,64 @@ class EnhancedDashboardGamification {
                     console.log(`Set coin reward for ${questType}: ${coinValue} (quest.coinReward: ${quest.coinReward})`);
                 }
 
-                // Handle completion state and collect button
-                if (quest.completed && !quest.rewardCollected) {
-                    questItem.classList.add('quest-completed');
-                    questItem.classList.add('reward-available');
+                            // Handle completion state and collect button
+            if (quest.completed && !quest.rewardCollected) {
+                questItem.classList.add('quest-completed');
+                questItem.classList.add('reward-available');
 
-                    // Show collect button if it exists
-                    if (collectButton) {
-                        collectButton.style.display = 'block';
-                        collectButton.textContent = 'Collect Reward';
-                        collectButton.onclick = () => this.collectSmartQuestReward(questType);
-                    }
+                // Show collect button if it exists
+                if (collectButton) {
+                    collectButton.style.display = 'block';
+                    collectButton.textContent = 'Collect Reward';
+                    collectButton.onclick = () => this.collectSmartQuestReward(questType);
+                }
 
-                    // Add pulsing animation for completed quests
-                    questItem.style.animation = 'pulse 2s infinite';
-                } else if (quest.completed && quest.rewardCollected) {
+                // Add pulsing animation for completed quests
+                questItem.style.animation = 'pulse 2s infinite';
+                            } else if (quest.completed && quest.rewardCollected) {
                     questItem.classList.add('quest-completed');
                     questItem.classList.remove('reward-available');
 
-                    // Hide the entire quest after reward collection (like regular quests)
-                    questItem.style.display = 'none';
+                    // Smooth hide animation to prevent layout shifts
+                    questItem.style.transition = 'all 0.3s ease';
+                    questItem.style.opacity = '0';
+                    questItem.style.transform = 'scale(0.8)';
+                    
+                    // After animation, hide completely
+                    setTimeout(() => {
+                        questItem.style.display = 'none';
+                        questItem.style.height = '0';
+                        questItem.style.margin = '0';
+                        questItem.style.padding = '0';
+                        questItem.style.overflow = 'hidden';
+                    }, 300);
+                    
                     console.log(`Hiding completed and reward-collected smart quest: ${questType}`);
 
                     // Remove pulsing animation
                     questItem.style.animation = 'none';
-                } else {
-                    questItem.classList.remove('quest-completed', 'reward-available');
-
-                    // Hide collect button
+                    
+                    // Also hide the collect button specifically
                     if (collectButton) {
                         collectButton.style.display = 'none';
                     }
+            } else {
+                questItem.classList.remove('quest-completed', 'reward-available');
 
-                    // Remove pulsing animation
-                    questItem.style.animation = 'none';
-
-                    // Reset progress text styling
-                    if (progressText) {
-                        progressText.style.color = '';
-                        progressText.style.fontWeight = '';
-                    }
+                // Hide collect button
+                if (collectButton) {
+                    collectButton.style.display = 'none';
                 }
+
+                // Remove pulsing animation
+                questItem.style.animation = 'none';
+
+                // Reset progress text styling
+                if (progressText) {
+                    progressText.style.color = '';
+                    progressText.style.fontWeight = '';
+                }
+            }
 
                 // Show scaling notice if quest is scaling
                 if (scalingNotice && quest.scaling && (quest.currentProgress || 0) > (quest.target || 0)) {
@@ -1300,10 +1607,14 @@ class EnhancedDashboardGamification {
             });
             const result = await response.json();
             if (response.ok) {
-                // Update user data with new coins/xp
+                // Update user data with new coins/xp and quest stats
                 this.currentUser.coins = result.coins;
                 this.currentUser.exp = result.xp;
+                if (result.questStats) {
+                    this.currentUser.questStats = result.questStats;
+                }
                 this.updateUI();
+                this.updateTitleProgress(); // Update title progress after quest stats change
                 this.showNotification(`Reward collected! +${result.xpGained} XP, +${result.coinsGained} coins`, 'success');
                 
                 // Handle unlocked titles from backend
@@ -1315,12 +1626,34 @@ class EnhancedDashboardGamification {
                     });
                 }
                 
-                // Hide the quest after reward collection (like regular quests)
+                // Hide the quest after reward collection with smooth animation
                 const questItem = document.querySelector(`.smart-quests-section [data-quest="${questType}"]`);
                 if (questItem) {
                     console.log(`Hiding smart quest ${questType} after reward collection`);
-                    questItem.style.display = 'none';
+                    
+                    // Add classes for styling
                     questItem.classList.add('quest-completed');
+                    questItem.classList.add('reward-collected');
+                    
+                    // Smooth hide animation to prevent layout shifts
+                    questItem.style.transition = 'all 0.3s ease';
+                    questItem.style.opacity = '0';
+                    questItem.style.transform = 'scale(0.8)';
+                    
+                    // After animation, hide completely
+                    setTimeout(() => {
+                        questItem.style.display = 'none';
+                        questItem.style.height = '0';
+                        questItem.style.margin = '0';
+                        questItem.style.padding = '0';
+                        questItem.style.overflow = 'hidden';
+                    }, 300);
+                }
+                
+                // Also hide the collect button specifically
+                const collectButton = questItem?.querySelector('.collect-reward-btn');
+                if (collectButton) {
+                    collectButton.style.display = 'none';
                 }
             } else {
                 this.showNotification(result.error || 'Failed to claim reward', 'error');
@@ -1330,9 +1663,9 @@ class EnhancedDashboardGamification {
             this.saveQuestStates();
             this.saveUserDataToStorage();
 
-            // Optionally, refresh smart quest data
-            await this.refreshSmartQuestData();
-            this.updateSmartQuestUI();
+            // Don't refresh smart quest data immediately to prevent showing the quest again
+            // The quest should stay hidden until the next day
+            console.log(`Smart quest ${questType} reward collected and hidden. Will reappear tomorrow.`);
         } catch (error) {
             console.error('Error collecting smart quest reward:', error);
             this.showNotification('Failed to collect reward', 'error');
@@ -1372,10 +1705,12 @@ class EnhancedDashboardGamification {
     }
 
     updateTitleProgress() {
+        console.log('[TITLE PROGRESS] Updating title progress with questStats:', this.currentUser.questStats);
+        
         // Update streak legend progress
         const streakLegendCard = document.querySelector('[data-title="streak-legend"]');
         if (streakLegendCard) {
-            const currentStreak = this.currentUser.questStats?.longestStreak || 0;
+            const currentStreak = this.currentUser.questStats?.currentStreak || 0;
             const targetStreak = 7;
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = streakLegendCard.querySelector('.progress-fill');
@@ -1383,12 +1718,13 @@ class EnhancedDashboardGamification {
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            console.log('[TITLE PROGRESS] Streak Legend updated:', { currentStreak, targetStreak, progressPercent });
         }
 
         // Update protein beast progress
         const proteinBeastCard = document.querySelector('[data-title="protein-beast"]');
         if (proteinBeastCard) {
-            const currentStreak = this.currentUser.questStats?.proteinLongestStreak || 0;
+            const currentStreak = this.currentUser.questStats?.proteinStreak || 0;
             const targetStreak = 5;
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = proteinBeastCard.querySelector('.progress-fill');
@@ -1396,12 +1732,13 @@ class EnhancedDashboardGamification {
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            console.log('[TITLE PROGRESS] Protein Beast updated:', { currentStreak, targetStreak, progressPercent });
         }
 
         // Update nutrition expert progress
         const nutritionExpertCard = document.querySelector('[data-title="nutrition-expert"]');
         if (nutritionExpertCard) {
-            const currentStreak = this.currentUser.questStats?.calorieLongestStreak || 0;
+            const currentStreak = this.currentUser.questStats?.calorieStreak || 0;
             const targetStreak = 5;
             const progressPercent = Math.min((currentStreak / targetStreak) * 100, 100);
             const progressFill = nutritionExpertCard.querySelector('.progress-fill');
@@ -1409,6 +1746,7 @@ class EnhancedDashboardGamification {
             
             if (progressFill) progressFill.style.width = `${progressPercent}%`;
             if (progressText) progressText.textContent = `${currentStreak}/${targetStreak} days`;
+            console.log('[TITLE PROGRESS] Nutrition Expert updated:', { currentStreak, targetStreak, progressPercent });
         }
     }
 
@@ -1685,6 +2023,8 @@ class EnhancedDashboardGamification {
 
         console.log('Daily quests and smart quests reset for new day');
     }
+
+    // syncQuestCompletionFromBackend removed - dailyQuests no longer used
 
     saveUserDataToStorage() {
         try {

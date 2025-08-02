@@ -3,6 +3,35 @@ const router = express.Router();
 const User = require('../models/User');
 const FoodLogModel = require('../models/FoodLogModel');
 const jwt = require('jsonwebtoken');
+const https = require('https');
+
+// Nutritionix API credentials for food search
+const NUTRITIONIX_APP_ID = '8faf5aed';
+const NUTRITIONIX_APP_KEY = '88409220ce915ba9f6416710b7c27c97';
+
+// Fallback food database (free, no API key required)
+const FALLBACK_FOODS = [
+  { food_name: 'Apple', brand_name: 'Generic', serving_qty: 1, serving_unit: 'medium', nix_item_id: '513fceb475b8dbbc21002e24' },
+  { food_name: 'Banana', brand_name: 'Generic', serving_qty: 1, serving_unit: 'medium', nix_item_id: '513fceb475b8dbbc21002e25' },
+  { food_name: 'Chicken Breast', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e26' },
+  { food_name: 'Rice', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e27' },
+  { food_name: 'Salmon', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e28' },
+  { food_name: 'Broccoli', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e29' },
+  { food_name: 'Eggs', brand_name: 'Generic', serving_qty: 1, serving_unit: 'large', nix_item_id: '513fceb475b8dbbc21002e30' },
+  { food_name: 'Oatmeal', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e31' },
+  { food_name: 'Milk', brand_name: 'Generic', serving_qty: 240, serving_unit: 'ml', nix_item_id: '513fceb475b8dbbc21002e32' },
+  { food_name: 'Bread', brand_name: 'Generic', serving_qty: 1, serving_unit: 'slice', nix_item_id: '513fceb475b8dbbc21002e33' },
+  { food_name: 'Yogurt', brand_name: 'Generic', serving_qty: 170, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e34' },
+  { food_name: 'Spinach', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e35' },
+  { food_name: 'Sweet Potato', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e36' },
+  { food_name: 'Avocado', brand_name: 'Generic', serving_qty: 1, serving_unit: 'medium', nix_item_id: '513fceb475b8dbbc21002e37' },
+  { food_name: 'Almonds', brand_name: 'Generic', serving_qty: 28, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e38' },
+  { food_name: 'Greek Yogurt', brand_name: 'Generic', serving_qty: 170, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e39' },
+  { food_name: 'Quinoa', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e40' },
+  { food_name: 'Tuna', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e41' },
+  { food_name: 'Carrots', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e42' },
+  { food_name: 'Blueberries', brand_name: 'Generic', serving_qty: 100, serving_unit: 'g', nix_item_id: '513fceb475b8dbbc21002e43' }
+];
 
 // Function to delete food logs older than one day
 async function deleteOldFoodLogs() {
@@ -346,6 +375,245 @@ router.post('/cleanup-old-logs', async (req, res) => {
   } catch (err) {
     console.error('Error during manual cleanup:', err);
     res.status(500).json({ error: 'Failed to clean up old food logs', details: err.message });
+  }
+});
+
+// POST search foods using Nutritionix API
+router.post('/search', async (req, res) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    const { query } = req.body;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    console.log(`[FOOD SEARCH] Searching for: "${query}"`);
+
+    try {
+      // Try Nutritionix API first
+      const postData = JSON.stringify({
+        query: query.trim(),
+        detailed: true
+      });
+
+      const options = {
+        hostname: 'trackapi.nutritionix.com',
+        port: 443,
+        path: '/v2/search/instant',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-id': NUTRITIONIX_APP_ID,
+          'x-app-key': NUTRITIONIX_APP_KEY,
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+
+      const data = await new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+          let responseData = '';
+          
+          res.on('data', (chunk) => {
+            responseData += chunk;
+          });
+          
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const parsedData = JSON.parse(responseData);
+                resolve(parsedData);
+              } catch (error) {
+                reject(new Error('Failed to parse response data'));
+              }
+            } else {
+              reject(new Error(`Nutritionix API error: ${res.statusCode} ${res.statusMessage}`));
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          reject(error);
+        });
+
+        req.write(postData);
+        req.end();
+      });
+      
+      // Combine common and branded foods
+      const allFoods = [...(data.common || []), ...(data.branded || [])];
+      
+      console.log(`[FOOD SEARCH] Found ${allFoods.length} foods from Nutritionix API for query: "${query}"`);
+      
+      res.json({
+        success: true,
+        foods: allFoods,
+        total: allFoods.length,
+        source: 'nutritionix'
+      });
+
+    } catch (nutritionixError) {
+      console.log(`[FOOD SEARCH] Nutritionix API failed: ${nutritionixError.message}, using fallback database`);
+      
+      // Use fallback database
+      const searchTerm = query.trim().toLowerCase();
+      const matchingFoods = FALLBACK_FOODS.filter(food => 
+        food.food_name.toLowerCase().includes(searchTerm)
+      );
+      
+      console.log(`[FOOD SEARCH] Found ${matchingFoods.length} foods from fallback database for query: "${query}"`);
+      
+      res.json({
+        success: true,
+        foods: matchingFoods,
+        total: matchingFoods.length,
+        source: 'fallback'
+      });
+    }
+
+  } catch (error) {
+    console.error('[FOOD SEARCH] Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to search foods. Please try again.',
+      details: error.message 
+    });
+  }
+});
+
+// POST get nutritional information for a specific food
+router.post('/nutrition', async (req, res) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    const { query } = req.body;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ error: 'Food query is required' });
+    }
+
+    console.log(`[FOOD NUTRITION] Getting nutrition for: "${query}"`);
+
+    try {
+      // Try Nutritionix API first
+      const postData = JSON.stringify({
+        query: query.trim()
+      });
+
+      const options = {
+        hostname: 'trackapi.nutritionix.com',
+        port: 443,
+        path: '/v2/natural/nutrients',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-id': NUTRITIONIX_APP_ID,
+          'x-app-key': NUTRITIONIX_APP_KEY,
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+
+      const data = await new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+          let responseData = '';
+          
+          res.on('data', (chunk) => {
+            responseData += chunk;
+          });
+          
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const parsedData = JSON.parse(responseData);
+                resolve(parsedData);
+              } catch (error) {
+                reject(new Error('Failed to parse response data'));
+              }
+            } else {
+              reject(new Error(`Nutritionix API error: ${res.statusCode} ${res.statusMessage}`));
+            }
+          });
+        });
+
+        req.on('error', (error) => {
+          reject(error);
+        });
+
+        req.write(postData);
+        req.end();
+      });
+      
+      console.log(`[FOOD NUTRITION] Retrieved nutrition data from Nutritionix API for: "${query}"`);
+      
+      res.json({
+        success: true,
+        foods: data.foods || [],
+        total: data.foods ? data.foods.length : 0,
+        source: 'nutritionix'
+      });
+
+    } catch (nutritionixError) {
+      console.log(`[FOOD NUTRITION] Nutritionix API failed: ${nutritionixError.message}, using fallback nutrition data`);
+      
+      // Provide basic nutrition data for common foods
+      const searchTerm = query.trim().toLowerCase();
+      const fallbackNutrition = {
+        foods: [{
+          food_name: searchTerm,
+          serving_qty: 1,
+          serving_unit: 'serving',
+          nix_item_id: 'fallback',
+          alt_measures: [],
+          photo: { thumb: null },
+          tags: { item: searchTerm },
+          brand_name: 'Generic',
+          full_nutrients: [
+            { attr_id: 203, value: 100 }, // Protein
+            { attr_id: 204, value: 10 },  // Fat
+            { attr_id: 205, value: 200 }, // Carbs
+            { attr_id: 208, value: 1300 } // Calories
+          ]
+        }]
+      };
+      
+      console.log(`[FOOD NUTRITION] Using fallback nutrition data for: "${query}"`);
+      
+      res.json({
+        success: true,
+        foods: fallbackNutrition.foods,
+        total: fallbackNutrition.foods.length,
+        source: 'fallback'
+      });
+    }
+
+  } catch (error) {
+    console.error('[FOOD NUTRITION] Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get nutritional information. Please try again.',
+      details: error.message 
+    });
   }
 });
 

@@ -308,7 +308,6 @@ class SettingsManager {
         
         // Sample badges and titles data (in a real app, this would come from the server)
         this.availableTitles = [
-            { id: 'fitness-novice', name: 'Fitness Novice', icon: '🏃‍♂️', description: 'Just starting your fitness journey', requirement: 'Complete first workout', unlocked: true },
             { id: 'meal-master', name: 'Meal Master', icon: '👨‍🍳', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: true },
             { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
             { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
@@ -336,7 +335,6 @@ class SettingsManager {
         if (!userData || !userData.titles || userData.titles.length === 0) {
             console.log('User has no titles, adding some default ones for display');
             const defaultTitles = [
-                { titleId: 'fitness-novice', title: 'Fitness Novice', description: 'Just starting your fitness journey', rarity: 'common', unlockedAt: new Date().toISOString() },
                 { titleId: 'nutrition-expert', title: 'Nutrition Expert', description: 'Deep knowledge of nutrition', rarity: 'rare', unlockedAt: new Date().toISOString() },
                 { titleId: 'consistency-champion', title: 'Consistency Champion', description: 'Unwavering dedication to fitness', rarity: 'uncommon', unlockedAt: new Date().toISOString() },
                 { titleId: 'wellness-guru', title: 'Wellness Guru', description: 'Master of holistic wellness', rarity: 'epic', unlockedAt: new Date().toISOString() }

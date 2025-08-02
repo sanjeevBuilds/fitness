@@ -7,8 +7,8 @@ const FriendRequestSchema = require('./FriendRequest');
 const FoodLogSchema = require('./FoodLog');
 const MealPlanSchema = require('./MealPlan');
 const PostureScanSchema = require('./PostureScan');
-const InsightSchema = require('./Insight');
-const DailyQuestSchema = require('./DailyQuest');
+
+// DailyQuestSchema removed - using questStats for tracking instead
 const MiniChallengeSchema = require('./MiniChallenge');
 // BadgeSchema import removed - only titles are used now
 const TitleSchema = require('./Tittle');
@@ -68,6 +68,13 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed, // { 'YYYY-MM-DD': { steps: true, calories: true, protein: true } }
     default: {}
   },
+  
+  // Daily Quest Completions (for the 4 specific quests: water, sleep, meal, exercise)
+  dailyQuestCompletions: {
+    type: mongoose.Schema.Types.Mixed, // { 'YYYY-MM-DD': { water: true, sleep: true, meal: true, exercise: true } }
+    default: {}
+  },
+  
   // Quest Progress Tracking
   questStats: {
     totalQuestsCompleted: { type: Number, default: 0 },
@@ -211,12 +218,12 @@ const UserSchema = new mongoose.Schema({
     toEmail: { type: String, required: true, lowercase: true },
     sentAt: { type: Date, default: Date.now }
   }],
-  dailyQuests: [DailyQuestSchema], // Enhanced daily quests
+  // dailyQuests removed - using questStats for tracking instead
   miniChallenges: [MiniChallengeSchema], // Enhanced mini challenges
   foodLogs: [FoodLogSchema],
   mealPlan: MealPlanSchema,
   postureScans: [PostureScanSchema],
-  insights: [InsightSchema],
+  
   friends: [{
     email: String,
     profileName: String,
@@ -311,76 +318,7 @@ UserSchema.post('init', function() {
   }
 });
 
-// Update quest stats when daily quests are modified
-UserSchema.pre('save', function(next) {
-  if (this.isModified('dailyQuests')) {
-    const today = new Date().toISOString().slice(0, 10);
-    const todayQuests = this.dailyQuests.filter(q => q.date === today);
-    const completedToday = todayQuests.filter(q => q.completed).length;
-    
-    // Initialize questStats if it doesn't exist
-    if (!this.questStats) {
-      this.questStats = {
-        totalQuestsCompleted: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        lastQuestDate: null,
-        stepGoalHistory: [],
-        proteinStreak: 0,
-        proteinLongestStreak: 0,
-        proteinLastCompletedDate: null,
-        calorieStreak: 0,
-        calorieLongestStreak: 0,
-        calorieLastCompletedDate: null
-      };
-    }
-    
-    // Update total completed quests (count ALL completed quests across all dates)
-    this.questStats.totalQuestsCompleted = this.dailyQuests.filter(q => q.completed).length;
-    
-    // Update streak if quests completed today
-    if (completedToday > 0) {
-      if (this.questStats.lastQuestDate === today) {
-        // Already updated today, don't change streak
-      } else {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().slice(0, 10);
-        
-        if (this.questStats.lastQuestDate === yesterdayStr) {
-          // Continuing streak
-          this.questStats.currentStreak += 1;
-        } else {
-          // New streak starts
-          this.questStats.currentStreak = 1;
-        }
-        
-        // Update longest streak
-        if (this.questStats.currentStreak > this.questStats.longestStreak) {
-          this.questStats.longestStreak = this.questStats.currentStreak;
-        }
-        
-        this.questStats.lastQuestDate = today;
-      }
-    }
-    
-    // Debug logging
-    console.log(`[UserSchema] Quest stats updated:`, {
-      totalQuestsCompleted: this.questStats.totalQuestsCompleted,
-      currentStreak: this.questStats.currentStreak,
-      longestStreak: this.questStats.longestStreak,
-      lastQuestDate: this.questStats.lastQuestDate,
-      proteinStreak: this.questStats.proteinStreak,
-      proteinLongestStreak: this.questStats.proteinLongestStreak,
-      calorieStreak: this.questStats.calorieStreak,
-      calorieLongestStreak: this.questStats.calorieLongestStreak,
-      completedToday: completedToday,
-      totalQuestsInDB: this.dailyQuests.length,
-      completedQuestsInDB: this.dailyQuests.filter(q => q.completed).length
-    });
-  }
-  next();
-});
+// dailyQuests pre-save middleware removed - using questStats for tracking instead
 
 // Update smart quest streaks when smartQuestClaims are modified
 UserSchema.pre('save', function(next) {
@@ -406,49 +344,69 @@ UserSchema.pre('save', function(next) {
     
     // Check if protein quest was completed today
     if (this.smartQuestClaims && this.smartQuestClaims[today] && this.smartQuestClaims[today].protein) {
+      console.log(`[UserSchema] Protein quest completed today. Current proteinLastCompletedDate: ${this.questStats.proteinLastCompletedDate}, today: ${today}`);
+      
       if (this.questStats.proteinLastCompletedDate !== today) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().slice(0, 10);
         
+        console.log(`[UserSchema] Protein streak calculation - yesterday: ${yesterdayStr}, current streak: ${this.questStats.proteinStreak}`);
+        
         if (this.questStats.proteinLastCompletedDate === yesterdayStr) {
           // Continuing protein streak
           this.questStats.proteinStreak += 1;
+          console.log(`[UserSchema] Continuing protein streak: ${this.questStats.proteinStreak}`);
         } else {
           // New protein streak starts
           this.questStats.proteinStreak = 1;
+          console.log(`[UserSchema] Starting new protein streak: ${this.questStats.proteinStreak}`);
         }
         
         // Update longest protein streak
         if (this.questStats.proteinStreak > this.questStats.proteinLongestStreak) {
           this.questStats.proteinLongestStreak = this.questStats.proteinStreak;
+          console.log(`[UserSchema] Updated protein longest streak: ${this.questStats.proteinLongestStreak}`);
         }
         
         this.questStats.proteinLastCompletedDate = today;
+        console.log(`[UserSchema] Set protein last completed date to: ${this.questStats.proteinLastCompletedDate}`);
+      } else {
+        console.log(`[UserSchema] Protein quest already completed today, skipping streak update`);
       }
     }
     
     // Check if calorie quest was completed today
     if (this.smartQuestClaims && this.smartQuestClaims[today] && this.smartQuestClaims[today].calories) {
+      console.log(`[UserSchema] Calorie quest completed today. Current calorieLastCompletedDate: ${this.questStats.calorieLastCompletedDate}, today: ${today}`);
+      
       if (this.questStats.calorieLastCompletedDate !== today) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().slice(0, 10);
         
+        console.log(`[UserSchema] Calorie streak calculation - yesterday: ${yesterdayStr}, current streak: ${this.questStats.calorieStreak}`);
+        
         if (this.questStats.calorieLastCompletedDate === yesterdayStr) {
           // Continuing calorie streak
           this.questStats.calorieStreak += 1;
+          console.log(`[UserSchema] Continuing calorie streak: ${this.questStats.calorieStreak}`);
         } else {
           // New calorie streak starts
           this.questStats.calorieStreak = 1;
+          console.log(`[UserSchema] Starting new calorie streak: ${this.questStats.calorieStreak}`);
         }
         
         // Update longest calorie streak
         if (this.questStats.calorieStreak > this.questStats.calorieLongestStreak) {
           this.questStats.calorieLongestStreak = this.questStats.calorieStreak;
+          console.log(`[UserSchema] Updated calorie longest streak: ${this.questStats.calorieLongestStreak}`);
         }
         
         this.questStats.calorieLastCompletedDate = today;
+        console.log(`[UserSchema] Set calorie last completed date to: ${this.questStats.calorieLastCompletedDate}`);
+      } else {
+        console.log(`[UserSchema] Calorie quest already completed today, skipping streak update`);
       }
     }
     

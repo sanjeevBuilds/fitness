@@ -54,6 +54,12 @@ document.querySelector("form").addEventListener("submit", async function (e) {
       if (response.ok) {
         console.log('yessssss');
         const data = await response.json();
+        
+        // Clear ALL localStorage data to ensure fresh start for new user
+        console.log('Clearing localStorage for new user...');
+        localStorage.clear();
+        
+        // Set only the essential user data
         localStorage.setItem('userData', JSON.stringify({
             _id: data._id,
             profileName: data.profileName,
@@ -68,6 +74,12 @@ document.querySelector("form").addEventListener("submit", async function (e) {
         if (data.token) {
             localStorage.setItem('authToken', data.token);
         }
+        
+        console.log('New user data set in localStorage:', {
+            userData: JSON.parse(localStorage.getItem('userData')),
+            authToken: localStorage.getItem('authToken')
+        });
+        
         window.location.href = "../ongoing/ongoing1/ongoing.html";
       } else {
         const data = await response.json();

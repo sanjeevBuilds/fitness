@@ -2,7 +2,6 @@
 class SharedSidebarManager {
     constructor() {
         this.availableTitles = [
-            { id: 'fitness-novice', name: 'Fitness Novice', icon: '🏃‍♂️', description: 'Just starting your fitness journey', requirement: 'Complete first workout', unlocked: true },
             { id: 'meal-master', name: 'Meal Master', icon: '👨‍🍳', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: true },
             { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
             { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
@@ -25,6 +24,7 @@ class SharedSidebarManager {
         this.loadUserData();
         this.setupUserProfileStructure();
         this.updateSidebarDisplay();
+        this.startNotificationPolling();
     }
 
     loadUserData() {
@@ -121,7 +121,6 @@ class SharedSidebarManager {
         const currentPath = window.location.pathname;
         const isInDashboard = currentPath.includes('/Dashboard/');
         const isInFoodSuggestion = currentPath.includes('/FoodSuggestion/');
-        const isInInsights = currentPath.includes('/Insights/');
         const isInNotifications = currentPath.includes('/Notifications/');
         
         let navItems = [];
@@ -131,9 +130,7 @@ class SharedSidebarManager {
                 { href: 'dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: 'FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                // { href: 'Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: 'Buddies.html', icon: '👥', text: 'Buddies' },
-                { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
                 { href: 'Settings.html', icon: '⚙️', text: 'Settings' }
             ];
@@ -142,20 +139,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: 'FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
-                { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
-                { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
-                { href: '../Dashboard/Settings.html', icon: '⚙️', text: 'Settings' }
-            ];
-        } else if (isInInsights) {
-            navItems = [
-                { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
-                { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
-                { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
-                { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
-                { href: 'Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
                 { href: '../Dashboard/Settings.html', icon: '⚙️', text: 'Settings' }
             ];
@@ -164,9 +148,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
-                { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: 'Notifications.html', icon: '🔔', text: 'Notification' },
                 { href: '../Dashboard/Settings.html', icon: '⚙️', text: 'Settings' }
             ];
@@ -176,9 +158,7 @@ class SharedSidebarManager {
                 { href: '../Dashboard/dashbaord.html', icon: '🏠', text: 'Home' },
                 { href: '../Dashboard/FoodLog.html', icon: '🍽️', text: 'Food Log' },
                 { href: '../FoodSuggestion/FoodSuggestion.html', icon: '💡', text: 'Food Suggestion' },
-                // { href: '../Dashboard/Posture.html', icon: '📊', text: 'Posture Scan' }, // Temporarily disabled for development
                 { href: '../Dashboard/Buddies.html', icon: '👥', text: 'Buddies' },
-                { href: '../Insights/Insights.html', icon: '📈', text: 'Insights' },
                 { href: '../Notifications/Notifications.html', icon: '🔔', text: 'Notification' },
                 { href: '../Dashboard/Settings.html', icon: '⚙️', text: 'Settings' }
             ];
@@ -188,13 +168,13 @@ class SharedSidebarManager {
             const navItem = document.createElement('a');
             navItem.href = item.href;
             navItem.className = 'nav-item';
+            navItem.style.position = 'relative'; // For notification badge positioning
             
             // Check if this is the current page
             const itemPath = item.href.split('/').pop();
             if (itemPath === currentPage + '.html' || 
                 (currentPage === 'dashbaord' && itemPath === 'dashbaord.html') ||
                 (currentPage === 'FoodSuggestion' && itemPath === 'FoodSuggestion.html') ||
-                (currentPage === 'Insights' && itemPath === 'Insights.html') ||
                 (currentPage === 'Notifications' && itemPath === 'Notifications.html')) {
                 navItem.classList.add('active');
             }
@@ -205,6 +185,16 @@ class SharedSidebarManager {
             
             navItem.appendChild(navIcon);
             navItem.appendChild(document.createTextNode(' ' + item.text));
+            
+            // Add notification badge for notification link
+            if (item.text === 'Notification') {
+                const notificationBadge = document.createElement('span');
+                notificationBadge.className = 'notification-badge';
+                notificationBadge.id = 'sidebar-notification-badge';
+                notificationBadge.style.display = 'none';
+                navItem.appendChild(notificationBadge);
+            }
+            
             navMenu.appendChild(navItem);
         });
         
@@ -282,6 +272,45 @@ class SharedSidebarManager {
         this.loadUserData();
         this.updateSidebarDisplay();
     }
+
+    // Start polling for notification updates
+    startNotificationPolling() {
+        // Update notifications every 30 seconds
+        setInterval(() => {
+            this.updateNotificationBadge();
+        }, 30000);
+        
+        // Initial update
+        this.updateNotificationBadge();
+    }
+
+    // Update notification badge
+    async updateNotificationBadge() {
+        if (!this.userData.email) return;
+
+        try {
+            const response = await fetch(`http://localhost:8000/api/notifications/unread-counts/${this.userData.email}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch notification counts');
+            }
+            
+            const counts = await response.json();
+            const totalUnread = counts.total;
+            
+            const badge = document.getElementById('sidebar-notification-badge');
+            if (badge) {
+                badge.textContent = totalUnread;
+                badge.style.display = totalUnread > 0 ? 'block' : 'none';
+            }
+        } catch (error) {
+            console.error('Error updating notification badge:', error);
+        }
+    }
+
+    // Public method to update notification badge (can be called from other pages)
+    updateNotificationCount() {
+        this.updateNotificationBadge();
+    }
 }
 
 // Initialize shared sidebar only once
@@ -305,6 +334,13 @@ if (document.readyState === 'loading') {
 function refreshSidebarDisplay() {
     if (window.sharedSidebar) {
         window.sharedSidebar.refreshDisplay();
+    }
+}
+
+// Global function to update notification count
+function updateNotificationCount() {
+    if (window.sharedSidebar) {
+        window.sharedSidebar.updateNotificationCount();
     }
 }
 

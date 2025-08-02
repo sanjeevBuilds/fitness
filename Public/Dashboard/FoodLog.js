@@ -28,8 +28,8 @@
 })();
 
 // Nutritionix API credentials
-const appId = 'ee23efb0';
-const appKey = 'bae6d2d56c1d0cccd180c07d68bf8936';
+const appId = '8faf5aed';
+const appKey = '88409220ce915ba9f6416710b7c27c97';
 
 // Global variables
 let selectedFood = null;
@@ -201,24 +201,33 @@ function setupModal() {
     });
 }
 
-// Search foods using Nutritionix API
+// Search foods using backend API
 async function searchFoods(query) {
     try {
-        const response = await fetch('https://trackapi.nutritionix.com/v2/search/instant', {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showError('Authentication required. Please log in again.');
+            return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/foodentry/search', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-app-id': appId,
-                'x-app-key': appKey
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                query: query,
-                detailed: true
+                query: query
             })
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Search failed');
+        }
+
         const data = await response.json();
-        displayAutocomplete(data.common.concat(data.branded));
+        displayAutocomplete(data.foods);
     } catch (error) {
         console.error('Error searching foods:', error);
         showError('Failed to search foods. Please try again.');
@@ -274,17 +283,27 @@ async function showNutritionalPreview() {
     if (!selectedFood) return;
     
     try {
-        const response = await fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.error('No auth token found');
+            return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/foodentry/nutrition', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-app-id': appId,
-                'x-app-key': appKey
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 query: `1 ${quantitySelect.value} ${selectedFood.food_name}`
             })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to get nutrition data');
+        }
 
         const data = await response.json();
         if (data.foods && data.foods.length > 0) {
@@ -335,17 +354,27 @@ async function addFoodToLog() {
     }
 
     try {
-        const response = await fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showError('Authentication required. Please log in again.');
+            return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/foodentry/nutrition', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-app-id': appId,
-                'x-app-key': appKey
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 query: `1 ${quantitySelect.value} ${selectedFood.food_name}`
             })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to get nutrition data');
+        }
 
         const data = await response.json();
         if (data.foods && data.foods.length > 0) {
