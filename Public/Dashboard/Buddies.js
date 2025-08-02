@@ -65,26 +65,36 @@ function acceptRequest(button) {
         console.log('Missing email or user data');
         return;
     }
+    console.log('Accepting friend request from:', email);
+    
     // Call backend to accept
     fetch('http://localhost:8000/api/respondFriendRequest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'accept' })
     }).then(res => res.json()).then(data => {
+        console.log('Accept request response:', data);
         if (data.success) {
+            console.log('Friend request accepted successfully, refreshing lists...');
             // Remove from UI
             requestItem.style.opacity = '0';
             requestItem.style.transform = 'translateX(-100%)';
             setTimeout(() => { 
                 requestItem.remove(); 
                 // Refresh friends list and friend requests
+                console.log('Calling renderFriends()...');
                 renderFriends();
+                console.log('Calling renderFriendRequests()...');
                 renderFriendRequests();
             }, 300);
         } else {
+            console.log('Accept request failed:', data);
             button.textContent = 'Error';
         }
-    }).catch(() => { button.textContent = 'Error'; });
+    }).catch((error) => { 
+        console.log('Accept request error:', error);
+        button.textContent = 'Error'; 
+    });
 }
 
 // Friend request rejection functionality
@@ -582,22 +592,34 @@ document.addEventListener('DOMContentLoaded', function() {
                             addBtn.style.transform = 'scale(1)';
                             let currentUser = null;
                             try {
-                                currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                            } catch (e) {}
-                            if (!currentUser || !user.email) {
+                                // Try to get current user from userData (which is what's actually stored)
+                                currentUser = JSON.parse(localStorage.getItem('userData'));
+                                if (!currentUser) {
+                                    // Fallback to currentUser if userData doesn't exist
+                                    currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                                }
+                            } catch (e) {
+                                console.log('No user data found in localStorage');
+                            }
+                            
+                            if (!currentUser || !currentUser.email || !user.email) {
+                                console.log('Missing user data or target email');
                                 addBtn.textContent = 'Error';
                                 return;
                             }
                             try {
+                                const requestData = {
+                                    toEmail: user.email,
+                                    fromEmail: currentUser.email,
+                                    fromProfileName: currentUser.profileName,
+                                    fromAvatar: currentUser.avatar
+                                };
+                                console.log('Sending friend request with data:', requestData);
+                                
                                 const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        toEmail: user.email,
-                                        fromEmail: currentUser.email,
-                                        fromProfileName: currentUser.profileName,
-                                        fromAvatar: currentUser.avatar
-                                    })
+                                    body: JSON.stringify(requestData)
                                 });
                                 const data = await res.json();
                                 if (res.ok && data.success) {
@@ -637,17 +659,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render real friends for the logged-in user
     async function renderFriends() {
-        const userData = JSON.parse(localStorage.getItem('currentUser'));
-        if (!userData || !userData.email) return;
+        let userData = null;
+        try {
+            // Try to get current user from userData (which is what's actually stored)
+            userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData) {
+                // Fallback to currentUser if userData doesn't exist
+                userData = JSON.parse(localStorage.getItem('currentUser'));
+            }
+        } catch (e) {
+            console.log('No user data found in localStorage');
+            return;
+        }
+        
+        if (!userData || !userData.email) {
+            console.log('No valid user data found');
+            return;
+        }
         try {
             const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
+            console.log('User data fetched for friends list:', user);
+            
             const friends = user.friends || [];
+            console.log('Friends array:', friends);
+            
             const friendsList = document.querySelector('.friends-list');
-            if (!friendsList) return;
+            if (!friendsList) {
+                console.log('Friends list element not found');
+                return;
+            }
+            console.log('Found friends list element');
+            
             friendsList.innerHTML = '';
-            friends.forEach(friend => {
+            console.log(`Rendering ${friends.length} friends`);
+            
+            friends.forEach((friend, index) => {
+                console.log(`Rendering friend ${index + 1}:`, friend);
                 const friendDiv = document.createElement('div');
                 friendDiv.className = 'friend-item';
                 friendDiv.innerHTML = `
@@ -668,8 +717,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check and update cooldown status for sent requests
     async function updateCooldownStatus() {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!currentUser || !currentUser.email) return;
+        let currentUser = null;
+        try {
+            // Try to get current user from userData (which is what's actually stored)
+            currentUser = JSON.parse(localStorage.getItem('userData'));
+            if (!currentUser) {
+                // Fallback to currentUser if userData doesn't exist
+                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            }
+        } catch (e) {
+            console.log('No user data found in localStorage');
+            return;
+        }
+        
+        if (!currentUser || !currentUser.email) {
+            console.log('No valid user data found');
+            return;
+        }
         
         try {
             const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(currentUser.email)}`);
@@ -741,11 +805,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Processing request:', req);
                 const reqDiv = document.createElement('div');
                 reqDiv.className = 'request-item';
-                reqDiv.setAttribute('data-email', req.fromEmail);
+                reqDiv.setAttribute('data-email', req.email);
                 reqDiv.innerHTML = `
-                    <img src="../../assets/${req.fromAvatar || 'avator1.jpeg'}" alt="${req.fromProfileName || req.fromEmail}" class="request-avatar">
+                    <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
                     <div class="request-info">
-                        <h3>${req.fromProfileName || req.fromEmail}</h3>
+                        <h3>${req.profileName || req.email}</h3>
                         <span class="level-tag">Friend Request</span>
                     </div>
                     <div class="request-actions">

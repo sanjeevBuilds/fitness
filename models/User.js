@@ -153,14 +153,14 @@ const UserSchema = new mongoose.Schema({
   mealFrequency: {
     type: String,
     enum: ['2', '3', '4+'],
-    default: ''
+    default: '3'
   },
   
   // Dietary Preferences
   dietType: {
     type: String,
     enum: ['vegetarian', 'vegan', 'keto', 'balanced', 'paleo', 'other'],
-    default: ''
+    default: 'balanced'
   },
   allergies: {
     type: [String],
@@ -184,7 +184,7 @@ const UserSchema = new mongoose.Schema({
   notificationPreference: {
     type: String,
     enum: ['all', 'important', 'none'],
-    default: ''
+    default: 'important'
   },
   
   // Health Metrics

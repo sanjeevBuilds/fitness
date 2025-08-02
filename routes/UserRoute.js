@@ -76,6 +76,8 @@ router.post('/sendFriendRequest', async (req, res) => {
   try {
     const { toEmail, fromEmail, fromProfileName, fromAvatar } = req.body;
     
+    console.log('Received friend request data:', { toEmail, fromEmail, fromProfileName, fromAvatar });
+    
     if (!toEmail || !fromEmail) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -107,7 +109,7 @@ router.post('/sendFriendRequest', async (req, res) => {
 
     // Check if request already exists
     const existingRequest = recipient.friendRequests.find(
-      req => req.fromEmail === fromEmail.toLowerCase()
+      req => req.email === fromEmail.toLowerCase()
     );
     
     if (existingRequest) {
@@ -125,18 +127,21 @@ router.post('/sendFriendRequest', async (req, res) => {
 
     // Add friend request
     const friendRequest = {
-      fromEmail: fromEmail.toLowerCase(),
-      fromProfileName: fromProfileName,
-      fromAvatar: fromAvatar,
+      email: fromEmail.toLowerCase(),
+      profileName: fromProfileName,
+      avatar: fromAvatar,
       sentAt: new Date(),
       status: 'pending'
     };
+
+    console.log('Creating friend request object:', friendRequest);
 
     if (!recipient.friendRequests) {
       recipient.friendRequests = [];
     }
     
     recipient.friendRequests.push(friendRequest);
+    console.log('Recipient friend requests after adding:', recipient.friendRequests);
     await recipient.save();
 
     // Add to sender's sent requests record
@@ -170,6 +175,8 @@ router.post('/respondFriendRequest', async (req, res) => {
   try {
     const { fromEmail, toEmail, action } = req.body;
     
+    console.log('Responding to friend request:', { fromEmail, toEmail, action });
+    
     if (!fromEmail || !toEmail || !action) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -192,7 +199,7 @@ router.post('/respondFriendRequest', async (req, res) => {
 
     // Find and remove the friend request
     const requestIndex = recipient.friendRequests.findIndex(
-      req => req.fromEmail === fromEmail.toLowerCase()
+      req => req.email === fromEmail.toLowerCase()
     );
     
     if (requestIndex === -1) {
@@ -203,6 +210,8 @@ router.post('/respondFriendRequest', async (req, res) => {
     recipient.friendRequests.splice(requestIndex, 1);
 
     if (action === 'accept') {
+      console.log('Accepting friend request...');
+      
       // Add to friends list for both users
       const recipientFriend = {
         email: sender.email,
@@ -222,11 +231,17 @@ router.post('/respondFriendRequest', async (req, res) => {
         addedAt: new Date()
       };
 
+      console.log('Recipient friend object:', recipientFriend);
+      console.log('Sender friend object:', senderFriend);
+
       if (!recipient.friends) recipient.friends = [];
       if (!sender.friends) sender.friends = [];
 
       recipient.friends.push(recipientFriend);
       sender.friends.push(senderFriend);
+      
+      console.log('Recipient friends after adding:', recipient.friends);
+      console.log('Sender friends after adding:', sender.friends);
     } else if (action === 'reject') {
       // Remove the sent request from sender's cooldown list to allow resending
       if (sender.sentFriendRequests) {
@@ -236,8 +251,10 @@ router.post('/respondFriendRequest', async (req, res) => {
       }
     }
 
+    console.log('Saving recipient and sender...');
     await recipient.save();
     await sender.save();
+    console.log('Both users saved successfully');
 
     res.json({ 
       success: true, 
