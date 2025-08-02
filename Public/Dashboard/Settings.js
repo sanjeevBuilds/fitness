@@ -309,17 +309,17 @@ class SettingsManager {
         
         // Available titles with proper requirements and unlock status
         this.availableTitles = [
-            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '🥗', description: 'Deep knowledge of nutrition', requirement: '5+ day calorie streak', unlocked: false },
-            { id: 'protein-beast', name: 'Protein Beast', icon: '💪', description: 'Avg. 100g protein/day', requirement: '5+ day protein streak', unlocked: false },
-            { id: 'streak-legend', name: 'Streak Legend', icon: '🔥', description: '14-day perfect activity streak', requirement: '7+ day quest streak', unlocked: false },
-            { id: 'meal-master', name: 'Meal Master', icon: '👨‍🍳', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: false },
-            { id: 'strength-warrior', name: 'Strength Warrior', icon: '💪', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
-            { id: 'cardio-king', name: 'Cardio King', icon: '🏃‍♀️', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
-            { id: 'yoga-guru', name: 'Yoga Guru', icon: '🧘‍♀️', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
-            { id: 'consistency-champion', name: 'Consistency Champion', icon: '📈', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: false },
-            { id: 'goal-crusher', name: 'Goal Crusher', icon: '🎯', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
-            { id: 'fitness-legend', name: 'Fitness Legend', icon: '👑', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '🌟', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: false }
+            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '<i class="fas fa-apple-alt"></i>', description: 'Deep knowledge of nutrition', requirement: '5+ day calorie streak', unlocked: false },
+            { id: 'protein-beast', name: 'Protein Beast', icon: '<i class="fas fa-dumbbell"></i>', description: 'Avg. 100g protein/day', requirement: '5+ day protein streak', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '<i class="fas fa-fire"></i>', description: '14-day perfect activity streak', requirement: '7+ day quest streak', unlocked: false },
+            { id: 'meal-master', name: 'Meal Master', icon: '<i class="fas fa-utensils"></i>', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: false },
+            { id: 'strength-warrior', name: 'Strength Warrior', icon: '<i class="fas fa-dumbbell"></i>', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
+            { id: 'cardio-king', name: 'Cardio King', icon: '<i class="fas fa-running"></i>', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
+            { id: 'yoga-guru', name: 'Yoga Guru', icon: '<i class="fas fa-pray"></i>', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
+            { id: 'consistency-champion', name: 'Consistency Champion', icon: '<i class="fas fa-chart-line"></i>', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: false },
+            { id: 'goal-crusher', name: 'Goal Crusher', icon: '<i class="fas fa-bullseye"></i>', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
+            { id: 'fitness-legend', name: 'Fitness Legend', icon: '<i class="fas fa-crown"></i>', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '<i class="fas fa-star"></i>', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: false }
         ];
 
         // Badges removed - only titles are used now

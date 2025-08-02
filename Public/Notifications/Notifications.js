@@ -205,29 +205,29 @@ class NotificationManager {
 
     getNotificationIcon(type) {
         const icons = {
-            'info': 'ℹ️',
-            'success': '✅',
-            'warning': '⚠️',
-            'error': '❌',
-            'quest': '🎯',
-            'levelup': '⭐',
-            'title': '🏆',
-            'friend': '👥'
+            'info': '<i class="fas fa-info-circle"></i>',
+            'success': '<i class="fas fa-check-circle"></i>',
+            'warning': '<i class="fas fa-exclamation-triangle"></i>',
+            'error': '<i class="fas fa-times-circle"></i>',
+            'quest': '<i class="fas fa-bullseye"></i>',
+            'levelup': '<i class="fas fa-star"></i>',
+            'title': '<i class="fas fa-trophy"></i>',
+            'friend': '<i class="fas fa-users"></i>'
         };
-        return icons[type] || '📢';
+        return icons[type] || '<i class="fas fa-bell"></i>';
     }
 
     getActivityIcon(type) {
         const icons = {
-            'quest': '🎯',
-            'levelup': '⭐',
-            'badge': '🏅',
-            'title': '🏆',
-            'challenge': '🔥',
-            'purchase': '🛒',
-            'achievement': '🎉'
+            'quest': '<i class="fas fa-bullseye"></i>',
+            'levelup': '<i class="fas fa-star"></i>',
+            'badge': '<i class="fas fa-medal"></i>',
+            'title': '<i class="fas fa-trophy"></i>',
+            'challenge': '<i class="fas fa-fire"></i>',
+            'purchase': '<i class="fas fa-shopping-cart"></i>',
+            'achievement': '<i class="fas fa-trophy"></i>'
         };
-        return icons[type] || '📝';
+        return icons[type] || '<i class="fas fa-clipboard-list"></i>';
     }
 
     getTimeAgo(date) {
