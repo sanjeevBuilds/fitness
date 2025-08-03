@@ -10,8 +10,8 @@
       "use": "@vercel/static"
     }
   ],
+  "outputDirectory": "Public",
   "rewrites": [
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/(.*)", "destination": "/Public/$1" }
+    { "source": "/assets/(.*)", "destination": "/assets/$1" }
   ]
 } 
