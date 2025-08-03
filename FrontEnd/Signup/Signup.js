@@ -44,7 +44,7 @@ document.querySelector("form").addEventListener("submit", async function (e) {
       targetWeight: null
     };
     try {
-      const response = await fetch('https://fitness-ewwi.onrender.com/api/createUser', {
+      const response = await fetch(getApiUrl('/api/createUser'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

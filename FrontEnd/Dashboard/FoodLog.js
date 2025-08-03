@@ -1,7 +1,7 @@
 // --- JWT Auth Check (Protected Page) ---
 (async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Public/Login/login.html';
+        window.location.href = '/Login/login.html';
     };
     
     const token = localStorage.getItem('authToken');
@@ -12,7 +12,7 @@
     
     // Validate token with server
     try {
-        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
+        const response = await fetch(getApiUrl('/api/validateToken'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ async function migrateFoodLogs() {
             return;
         }
         
-        const response = await fetch('https://your-app-name.onrender.com/api/foodentry/migrate-foodlogs', {
+                    const response = await fetch(getApiUrl('/api/foodentry/migrate-foodlogs'), {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ async function searchFoods(query) {
             return;
         }
 
-        const response = await fetch('https://your-app-name.onrender.com/api/foodentry/search', {
+                    const response = await fetch(getApiUrl('/api/foodentry/search'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -295,7 +295,7 @@ async function showNutritionalPreview() {
             return;
         }
 
-        const response = await fetch('https://your-app-name.onrender.com/api/foodentry/nutrition', {
+        const response = await fetch(getApiUrl('/api/foodentry/nutrition'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -366,7 +366,7 @@ async function addFoodToLog() {
             return;
         }
 
-        const response = await fetch('https://your-app-name.onrender.com/api/foodentry/nutrition', {
+        const response = await fetch(getApiUrl('/api/foodentry/nutrition'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -469,7 +469,7 @@ async function deleteFoodLogFromBackend(foodLogId) {
             return false;
         }
         
-        const response = await fetch(`https://your-app-name.onrender.com/api/foodentry/delete/${foodLogId}`, {
+        const response = await fetch(getApiUrl(`/api/foodentry/delete/${foodLogId}`), {
             method: 'DELETE',
             headers: { 
                 'Content-Type': 'application/json',
@@ -511,7 +511,7 @@ async function syncFoodLogWithBackend(foodLog) {
             return;
         }
         
-        const response = await fetch('https://your-app-name.onrender.com/api/foodentry/add', {
+        const response = await fetch(getApiUrl('/api/foodentry/add'), {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

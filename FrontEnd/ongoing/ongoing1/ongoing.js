@@ -1,7 +1,7 @@
 // --- JWT Auth Check (Protected Page) ---
 (async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Public/Login/login.html';
+        window.location.href = '/Login/login.html';
     };
     
     const token = localStorage.getItem('authToken');
@@ -12,7 +12,7 @@
     
     // Validate token with server
     try {
-        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
+        const response = await fetch(getApiUrl('/api/validateToken'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ document.getElementById("onboarding-form").addEventListener("submit", async func
   const primaryGoal = select.value;
 
   try {
-    const response = await fetch(`https://your-app-name.onrender.com/api/updateUser/${encodeURIComponent(email)}`, {
+            const response = await fetch(getApiUrl(`/api/updateUser/${encodeURIComponent(email)}`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fullName, age, gender, height, weight, primaryGoal })

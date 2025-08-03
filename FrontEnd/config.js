@@ -3,7 +3,7 @@ const API_CONFIG = {
     // Change this URL when deploying
     // Local development: 'http://localhost:8000'
     // Production: 'https://your-app-name.onrender.com'
-    BASE_URL: 'https://your-app-name.onrender.com',
+    BASE_URL: 'https://fitness-ewwi.onrender.com',
     
     // API endpoints
     ENDPOINTS: {

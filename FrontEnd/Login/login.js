@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             console.log('Attempting login with:', { email, password: '***' });
-               const response = await fetch('https://fitness-ewwi.onrender.com/api/login', {
+               const response = await fetch(getApiUrl('/api/login'), {
                 
          
                 method: 'POST',
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(`Login successful!\n\nWelcome, ${data.profileName}!\nLevel: ${data.level}\nXP: ${data.xp}`);
                 
                 // Redirect to dashboard
-                window.location.href = '/Public/Dashboard/dashbaord.html';
+                window.location.href = '/Dashboard/dashbaord.html';
                 
             } else {
                 // Error
