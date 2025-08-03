@@ -12,7 +12,7 @@
     
     // Validate token with server
     try {
-        const response = await fetch('http://localhost:8000/api/validateToken', {
+        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ class NotificationManager {
         if (!this.userData.email) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/all/${this.userData.email}`);
+            const response = await fetch(`https://your-app-name.onrender.com/api/notifications/all/${this.userData.email}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch notifications');
             }
@@ -311,7 +311,7 @@ class NotificationManager {
 
     async respondToFriendRequest(fromEmail, action) {
         try {
-            const response = await fetch('http://localhost:8000/api/notifications/friend-requests/respond', {
+            const response = await fetch('https://your-app-name.onrender.com/api/notifications/friend-requests/respond', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -338,7 +338,7 @@ class NotificationManager {
 
     async markNotificationAsRead(notificationId) {
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/mark-read/${this.userData.email}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/notifications/mark-read/${this.userData.email}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notificationId })
@@ -362,7 +362,7 @@ class NotificationManager {
 
     async markAllAsRead() {
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/mark-read/${this.userData.email}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/notifications/mark-read/${this.userData.email}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
@@ -391,7 +391,7 @@ class NotificationManager {
         if (!confirm('Are you sure you want to clear all notifications?')) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/clear-all/${this.userData.email}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/notifications/clear-all/${this.userData.email}`, {
                 method: 'DELETE'
             });
 

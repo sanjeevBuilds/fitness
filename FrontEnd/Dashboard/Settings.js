@@ -81,7 +81,7 @@ class SettingsManager {
                 };
 
                 try {
-                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(originalEmail)}`, {
+                    const response = await fetch(`https://your-app-name.onrender.com/api/updateUser/${encodeURIComponent(originalEmail)}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(updateData)
@@ -153,7 +153,7 @@ class SettingsManager {
                 updateUsernameBtn.disabled = true;
 
                 try {
-                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(originalEmail)}`, {
+                    const response = await fetch(`https://your-app-name.onrender.com/api/updateUser/${encodeURIComponent(originalEmail)}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username })
@@ -263,7 +263,7 @@ class SettingsManager {
                 console.log(userData);
                 if (!userData || !userData.email) return;
                 try {
-                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
+                    const response = await fetch(`https://your-app-name.onrender.com/api/updateUser/${encodeURIComponent(userData.email)}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ avatar: selectedAvatar })
@@ -337,7 +337,7 @@ class SettingsManager {
                 throw new Error('Invalid token');
             }
 
-            const response = await fetch(`http://localhost:8000/api/getUser/${decoded.email}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/getUser/${decoded.email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -517,7 +517,7 @@ class SettingsManager {
 
             const updateData = { selectedTitle: this.selectedTitle };
 
-            const response = await fetch(`http://localhost:8000/api/updateUser`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/updateUser`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -598,7 +598,7 @@ class SettingsManager {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/updateUser`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/updateUser`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -729,7 +729,7 @@ class SettingsManager {
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             if (!userData?.email) return;
 
-            const response = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            const response = await fetch(`https://your-app-name.onrender.com/api/getUser/${encodeURIComponent(userData.email)}`);
             if (!response.ok) return;
 
             const user = await response.json();
@@ -797,7 +797,7 @@ class SettingsManager {
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             if (!userData?.email) return;
 
-            const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/updateUser/${encodeURIComponent(userData.email)}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [key]: value })
@@ -929,7 +929,7 @@ function showLogoutToast() {
     
     // Validate token with server
     try {
-        const response = await fetch('http://localhost:8000/api/validateToken', {
+        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

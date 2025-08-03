@@ -15,7 +15,7 @@ console.log('Buddies.js loaded successfully');
     
     // Validate token with server
     try {
-        const response = await fetch('http://localhost:8000/api/validateToken', {
+        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ class ActivityManager {
             const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
             if (!userData || !userData.email) return;
 
-            const response = await fetch(`http://localhost:8000/api/activities/friends/${userData.email}`);
+            const response = await fetch(`https://your-app-name.onrender.com/api/activities/friends/${userData.email}`);
             if (response.ok) {
                 const data = await response.json();
                 this.activities = data.activities || [];
@@ -138,7 +138,7 @@ class ActivityManager {
             const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
             if (!userData || !userData.email) return;
 
-            const response = await fetch(`http://localhost:8000/api/activities/clear/${userData.email}`, {
+            const response = await fetch(`https://your-app-name.onrender.com/api/activities/clear/${userData.email}`, {
                 method: 'DELETE'
             });
 
@@ -167,7 +167,7 @@ class ActivityManager {
                 timestamp: new Date().toISOString()
             };
 
-            const response = await fetch('http://localhost:8000/api/activities/add', {
+            const response = await fetch('https://your-app-name.onrender.com/api/activities/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -223,7 +223,7 @@ function acceptRequest(button) {
     console.log('Accepting friend request from:', email);
     
     // Call backend to accept
-    fetch('http://localhost:8000/api/respondFriendRequest', {
+    fetch('https://your-app-name.onrender.com/api/respondFriendRequest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'accept' })
@@ -275,7 +275,7 @@ function rejectRequest(button) {
         return;
     }
     // Call backend to reject
-    fetch('http://localhost:8000/api/respondFriendRequest', {
+    fetch('https://your-app-name.onrender.com/api/respondFriendRequest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fromEmail: email, toEmail: userData.email, action: 'reject' })
@@ -315,7 +315,7 @@ function rejectAllRequests() {
         console.log('No valid user data found');
         return;
     }
-    fetch('http://localhost:8000/api/rejectAllFriendRequests', {
+    fetch('https://your-app-name.onrender.com/api/rejectAllFriendRequests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toEmail: userData.email })
@@ -436,7 +436,7 @@ async function fetchMyFriends() {
     const userData = JSON.parse(localStorage.getItem('currentUser'));
     if (!userData || !userData.email) return;
     try {
-        const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+        const res = await fetch(`https://your-app-name.onrender.com/api/getUser/${encodeURIComponent(userData.email)}`);
         if (!res.ok) throw new Error('Failed to fetch user');
         const user = await res.json();
         myFriendEmails = new Set((user.friends || []).map(f => f.email));
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             try {
-                const res = await fetch(`http://localhost:8000/api/searchUsers?query=${encodeURIComponent(query)}`);
+                const res = await fetch(`https://your-app-name.onrender.com/api/searchUsers?query=${encodeURIComponent(query)}`);
                 if (!res.ok) throw new Error('Failed to fetch users');
                 let users = await res.json();
                 // Hide current user from search results
@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 };
                                 console.log('Sending friend request with data:', requestData);
                                 
-                                const res = await fetch('http://localhost:8000/api/sendFriendRequest', {
+                                const res = await fetch('https://your-app-name.onrender.com/api/sendFriendRequest', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(requestData)
@@ -832,7 +832,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         try {
-            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            const res = await fetch(`https://your-app-name.onrender.com/api/getUser/${encodeURIComponent(userData.email)}`);
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
             console.log('User data fetched for friends list:', user);
@@ -891,7 +891,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(currentUser.email)}`);
+            const res = await fetch(`https://your-app-name.onrender.com/api/getUser/${encodeURIComponent(currentUser.email)}`);
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
             
@@ -943,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         try {
-            const res = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            const res = await fetch(`https://your-app-name.onrender.com/api/getUser/${encodeURIComponent(userData.email)}`);
             if (!res.ok) throw new Error('Failed to fetch user');
             const user = await res.json();
             const requests = user.friendRequests || [];
@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function renderLeaderboard() {
         try {
             // Add cache-busting parameter to force fresh data
-            const res = await fetch('http://localhost:8000/api/getUser?t=' + Date.now());
+            const res = await fetch('https://your-app-name.onrender.com/api/getUser?t=' + Date.now());
             if (!res.ok) throw new Error('Failed to fetch users');
             const users = await res.json();
             

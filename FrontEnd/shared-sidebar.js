@@ -288,7 +288,7 @@ class SharedSidebarManager {
         if (!this.userData.email) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/unread-counts/${this.userData.email}`);
+            const response = await fetch(`https://your-app-name.onrender.com/api/notifications/unread-counts/${this.userData.email}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch notification counts');
             }

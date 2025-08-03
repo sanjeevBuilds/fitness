@@ -12,7 +12,7 @@
     
     // Validate token with server
     try {
-        const response = await fetch('http://localhost:8000/api/validateToken', {
+        const response = await fetch('https://your-app-name.onrender.com/api/validateToken', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

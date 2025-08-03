@@ -5,17 +5,17 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const PRODUCTION_API_URL = 'https://your-app-name.onrender.com'; // Change this to your Render URL
+const PRODUCTION_API_URL = 'https://fitness-ewwi.onrender.com'; // Change this to your Render URL
 const LOCAL_API_URL = 'http://localhost:8000';
 
-// Files to update (relative to FrontEnd/Public)
+// Files to update (relative to FrontEnd root)
 const filesToUpdate = [
     'Signup/Signup.js',
     'shared-sidebar.js',
-    'ongoing/ongoing4/ongoing4.js',
-    'ongoing/ongoing3/ongoing3.js',
-    'ongoing/ongoing2/ongoing2.js',
-    'ongoing/ongoing1/ongoing.js',
+    'Public/ongoing/ongoing4/ongoing4.js',
+    'Public/ongoing/ongoing3/ongoing3.js',
+    'Public/ongoing/ongoing2/ongoing2.js',
+    'Public/ongoing/ongoing1/ongoing.js',
     'Notifications/Notifications.js',
     'Login/login.js',
     'FoodSuggestion/FoodSuggestion.js',
@@ -30,7 +30,7 @@ function updateApiUrls() {
     console.log('🔄 Updating API URLs for production deployment...');
     
     filesToUpdate.forEach(file => {
-        const filePath = path.join(__dirname, 'Public', file);
+        const filePath = path.join(__dirname, file);
         
         if (fs.existsSync(filePath)) {
             let content = fs.readFileSync(filePath, 'utf8');
@@ -51,7 +51,7 @@ function updateApiUrls() {
     });
     
     // Update config.js
-    const configPath = path.join(__dirname, 'Public', 'config.js');
+    const configPath = path.join(__dirname, 'config.js');
     if (fs.existsSync(configPath)) {
         let configContent = fs.readFileSync(configPath, 'utf8');
         configContent = configContent.replace(
@@ -74,7 +74,7 @@ function revertToLocal() {
     console.log('🔄 Reverting API URLs to local development...');
     
     filesToUpdate.forEach(file => {
-        const filePath = path.join(__dirname, 'Public', file);
+        const filePath = path.join(__dirname, file);
         
         if (fs.existsSync(filePath)) {
             let content = fs.readFileSync(filePath, 'utf8');
@@ -95,7 +95,7 @@ function revertToLocal() {
     });
     
     // Revert config.js
-    const configPath = path.join(__dirname, 'Public', 'config.js');
+    const configPath = path.join(__dirname, 'config.js');
     if (fs.existsSync(configPath)) {
         let configContent = fs.readFileSync(configPath, 'utf8');
         configContent = configContent.replace(

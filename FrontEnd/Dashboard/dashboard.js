@@ -15,7 +15,7 @@ console.log('=== DASHBOARD.JS LOADED ===');
     
     // Validate token with server
     try {
-        const response = await fetch('http://localhost:8000/api/validateToken', {
+                    const response = await fetch('https://fitness-ewwi.onrender.com/api/validateToken', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ class EnhancedDashboardGamification {
             this.activityLog = [];
 
             // API Base URL
-            this.API_BASE = 'http://localhost:8000/api';
+            this.API_BASE = 'https://fitness-ewwi.onrender.com/api';
 
             // DOM Elements
             this.activityList = document.getElementById('activity-list');
@@ -1420,7 +1420,7 @@ class EnhancedDashboardGamification {
             const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
             if (!userData || !userData.email) return;
 
-            const response = await fetch('http://localhost:8000/api/activities/share-achievement', {
+            const response = await fetch('https://your-app-name.onrender.com/api/activities/share-achievement', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2421,7 +2421,7 @@ class EnhancedDashboardGamification {
     async getRealRank(email) {
         console.log('🔍 Getting real rank for email:', email);
         try {
-            const response = await fetch(`http://localhost:8000/api/rank/${encodeURIComponent(email)}`);
+            const response = await fetch(`https://your-app-name.onrender.com/api/rank/${encodeURIComponent(email)}`);
             console.log('🔍 Rank API response status:', response.status);
             if (!response.ok) {
                 throw new Error('Failed to fetch rank');
@@ -2548,7 +2548,7 @@ class EnhancedDashboardGamification {
             const userData = JSON.parse(localStorage.getItem('userData')) || JSON.parse(localStorage.getItem('currentUser'));
             if (!userData || !userData.email) return;
 
-            const response = await fetch('http://localhost:8000/api/activities/share-levelup', {
+            const response = await fetch('https://your-app-name.onrender.com/api/activities/share-levelup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
