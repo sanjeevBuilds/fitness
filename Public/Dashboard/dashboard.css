@@ -1665,3 +1665,303 @@ body.dark-mode .achievement-notification {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     color: white;
 }
+
+/* Enhanced Mobile Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .main-content {
+        margin-left: 0;
+        margin-top: 80px;
+        padding: 1rem;
+        transition: margin-top 0.3s ease;
+    }
+
+    .coin-wallet {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .gamified-header {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .user-stats {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .challenges-grid,
+    .titles-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .checklist-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .checklist-item {
+        padding: 1rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+
+    .quest-reward {
+        align-self: center;
+    }
+
+    .challenge-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .title-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .quest-rewards {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Mobile-specific animations */
+    .summary-card,
+    .checklist-item,
+    .quest-item,
+    .title-card,
+    .challenge-card {
+        animation: slideInUp 0.3s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Mobile swipe gestures */
+    .checklist-item,
+    .quest-item {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .checklist-item::before,
+    .quest-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-btn);
+        transition: width 0.3s ease;
+    }
+
+    .checklist-item:hover::before,
+    .quest-item:hover::before {
+        width: 8px;
+    }
+
+    /* Mobile-optimized progress bars */
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    .progress-fill {
+        border-radius: 4px;
+    }
+
+    /* Mobile-optimized buttons */
+    .btn-secondary {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Mobile-optimized modals */
+    .unlock-modal .modal-content {
+        margin: 1rem;
+        padding: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .modal-actions .btn {
+        width: 100%;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Mobile notifications */
+    .level-up-notification {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        max-width: none;
+        border-radius: 12px;
+    }
+
+    .achievement-notification {
+        left: 1rem;
+        right: 1rem;
+        top: 90px;
+        max-width: none;
+        border-radius: 12px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .main-content {
+        margin-top: 70px;
+        padding: 0.75rem;
+    }
+
+    .summary-grid {
+        gap: 0.5rem;
+    }
+
+    .daily-summary-section,
+    .smart-quests-section,
+    .stats-grid,
+    .checklist-section,
+    .activity-section {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .summary-card,
+    .checklist-item,
+    .quest-item,
+    .title-card,
+    .challenge-card {
+        padding: 0.75rem;
+    }
+
+    .gamified-header {
+        padding: 0.75rem;
+    }
+
+    .coin-wallet {
+        padding: 0.5rem;
+    }
+
+    .btn-secondary {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .unlock-modal .modal-content {
+        margin: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .level-up-notification,
+    .achievement-notification {
+        left: 0.5rem;
+        right: 0.5rem;
+        padding: 0.75rem;
+    }
+}
+
+/* Mobile-specific dark mode enhancements */
+@media (max-width: 768px) {
+    body.dark-mode .main-content {
+        background: linear-gradient(135deg, rgb(18, 24, 22) 0%, rgb(22, 30, 28) 100%);
+    }
+
+    body.dark-mode .summary-card,
+    body.dark-mode .checklist-item,
+    body.dark-mode .quest-item,
+    body.dark-mode .title-card,
+    body.dark-mode .challenge-card {
+        background: rgba(30, 200, 120, 0.08);
+        border: 1px solid rgba(30, 200, 120, 0.15);
+        backdrop-filter: blur(5px);
+    }
+
+    body.dark-mode .summary-card:hover,
+    body.dark-mode .checklist-item:hover,
+    body.dark-mode .quest-item:hover,
+    body.dark-mode .title-card:hover,
+    body.dark-mode .challenge-card:hover {
+        background: rgba(30, 200, 120, 0.12);
+        border-color: rgba(30, 200, 120, 0.25);
+        box-shadow: 0 4px 20px rgba(30, 200, 120, 0.2);
+    }
+
+    body.dark-mode .coin-wallet {
+        background: rgba(30, 200, 120, 0.1);
+        border: 1px solid rgba(30, 200, 120, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    body.dark-mode .gamified-header {
+        background: rgba(30, 200, 120, 0.05);
+        border: 1px solid rgba(30, 200, 120, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    body.dark-mode .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .progress-fill {
+        background: linear-gradient(90deg, rgb(30, 200, 120), rgb(25, 170, 100));
+    }
+
+    body.dark-mode .gamified-checkbox {
+        border-color: rgba(30, 200, 120, 0.3);
+        background: rgba(30, 200, 120, 0.1);
+    }
+
+    body.dark-mode .gamified-checkbox:hover {
+        border-color: rgba(30, 200, 120, 0.5);
+        background: rgba(30, 200, 120, 0.15);
+    }
+
+    body.dark-mode .quest-checkbox:checked + .gamified-checkbox {
+        background: rgb(30, 200, 120);
+        border-color: rgb(30, 200, 120);
+    }
+
+    body.dark-mode .unlock-modal .modal-content {
+        background: rgba(28, 36, 34, 0.95);
+        border: 1px solid rgba(30, 200, 120, 0.2);
+        backdrop-filter: blur(15px);
+    }
+}
