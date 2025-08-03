@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest - Buddies</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="Buddies.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="Buddies.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <h1>Buddies</h1>
+            
+            <div class="search-container">
+                <input type="text" class="search-bar" placeholder="Search for friends...">
+            </div>
+            <div class="search-results"></div>
+
+            <!-- Collapsible Friend Requests Section -->
+            <section class="friend-requests">
+                <div class="requests-header" id="requests-header">
+                    <h2>Friend Requests</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-danger reject-all-btn">Reject All</button>
+                        <button class="toggle-btn" id="requests-toggle">
+                            <span class="toggle-arrow">▼</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="request-list" id="request-list">
+                    
+                </div>
+            </section>
+
+            <!-- My Friends Section -->
+            <section class="my-friends">
+                <h2>My Friends</h2>
+                <div class="friends-list">
+                    
+                </div>
+            </section>
+
+            <section class="leaderboard">
+                <h2>Leaderboard</h2>
+                <button class="leaderboard-next-btn" style="float:right;margin-top:-2.2rem;margin-right:0.5rem;">→</button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>XP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="recent-activity">
+                <div class="activity-header">
+                    <h2>Recent Activity</h2>
+                    <button class="clear-activity-btn" id="clear-activity-btn">Clear All</button>
+                </div>
+                <div class="activity-list" id="activity-list">
+                    <!-- Activity items will be populated dynamically -->
+                </div>
+                <div class="no-activity" id="no-activity" style="display: none;">
+                    <p>No recent activity from your friends</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../shared-sidebar.js"></script>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+    </script>
+    <script>
+    // Sidebar is now handled by shared-sidebar.js
+    </script>
+</body>
+</html>

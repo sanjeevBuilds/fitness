@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - HealthQuest</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="Settings.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar (maintained from dashboard) -->
+        <aside class="sidebar">
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1>Settings</h1>
+            
+            <!-- Account Information Section -->
+            <section class="settings-section">
+                <h2>Account Information</h2>
+                <div class="form-group">
+                    <label for="profile-name">Profile Name</label>
+                    <input type="text" id="profile-name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="••••••••">
+                    <button class="update-btn">Save Changes</button>
+                </div>
+            </section>
+
+            <!-- Username Section -->
+            <section class="settings-section">
+                <h2>Username</h2>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                    <small class="form-hint">This is your unique username for the platform</small>
+                </div>
+                <button class="update-btn" id="update-username-btn">Update Username</button>
+            </section>
+
+            <!-- Avatar Change Section -->
+            <section class="settings-section" id="avatar-section">
+                <h2>Change Avatar</h2>
+                <button id="change-avatar-btn" class="btn btn-primary" type="button" style="margin-bottom:1rem;">Change Avatar</button>
+                <div id="avatar-options" style="display:none; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;" class="avatar-options">
+                  <button id="close-avatar-options" title="Close" style="display:none;">&times;</button>
+                </div>
+                <button id="confirm-avatar-btn" class="btn btn-success" style="display:none;">Confirm Avatar</button>
+            </section>
+
+            <!-- Titles Section -->
+            <section class="settings-section" id="titles-section">
+                <h2><i class="fas fa-trophy"></i> Titles</h2>
+                
+                <!-- Titles Section -->
+                <div class="titles-section">
+                    <h3><i class="fas fa-crown"></i> Select Your Title</h3>
+                    <p class="section-description">Choose a title to display next to your avatar. Titles are earned through achievements!</p>
+                    
+                    <div class="current-selection">
+                        <label>Current Title:</label>
+                        <span id="current-title-display" class="current-title">None</span>
+                    </div>
+                    
+                    <div class="titles-grid" id="titles-grid">
+                        <!-- Titles will be populated by JavaScript -->
+                    </div>
+                    
+                    <button id="confirm-title-btn" style="display:none;">Confirm Title</button>
+                </div>
+                
+                <!-- Badges section removed - only titles are used now -->
+            </section>
+
+            <!-- Notification Preferences Section -->
+            <section class="settings-section">
+                <h2>Notification Preferences</h2>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label>Friend Requests</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="friend-requests" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Receive notifications when someone sends you a friend request</p>
+                    </div>
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label>Activity Updates</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="activity-updates" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Get updates about your friends' activities and achievements</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- App Settings Section -->
+            <section class="settings-section">
+                <h2>App Settings</h2>
+                <div class="toggle-group">
+                    <div class="toggle-item">
+                        <div class="toggle-header">
+                            <label for="dark-mode">Dark Mode</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="dark-mode" name="dark-mode">
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                        <p class="hint-text">Switch between light and dark mode</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Help & Support Section -->
+            <section class="settings-section">
+                <h2>Help & Support</h2>
+                <div class="link-list">
+                    <a href="../HelpSupport/HelpSupport.html" class="nav-link">
+                        Help & Support
+                        <span class="arrow">→</span>
+                    </a>
+                </div>
+            </section>
+
+
+
+
+
+            <!-- Logout Section -->
+            <section class="settings-section logout-section">
+                <button class="logout-btn-gamified" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="Settings.js"></script>
+    <script src="../shared-sidebar.js"></script>
+    <script>
+    // Sidebar is now handled by shared-sidebar.js
+    // Autofill form fields from localStorage if available
+    (function() {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            // Form fields
+            const profileInput = document.getElementById('profile-name');
+            const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
+            if (profileInput) profileInput.value = userData.profileName || '';
+            if (emailInput) emailInput.value = userData.email || '';
+            if (usernameInput) usernameInput.value = userData.username || '';
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Smart Quest Animations and Styles */
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        /* Quest completion states */
+        .quest-completed {
+            border: 2px solid #4CAF50 !important;
+            background: linear-gradient(135deg, #f8fff8, #e8f5e8) !important;
+        }
+        
+        .reward-available {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .reward-available::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        /* Collect reward button */
+        .collect-reward-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        .collect-reward-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+        }
+        
+        .collect-reward-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Progress bar enhancements */
+        .progress-fill {
+            transition: width 0.5s ease, background 0.3s ease;
+        }
+        
+        /* Scaling notice */
+        .scaling-notice {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 4px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-3px);
+            }
+            60% {
+                transform: translateY(-2px);
+            }
+        }
+        
+        /* Quest item hover effects */
+        .smart-quests-section .quest-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        /* Completed quest styling */
+        .quest-completed .progress-text {
+            color: #4CAF50 !important;
+            font-weight: bold !important;
+        }
+        
+        .quest-completed .reward-xp,
+        .quest-completed .reward-coins {
+            color: #FFD700 !important;
+            font-weight: bold !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                                    <img src="/assets/avator.jpeg" alt="User Avatar" class="avatar">
+                <h3 class="user-name">John Doe</h3>
+                <span class="level-badge user-level">Level 1</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashbaord.html" class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
+                    Home
+                </a>
+                <a href="FoodLog.html" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-utensils"></i></span>
+                    Food Log
+                </a>
+                <a href="../FoodSuggestion/FoodSuggestion.html" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-lightbulb"></i></span>
+                    Food Suggestion
+                </a>
+
+                <a href="Buddies.html" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    Buddies
+                </a>
+
+                <a href="../Notifications/Notifications.html" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-bell"></i></span>
+                    Notification
+                </a>
+                <a href="Settings.html" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1>Dashboard</h1>
+            
+            <!-- Coin Wallet -->
+            <div class="coin-wallet">
+                <span class="coin-icon"><i class="fas fa-coins"></i></span>
+                <span class="coin-balance">0</span>
+                <span class="coin-label">Coins</span>
+            </div>
+            
+            <!-- Gamified Header - Level and Rank at Top -->
+            <div class="gamified-header">
+                <div class="level-progress">
+                    <div class="level-info">
+                        <h2 class="current-level">Level 1</h2>
+                        <span class="xp">0/100 XP</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-trophy"></i></span>
+                        <span class="stat-value" data-stat="rank">#42</span>
+                        <span class="stat-label">Rank</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-star"></i></span>
+                        <span class="stat-value" data-stat="level">1</span>
+                        <span class="stat-label">Level</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-gem"></i></span>
+                        <span class="stat-value" data-stat="xp">0</span>
+                        <span class="stat-label">XP</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-fire"></i></span>
+                        <span class="stat-value" data-stat="streak">0</span>
+                        <span class="stat-label">Streak</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-drumstick-bite"></i></span>
+                        <span class="stat-value" data-stat="protein-streak">0</span>
+                        <span class="stat-label">Protein</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><i class="fas fa-apple-alt"></i></span>
+                        <span class="stat-value" data-stat="calorie-streak">0</span>
+                        <span class="stat-label">Calorie</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Daily Summary Section -->
+            <section class="daily-summary-section">
+                <h2><i class="fas fa-chart-bar"></i> Daily Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Calories</h3>
+                        <div class="summary-value" id="calories-display">0</div>
+                        <div class="summary-unit">kcal</div>
+                        <div class="summary-change positive" id="calories-change">+0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Protein</h3>
+                        <div class="summary-value" id="protein-display">0</div>
+                        <div class="summary-unit">g</div>
+                        <div class="summary-change positive" id="protein-change">+0%</div>
+                    </div>
+
+                    <div class="summary-card">
+                        <h3>Water</h3>
+                        <div class="summary-value" id="water-display">0</div>
+                        <div class="summary-unit">L</div>
+                        <div class="summary-change positive" id="water-change">+0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Sleep</h3>
+                        <div class="summary-value" id="sleep-display">0</div>
+                        <div class="summary-unit">hrs</div>
+                        <div class="summary-change positive" id="sleep-change">+0%</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Daily Quests Section -->
+            <div class="checklist-section">
+                <h2><i class="fas fa-clipboard-list"></i> Daily Quests</h2>
+                <div class="checklist-grid">
+                    <div class="checklist-item" data-quest="water">
+                        <div class="quest-info">
+                            <span class="quest-icon"><i class="fas fa-tint"></i></span>
+                            <div class="quest-details">
+                                <h3>Hydration Master</h3>
+                                <p>Log 2L water</p>
+                            </div>
+                        </div>
+                        <div class="quest-reward">
+                            <span class="xp-reward">+25 XP</span>
+                            <input type="checkbox" class="quest-checkbox" id="water-quest">
+                            <label for="water-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
+                        </div>
+                    </div>
+
+
+
+                    <div class="checklist-item" data-quest="sleep">
+                        <div class="quest-info">
+                            <span class="quest-icon"><i class="fas fa-bed"></i></span>
+                            <div class="quest-details">
+                                <h3>Sleep Warrior</h3>
+                                <p>Sleep 7+ hours</p>
+                            </div>
+                        </div>
+                        <div class="quest-reward">
+                            <span class="xp-reward">+30 XP</span>
+                            <input type="checkbox" class="quest-checkbox" id="sleep-quest">
+                            <label for="sleep-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
+                        </div>
+                    </div>
+
+
+
+                    <div class="checklist-item" data-quest="meal">
+                        <div class="quest-info">
+                            <span class="quest-icon"><i class="fas fa-utensils"></i></span>
+                            <div class="quest-details">
+                                <h3>Nutrition Tracker</h3>
+                                <p>Log today's meal</p>
+                            </div>
+                        </div>
+                        <div class="quest-reward">
+                            <span class="xp-reward">+20 XP</span>
+                            <input type="checkbox" class="quest-checkbox" id="meal-quest">
+                            <label for="meal-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="checklist-item" data-quest="exercise">
+                        <div class="quest-info">
+                            <span class="quest-icon"><i class="fas fa-dumbbell"></i></span>
+                            <div class="quest-details">
+                                <h3>Fitness Fanatic</h3>
+                                <p>30 min workout</p>
+                            </div>
+                        </div>
+                        <div class="quest-reward">
+                            <span class="xp-reward">+60 XP</span>
+                            <input type="checkbox" class="quest-checkbox" id="exercise-quest">
+                            <label for="exercise-quest" class="gamified-checkbox">
+                                <span class="checkbox-icon">✓</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Smart Daily Quest Scaling -->
+            <section class="smart-quests-section">
+                <h2><i class="fas fa-bullseye"></i> Smart Daily Quests</h2>
+                <div class="quest-scaling-grid">
+                    <div class="quest-item" data-quest="calories">
+                        <div class="quest-header">
+                            <span class="quest-icon"><i class="fas fa-fire"></i></span>
+                            <div class="quest-info">
+                                <h3>Calories</h3>
+                                <p>Today's Goal: <span class="current-goal">0</span></p>
+                            </div>
+                        </div>
+                        <div class="quest-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">0 / 0</span>
+                        </div>
+                        <div class="quest-rewards">
+                            <span class="reward-xp">+0 XP</span>
+                            <span class="reward-coins">+0 Coins</span>
+                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
+                        </div>
+                    </div>
+
+                    <div class="quest-item" data-quest="protein">
+                        <div class="quest-header">
+                            <span class="quest-icon"><i class="fas fa-dumbbell"></i></span>
+                            <div class="quest-info">
+                                <h3>Protein</h3>
+                                <p>Today's Goal: <span class="current-goal">0g</span></p>
+                            </div>
+                        </div>
+                        <div class="quest-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">0 / 0g</span>
+                        </div>
+                        <div class="quest-rewards">
+                            <span class="reward-xp">+0 XP</span>
+                            <span class="reward-coins">+0 Coins</span>
+                            <button class="collect-reward-btn" style="display: none;">Collect Reward</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mini Challenges Section removed - only titles are used now -->
+
+            <!-- User Titles & Ranks Section -->
+            <section class="titles-section">
+                <h2><i class="fas fa-trophy"></i> Titles & Ranks</h2>
+                <div class="titles-grid" id="titles-grid">
+                    <div class="title-card" data-title="nutrition-expert">
+                        <div class="title-header">
+                            <span class="title-icon"><i class="fas fa-apple-alt"></i></span>
+                            <div class="title-info">
+                                <h3>Nutrition Expert</h3>
+                                <p>5+ day calorie streak</p>
+                            </div>
+                        </div>
+                        <div class="title-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-text">Completed!</span>
+                        </div>
+                        <div class="title-actions">
+                            <span class="title-cost"><i class="fas fa-coins"></i> 100</span>
+                            <button class="btn btn-secondary unlock-title-btn" data-cost="100">Unlock</button>
+                        </div>
+                    </div>
+
+                    <div class="title-card" data-title="protein-beast">
+                        <div class="title-header">
+                            <span class="title-icon"><i class="fas fa-dumbbell"></i></span>
+                            <div class="title-info">
+                                <h3>Protein Beast</h3>
+                                <p>5+ day protein streak</p>
+                            </div>
+                        </div>
+                        <div class="title-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%"></div>
+                            </div>
+                            <span class="progress-text">80/100g avg</span>
+                        </div>
+                        <div class="title-actions">
+                            <span class="title-cost"><i class="fas fa-coins"></i> 100</span>
+                            <button class="btn btn-secondary unlock-title-btn" data-cost="100">Unlock</button>
+                        </div>
+                    </div>
+
+                    <div class="title-card" data-title="streak-legend">
+                        <div class="title-header">
+                            <span class="title-icon"><i class="fas fa-fire"></i></span>
+                            <div class="title-info">
+                                <h3>Streak Legend</h3>
+                                <p>7+ day quest streak</p>
+                            </div>
+                        </div>
+                        <div class="title-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 35%"></div>
+                            </div>
+                            <span class="progress-text">5/14 days</span>
+                        </div>
+                        <div class="title-actions">
+                            <span class="title-cost"><i class="fas fa-coins"></i> 200</span>
+                            <button class="btn btn-secondary unlock-title-btn" data-cost="200">Unlock</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upcoming Titles Section (hidden by default) -->
+                <div class="upcoming-titles-section" id="upcoming-titles-section" style="display: none;">
+                    <h3><i class="fas fa-rocket"></i> Upcoming Titles</h3>
+                    <div class="upcoming-titles-grid">
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon"><i class="fas fa-crown"></i></span>
+                                <div class="upcoming-title-info">
+                                    <h4>Fitness Master</h4>
+                                    <p>Complete all current titles</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
+                        </div>
+                        
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon"><i class="fas fa-star"></i></span>
+                                <div class="upcoming-title-info">
+                                    <h4>Wellness Guru</h4>
+                                    <p>30-day perfect streak</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
+                        </div>
+                        
+                        <div class="upcoming-title-card">
+                            <div class="upcoming-title-header">
+                                <span class="upcoming-title-icon"><i class="fas fa-bolt"></i></span>
+                                <div class="upcoming-title-info">
+                                    <h4>Speed Demon</h4>
+                                    <p>Complete 10 quests in one day</p>
+                                </div>
+                            </div>
+                            <div class="upcoming-badge">
+                                <span>Coming Soon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="activity-section">
+                <h2>Recent Activity</h2>
+                <div class="activity-list" id="activity-list">
+
+                    <div class="activity-item">
+                        <span class="activity-icon"><i class="fas fa-utensils"></i></span>
+                        <div class="activity-details">
+                            <span class="activity-xp">+20 XP</span>
+                            Logged breakfast
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon"><i class="fas fa-shoe-prints"></i></span>
+                        <div class="activity-details">
+                            <span class="activity-xp">+30 XP</span>
+                            Reached 5,000 steps
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Unlock Modal -->
+    <div class="unlock-modal" id="unlock-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Unlock Challenge</h3>
+                <button class="close-btn" id="close-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Are you sure you want to unlock this challenge?</p>
+                <div class="modal-cost">
+                    <span class="cost-icon">🪙</span>
+                    <span class="cost-amount" id="modal-cost">0</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-unlock">Cancel</button>
+                <button class="btn btn-primary" id="confirm-unlock">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script src="../shared-sidebar.js"></script>
+    <script>
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (userData) {
+                const avatar = document.querySelector('.avatar');
+                const name = document.querySelector('.user-name');
+                const level = document.querySelector('.user-level');
+        
+                if (avatar && userData.avatar) avatar.src = '../assets/' + userData.avatar;
+                if (name && userData.profileName) name.textContent = userData.profileName;
+                if (level && userData.level) level.textContent = 'Level ' + userData.level;
+            }
+        })();
+        
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+    </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Quest - Smart Meal Planning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="FoodSuggestion.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation (Dashboard Style) -->
+        <aside class="sidebar">
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Gamified Header -->
+            <div class="quest-header">
+                <div class="quest-title">
+                    <i class="fas fa-crown quest-icon"></i>
+                    <h1>Meal Quest</h1>
+                    <span class="quest-subtitle">Your AI-Powered Nutrition Adventure</span>
+                </div>
+                <div class="quest-progress">
+                    <div class="progress-ring">
+                        <svg width="60" height="60">
+                            <circle cx="30" cy="30" r="25" class="progress-bg"></circle>
+                            <circle cx="30" cy="30" r="25" class="progress-fill" id="questProgress"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="progress-number">0</span>
+                            <span class="progress-label">Meals</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="foodSearch" placeholder="Search for foods, meals, or ingredients..." class="search-input">
+                        <button class="search-btn" id="searchBtn">
+                            <i class="fas fa-magic"></i>
+                            <span>Discover</span>
+                        </button>
+                    </div>
+                    <div class="search-suggestions" id="searchSuggestions">
+                        <div class="suggestion-chip" data-food="chicken">🍗 Chicken</div>
+                        <div class="suggestion-chip" data-food="salmon">🐟 Salmon</div>
+                        <div class="suggestion-chip" data-food="quinoa">🌾 Quinoa</div>
+                        <div class="suggestion-chip" data-food="avocado">🥑 Avocado</div>
+                        <div class="suggestion-chip" data-food="spinach">🥬 Spinach</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-header">
+                    <h3><i class="fas fa-filter"></i> Smart Filters</h3>
+                    <span class="filter-subtitle">Based on your preferences</span>
+                </div>
+                <div class="filter-grid">
+                    <div class="filter-card" data-filter="diet">
+                        <div class="filter-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div class="filter-content">
+                            <h4>Diet Type</h4>
+                            <p id="dietType">Balanced</p>
+                        </div>
+                        <div class="filter-status active"></div>
+                    </div>
+                    <div class="filter-card" data-filter="goal">
+                        <div class="filter-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="filter-content">
+                            <h4>Goal</h4>
+                            <p id="userGoal">Muscle Gain</p>
+                        </div>
+                        <div class="filter-status active"></div>
+                    </div>
+                    <div class="filter-card" data-filter="allergies">
+                        <div class="filter-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="filter-content">
+                            <h4>Allergies</h4>
+                            <p id="userAllergies">None</p>
+                        </div>
+                        <div class="filter-status"></div>
+                    </div>
+                    <div class="filter-card" data-filter="calories">
+                        <div class="filter-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="filter-content">
+                            <h4>Calories</h4>
+                            <p id="calorieRange">2000-2500</p>
+                        </div>
+                        <div class="filter-status active"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <div class="results-header">
+                    <h3><i class="fas fa-star"></i> Discovered Meals</h3>
+                    <div class="results-count">
+                        <span id="resultsCount">0</span> meals found
+                    </div>
+                </div>
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Meal Plan Generator -->
+            <div class="meal-plan-section">
+                <div class="plan-header">
+                    <div class="plan-title">
+                        <i class="fas fa-robot ai-icon"></i>
+                        <h2>AI Meal Plan Generator</h2>
+                    </div>
+                    <div class="plan-subtitle">
+                        <span>Let our smart assistant create your perfect meal plan</span>
+                    </div>
+                </div>
+                
+                <div class="plan-config">
+                    <div class="config-card">
+                        <div class="config-header">
+                            <i class="fas fa-cog"></i>
+                            <h4>Plan Configuration</h4>
+                        </div>
+                        <div class="config-options">
+                            <div class="option-group">
+                                <label>Meal Preferences</label>
+                                <div class="description-input-wrapper">
+                                    <textarea 
+                                        id="mealDescription" 
+                                        placeholder="Describe your meal preferences (e.g., chicken dishes, vegetarian meals, protein-rich foods, low-carb options, spicy food, etc.)"
+                                        class="meal-description-input"
+                                        rows="3"
+                                    ></textarea>
+                                    <div class="description-tips">
+                                        <small>💡 Tip: Use keywords like "chicken", "vegetarian", "protein", "low-carb", "spicy", "sweet", etc.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="option-group">
+                                <label>Duration</label>
+                                <div class="duration-selector">
+                                    <button class="duration-btn active" data-days="7">
+                                        <span class="duration-number">7</span>
+                                        <span class="duration-label">Days</span>
+                                    </button>
+                                    <button class="duration-btn" data-days="14">
+                                        <span class="duration-number">14</span>
+                                        <span class="duration-label">Days</span>
+                                    </button>
+                                    <button class="duration-btn" data-days="30">
+                                        <span class="duration-number">30</span>
+                                        <span class="duration-label">Days</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="generate-btn" id="generatePlanBtn">
+                            <i class="fas fa-magic"></i>
+                            <span>Generate My Plan</span>
+                            <div class="btn-shine"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generated Plan Display -->
+                <div class="plan-display" id="planDisplay" style="display: none;">
+                    <div class="plan-header-display">
+                        <h3><i class="fas fa-calendar-alt"></i> Your Personalized Meal Plan</h3>
+                        <div class="plan-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-fire"></i>
+                                <span id="totalCalories">0</span>
+                                <span>calories</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-dumbbell"></i>
+                                <span id="totalProtein">0</span>
+                                <span>g protein</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-clock"></i>
+                                <span id="planDuration">7</span>
+                                <span>days</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="plan-content" id="planContent">
+                        <!-- Generated plan will appear here -->
+                    </div>
+                    <div class="plan-actions">
+                        <button class="action-btn save-btn">
+                            <i class="fas fa-save"></i>
+                            <span>Save Plan</span>
+                        </button>
+                        <button class="action-btn share-btn">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                        <button class="action-btn regenerate-btn">
+                            <i class="fas fa-redo"></i>
+                            <span>Regenerate</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Plan Section -->
+            <div class="my-plan-section">
+                <div class="my-plan-header">
+                    <h3><i class="fas fa-shopping-cart"></i> My Plan</h3>
+                    <div class="plan-summary">
+                        <span class="plan-count">0</span> meals selected
+                    </div>
+                </div>
+                
+                <!-- Plan Nutrition Summary -->
+                <div class="nutrition-summary">
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="myPlanTotalCalories">0</span>
+                            <span class="nutrition-label">Calories</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="myPlanTotalProtein">0g</span>
+                            <span class="nutrition-label">Protein</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="myPlanTotalCarbs">0g</span>
+                            <span class="nutrition-label">Carbs</span>
+                        </div>
+                    </div>
+                    <div class="nutrition-card">
+                        <div class="nutrition-info">
+                            <span class="nutrition-value" id="myPlanTotalFat">0g</span>
+                            <span class="nutrition-label">Fat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Meals List -->
+                <div class="selected-meals" id="selectedMeals">
+                    <div class="empty-plan">
+                        <i class="fas fa-utensils"></i>
+                        <h4>No meals selected yet</h4>
+                        <p>Click "Add to Plan" on any meal to start building your plan</p>
+                    </div>
+                </div>
+
+                <!-- Plan Actions -->
+                <div class="plan-actions">
+                    <button class="plan-btn clear-btn" id="clearPlanBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Clear Plan</span>
+                    </button>
+                    <button class="plan-btn save-plan-btn" id="savePlanBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Save Plan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tips and Rewards Section -->
+            <div class="tips-section">
+                <div class="tips-header">
+                    <h3><i class="fas fa-lightbulb"></i> Nutrition Tips</h3>
+                    <div class="tips-progress">
+                        <span class="tips-count">0</span>/5 tips unlocked
+                    </div>
+                </div>
+                <div class="tips-grid">
+                    <div class="tip-card locked">
+                        <div class="tip-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Protein Timing</h4>
+                            <p>Unlock to learn about optimal protein timing for muscle growth</p>
+                        </div>
+                    </div>
+                    <div class="tip-card unlocked">
+                        <div class="tip-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Hydration</h4>
+                            <p>Drink water 30 minutes before meals for better digestion</p>
+                        </div>
+                    </div>
+                    <div class="tip-card locked">
+                        <div class="tip-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Meal Prep</h4>
+                            <p>Unlock to discover efficient meal prep strategies</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h3>Creating Your Perfect Meal Plan</h3>
+            <p>Our AI is analyzing your preferences...</p>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="loadingProgress"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div class="success-notification" id="successNotification">
+        <div class="notification-content">
+            <i class="fas fa-check-circle"></i>
+            <span>Meal plan generated successfully!</span>
+        </div>
+    </div>
+
+    <script src="FoodSuggestion.js"></script>
+    <script src="../shared-sidebar.js"></script>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+
+       
+    </script>
+</body>
+</html>

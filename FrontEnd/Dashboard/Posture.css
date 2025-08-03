@@ -1,0 +1,560 @@
+/* Posture Scan Page Styles */
+
+/* Header Section */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.title-section h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #121816);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.title-section .description {
+    font-size: 1.1rem;
+    color: var(--text-secondary, #666);
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+/* Dark Mode Toggle */
+.dark-mode-toggle {
+    background: var(--bg-secondary, #f8f9fa);
+    border: 2px solid var(--border-color, #e1e5e9);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color, #1ec878);
+}
+
+/* Scan Container */
+.scan-container {
+    background: var(--bg-card, #fff);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color, #e1e5e9);
+}
+
+/* Webcam Area */
+.webcam-area {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--border-color, #e1e5e9);
+}
+
+/* Camera Overlay */
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(30, 200, 120, 0.1), rgba(22, 160, 133, 0.1));
+    z-index: 1;
+}
+
+.overlay-content {
+    text-align: center;
+    color: var(--text-primary, #121816);
+}
+
+.camera-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.overlay-content p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Scan Controls */
+.scan-controls {
+    text-align: center;
+}
+
+.scan-btn {
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(30, 200, 120, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.scan-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 200, 120, 0.4);
+}
+
+.scan-btn.scanning {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Feedback */
+.feedback {
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary, #121816);
+    text-align: center;
+    min-height: 2rem;
+}
+
+/* Score Badge */
+#score-badge {
+    animation: badgeAppear 0.5s ease-out;
+}
+
+@keyframes badgeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.5) rotate(-180deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Scan History */
+.scan-history {
+    background: var(--bg-card, #fff);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color, #e1e5e9);
+}
+
+.scan-history h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary, #121816);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.scan-history h2::before {
+    content: "📊";
+    font-size: 1.5rem;
+}
+
+/* Table Styles */
+.table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e1e5e9);
+}
+
+.scan-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card, #fff);
+}
+
+.scan-history-table th {
+    background: var(--bg-secondary, #f8f9fa);
+    color: var(--text-primary, #121816);
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color, #e1e5e9);
+}
+
+.scan-history-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color, #e1e5e9);
+    color: var(--text-primary, #121816);
+}
+
+.scan-history-table tr:hover {
+    background: var(--bg-hover, #f8f9fa);
+}
+
+/* Score Badge Small */
+.score-badge-small {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    min-width: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .title-section h1 {
+        font-size: 2rem;
+    }
+    
+    .webcam-area {
+        height: 300px;
+    }
+    
+    .scan-container,
+    .scan-history {
+        padding: 1.5rem;
+    }
+    
+    .scan-btn {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+    
+    .scan-history-table th,
+    .scan-history-table td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-section h1 {
+        font-size: 1.75rem;
+    }
+    
+    .webcam-area {
+        height: 250px;
+    }
+    
+    .scan-container,
+    .scan-history {
+        padding: 1rem;
+    }
+    
+    .scan-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .feedback {
+        font-size: 1rem;
+    }
+}
+
+/* Dark Mode Styles */
+.dark-mode .title-section h1 {
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark-mode .title-section .description {
+    color: var(--text-secondary-dark, #a0a0a0);
+}
+
+.dark-mode .dark-mode-toggle {
+    background: var(--bg-secondary-dark, #2c2c2c);
+    border-color: var(--border-color-dark, #444);
+    color: #fff;
+}
+
+.dark-mode .scan-container,
+.dark-mode .scan-history {
+    background: var(--bg-card-dark, #1a1a1a);
+    border-color: var(--border-color-dark, #333);
+}
+
+.dark-mode .webcam-area {
+    background: var(--bg-secondary-dark, #2c2c2c);
+    border-color: var(--border-color-dark, #333);
+}
+
+.dark-mode .camera-overlay {
+    background: linear-gradient(135deg, rgba(30, 200, 120, 0.2), rgba(22, 160, 133, 0.2));
+}
+
+.dark-mode .overlay-content {
+    color: var(--text-primary-dark, #fff);
+}
+
+.dark-mode .feedback {
+    color: var(--text-primary-dark, #fff);
+}
+
+.dark-mode .scan-history h2 {
+    color: var(--text-primary-dark, #fff);
+}
+
+.dark-mode .scan-history-table {
+    background: var(--bg-card-dark, #1a1a1a);
+}
+
+.dark-mode .scan-history-table th {
+    background: var(--bg-secondary-dark, #2c2c2c);
+    color: var(--text-primary-dark, #fff);
+    border-bottom-color: var(--border-color-dark, #333);
+}
+
+.dark-mode .scan-history-table td {
+    color: var(--text-primary-dark, #fff);
+    border-bottom-color: var(--border-color-dark, #333);
+}
+
+.dark-mode .scan-history-table tr:hover {
+    background: var(--bg-hover-dark, #2c2c2c);
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Exercise Modal Styles */
+.exercise-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.exercise-modal-content {
+    background: var(--bg-card, #fff);
+    padding: 2rem;
+    border-radius: 16px;
+    max-width: 800px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color, #e1e5e9);
+}
+
+.exercise-modal-content h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary, #121816);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.exercise-modal-content h2::before {
+    content: "💪";
+    font-size: 1.5rem;
+}
+
+.close-exercise-modal {
+    color: var(--text-secondary, #666);
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.close-exercise-modal:hover {
+    color: var(--text-primary, #121816);
+}
+
+#exercise-categories {
+    margin-bottom: 2rem;
+}
+
+.exercise-category-btn {
+    background: var(--bg-secondary, #f8f9fa);
+    border: 2px solid var(--border-color, #e1e5e9);
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    margin: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #121816);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: capitalize;
+}
+
+.exercise-category-btn:hover {
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    color: white;
+    border-color: #1ec878;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 200, 120, 0.3);
+}
+
+.exercise-item {
+    background: var(--bg-secondary, #f8f9fa);
+    border: 1px solid var(--border-color, #e1e5e9);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.exercise-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #1ec878;
+}
+
+.exercise-item img {
+    border-radius: 8px;
+    border: 2px solid var(--border-color, #e1e5e9);
+}
+
+.exercise-item strong {
+    color: var(--text-primary, #121816);
+    font-size: 1.1rem;
+}
+
+.select-exercise-btn {
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.select-exercise-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 200, 120, 0.3);
+}
+
+/* View Exercises Button */
+.view-exercises-btn {
+    background: linear-gradient(135deg, #1ec878, #16a085);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(30, 200, 120, 0.3);
+}
+
+.view-exercises-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(30, 200, 120, 0.4);
+}
+
+/* Dark Mode Styles for Exercise Modal */
+.dark-mode .exercise-modal-content {
+    background: var(--bg-card-dark, #2c3e50);
+    border-color: var(--border-color-dark, #34495e);
+}
+
+.dark-mode .exercise-modal-content h2 {
+    color: var(--text-primary-dark, #ecf0f1);
+}
+
+.dark-mode .exercise-category-btn {
+    background: var(--bg-secondary-dark, #34495e);
+    border-color: var(--border-color-dark, #2c3e50);
+    color: var(--text-primary-dark, #ecf0f1);
+}
+
+.dark-mode .exercise-item {
+    background: var(--bg-secondary-dark, #34495e);
+    border-color: var(--border-color-dark, #2c3e50);
+}
+
+.dark-mode .exercise-item strong {
+    color: var(--text-primary-dark, #ecf0f1);
+}
+
+/* Responsive Design for Exercise Modal */
+@media (max-width: 768px) {
+    .exercise-modal-content {
+        padding: 1.5rem;
+        max-width: 95vw;
+    }
+    
+    .exercise-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .select-exercise-btn {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .exercise-category-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}

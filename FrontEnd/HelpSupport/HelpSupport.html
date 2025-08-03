@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest - Help & Support</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="HelpSupport.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-container">
+                <div class="logo">
+                    <span class="logo-text">HealthQuest</span>
+                </div>
+                <nav class="nav-links">
+                    <a href="#" class="signout" onclick="signOut()">Sign Out</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">Need Help? We're Here for You!</h1>
+                        <p class="hero-description">
+                            Have questions about HealthQuest? Need technical support? Our dedicated team is ready to help you get the most out of your fitness journey.
+                        </p>
+                        <button class="go-back-btn" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i> Go Back
+                        </button>
+                    </div>
+                    <div class="hero-image">
+                        <div class="support-icon">💬</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Get in Touch</h2>
+                    <p class="section-subtitle">Reach out to our team for any questions or support</p>
+                </div>
+                
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <div class="contact-avatar">
+                            <img src="/assets/Sreeharini.jpg" alt="SreeHarini Ganeshkaa" class="contact-image">
+                        </div>
+                        <h3 class="contact-name">SreeHarini Ganishkaa</h3>
+                        <p class="contact-role">Frontend Developer</p>
+                        <a href="mailto:23z370@psgtech.ac.in" class="contact-email">23z370@psgtech.ac.in</a>
+                        <button class="contact-btn" onclick="window.location.href='mailto:23z370@psgtech.ac.in'">
+                            Send Email
+                        </button>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-avatar">
+                            <img src="/assets/SreeRam.jpg" alt="NV Sriram" class="contact-image">
+                        </div>
+                        <h3 class="contact-name">NV Sriram</h3>
+                        <p class="contact-role">Frontend Developer</p>
+                        <a href="mailto:23z348@psgtech.ac.in" class="contact-email">23z348@psgtech.ac.in</a>
+                        <button class="contact-btn" onclick="window.location.href='mailto:23z348@psgtech.ac.in'">
+                            Send Email
+                        </button>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-avatar">
+                            <img src="/assets/Sanjeev.jpg" alt="Sanjeev" class="contact-image">
+                        </div>
+                        <h3 class="contact-name">Sanjeev</h3>
+                        <p class="contact-role">Full Stack Developer</p>
+                        <a href="mailto:23z361@psgtech.ac.in" class="contact-email">23z361@psgtech.ac.in</a>
+                        <button class="contact-btn" onclick="window.location.href='mailto:23z361@psgtech.ac.in'">
+                            Send Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <p class="section-subtitle">Quick answers to common questions</p>
+                </div>
+                
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h3 class="faq-question">How do I get started with HealthQuest?</h3>
+                        <p class="faq-answer">Simply sign up for a free account and complete the onboarding process. We'll guide you through setting up your profile and preferences.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3 class="faq-question">How does the XP system work?</h3>
+                        <p class="faq-answer">Earn XP by completing daily quests, logging meals, and maintaining healthy habits. Level up to unlock new features and achievements.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3 class="faq-question">Can I connect with friends?</h3>
+                        <p class="faq-answer">Yes! Use the Buddy Mode feature to add friends, compete on the leaderboard, and stay motivated together.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3 class="faq-question">Is my data secure?</h3>
+                        <p class="faq-answer">Absolutely. We use industry-standard encryption and security measures to protect your personal information and health data.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="cta-title">Still Need Help?</h2>
+                    <p class="cta-description">Don't hesitate to reach out to our team. We're here to help you succeed on your fitness journey!</p>
+                    <div class="cta-buttons">
+                        <a href="mailto:23z370@psgtech.ac.in" class="btn btn-primary">Contact Support</a>
+                        <button class="btn btn-secondary" onclick="window.history.back()">Go Back</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">HealthQuest</h3>
+                    <p class="footer-description">Level up your health with AI-powered fitness tracking and gamification.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-subtitle">Quick Links</h4>
+                                         <a href="/Home/home.html#features" class="footer-link">Features</a>
+                     <a href="/HelpSupport/HelpSupport.html" class="footer-link">Help & Support</a>
+                 </div>
+                 <div class="footer-section">
+                     <h4 class="footer-subtitle">Account</h4>
+                     <a href="/Signup/Signup.html" class="footer-link">Sign Up</a>
+                     <a href="/Login/login.html" class="footer-link">Log In</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HealthQuest. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function signOut() {
+            // Clear localStorage
+            localStorage.clear();
+            
+            // Show a brief message
+            alert('Signed out successfully!');
+            
+                         // Redirect to home page
+             window.location.href = '/Home/home.html';
+        }
+    </script>
+</body>
+</html> 

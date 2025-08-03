@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthQuest - Food Log</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="FoodLog.css">
+    <link rel="stylesheet" href="../shared-sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <!-- Shared sidebar will be populated by shared-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <div class="header-section">
+                <h1>Food Log</h1>
+                <button class="btn btn-primary add-entry-btn" id="show-logger-btn">Add Entry</button>
+            </div>
+            
+            <p class="description">Track your daily food intake to monitor your nutrition and progress towards your health goals. Log meals, snacks, and beverages to gain insights into your dietary habits.</p>
+
+            <!-- Food Logger Modal -->
+            <div class="food-logger-modal" id="food-logger-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Add Food Entry</h2>
+                        <button class="close-btn" id="close-logger-btn">×</button>
+                    </div>
+                    
+                    <div class="food-search-section">
+                        <div class="search-container">
+                            <input type="text" id="food-search" placeholder="Search for a food (e.g., 'almonds', 'boiled egg')" class="food-search-input">
+                            <div class="autocomplete-list" id="autocomplete-list"></div>
+                        </div>
+                        
+                        <div class="quantity-section">
+                            <label for="quantity-select">Quantity:</label>
+                            <select id="quantity-select" disabled>
+                                <option value="">Select quantity</option>
+                                <option value="handful">Handful</option>
+                                <option value="100g">100g</option>
+                                <option value="250g">250g</option>
+                                <option value="500g">500g</option>
+                                <option value="1 cup">1 cup</option>
+                                <option value="1 tbsp">1 tbsp</option>
+                                <option value="1 tsp">1 tsp</option>
+                                <option value="1 medium">1 medium</option>
+                                <option value="1 large">1 large</option>
+                                <option value="1 small">1 small</option>
+                            </select>
+                        </div>
+                        
+                        <div class="nutritional-preview" id="nutritional-preview"></div>
+                        
+                        <button class="btn btn-primary add-food-btn" id="add-food-btn" disabled>Add to Log</button>
+                    </div>
+                </div>
+            </div>
+
+            <section class="summary-section">
+                <h2>Today's Summary</h2>
+                <div class="progress-bars">
+                    <div class="progress-item" data-type="calories">
+                        <div class="progress-label">
+                            <span>Calories</span>
+                            <span class="remaining">Remaining: 2000</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/2000</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item" data-type="protein">
+                        <div class="progress-label">
+                            <span>Protein</span>
+                            <span class="remaining">Remaining: 100g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/100g</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item" data-type="carbs">
+                        <div class="progress-label">
+                            <span>Carbohydrates</span>
+                            <span class="remaining">Remaining: 300g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/300g</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-item" data-type="fat">
+                        <div class="progress-label">
+                            <span>Fats</span>
+                            <span class="remaining">Remaining: 75g</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                            <span class="progress-text">0/75g</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="meals-section">
+                <div class="meals-header">
+                    <h2>Logged Meals</h2>
+                    <button class="btn btn-danger clear-all-btn" id="clear-all-meals-btn">Clear All</button>
+                </div>
+                <div class="meal-list">
+                    <!-- Meals will be dynamically added here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="FoodLog.js"></script>
+    <script src="../shared-sidebar.js"></script>
+    <script>
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+
+        // Sidebar is now handled by shared-sidebar.js
+    </script>
+</body>
+</html>

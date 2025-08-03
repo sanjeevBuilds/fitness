@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthQuest - Join the Fitness Revolution</title>
+
+  <!-- Link to custom font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Signup.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="nav-container">
+        <div class="logo">
+          <span class="logo-text">HealthQuest</span>
+        </div>
+        <nav class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/#features" class="nav-link">Features</a>
+          <a href="/Support/Support.html" class="nav-link">Support</a>
+          <a href="/Signup/Signup.html" class="signup">Sign Up</a>
+          <a href="/Login/login.html" class="login">Log In</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="signup-main">
+      <div class="signup-container">
+        <div class="signup-content">
+          <div class="signup-header">
+            <h1 class="signup-title">Join the Fitness Revolution!</h1>
+            <p class="signup-subtitle">Start your journey to a healthier, stronger you with AI-powered fitness tracking and gamification.</p>
+          </div>
+
+          <div class="signup-form-container">
+            <form class="signup-form">
+              <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" placeholder="Enter your full name" required>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+              </div>
+
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Create a strong password" required>
+              </div>
+
+              <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+              </div>
+
+              <button type="submit" class="signup-btn">Create Account</button>
+            </form>
+
+            <button id="random-fill-btn" type="button" class="demo-btn">
+              <span class="demo-icon"><i class="fas fa-bullseye"></i></span>
+              Fill Demo Data
+            </button>
+
+            <div class="divider">
+              <span class="divider-text">or continue with</span>
+            </div>
+
+            <div class="social-buttons">
+              <button class="social-btn google-btn">
+                <span class="social-icon">🔍</span>
+                Continue with Google
+              </button>
+              <button class="social-btn apple-btn">
+                <span class="social-icon">🍎</span>
+                Continue with Apple
+              </button>
+            </div>
+
+            <div class="login-prompt">
+              <p>Already have an account? <a href="/Login/login.html" class="login-link">Log in</a></p>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </main>
+  </div>
+
+  <script src="Signup.js"></script>
+</body>
+</html>
