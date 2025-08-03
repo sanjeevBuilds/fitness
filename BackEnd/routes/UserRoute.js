@@ -803,6 +803,10 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
     const caloriesGoal = calculateCaloriesGoal(user);
     const proteinGoal = calculateProteinGoal(user);
 
+    // Check if rewards have been claimed today
+    const smartQuestClaims = user.smartQuestClaims || {};
+    const todayClaims = smartQuestClaims[today] || {};
+
     res.json({
       quests: {
         calories: {
@@ -811,7 +815,8 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
           questName: 'Calorie Target',
           target: caloriesGoal,
           currentProgress: todayTotals.calories,
-          completed: todayTotals.calories >= caloriesGoal
+          completed: todayTotals.calories >= caloriesGoal,
+          rewardCollected: !!todayClaims.calories
         },
         protein: {
           date: today,
@@ -819,7 +824,8 @@ router.get('/getSmartQuestData/:email', authenticateToken, async (req, res) => {
           questName: 'Protein Power',
           target: proteinGoal,
           currentProgress: todayTotals.protein,
-          completed: todayTotals.protein >= proteinGoal
+          completed: todayTotals.protein >= proteinGoal,
+          rewardCollected: !!todayClaims.protein
         }
       },
       totals: todayTotals,

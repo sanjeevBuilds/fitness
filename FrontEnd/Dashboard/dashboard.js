@@ -259,28 +259,22 @@ class EnhancedDashboardGamification {
                         calories: {
                             ...questData.quests.calories,
                             xpReward: questData.quests.calories?.xpReward ?? 30,
-                            coinReward: questData.quests.calories?.coinReward ?? 10
+                            coinReward: questData.quests.calories?.coinReward ?? 10,
+                            rewardCollected: questData.quests.calories?.rewardCollected ?? false
                         },
                         protein: {
                             ...questData.quests.protein,
                             xpReward: questData.quests.protein?.xpReward ?? 25,
-                            coinReward: questData.quests.protein?.coinReward ?? 8
+                            coinReward: questData.quests.protein?.coinReward ?? 8,
+                            rewardCollected: questData.quests.protein?.rewardCollected ?? false
                         }
                     };
                     
-                    // Check if quests have been claimed today from backend
-                    if (this.currentUser && this.currentUser.smartQuestClaims) {
-                        const today = new Date().toISOString().slice(0, 10);
-                        const todayClaims = this.currentUser.smartQuestClaims[today] || {};
-                        
-                        Object.keys(this.smartQuests).forEach(questType => {
-                            if (todayClaims[questType]) {
-                                console.log(`[LOAD SMART QUEST DATA] Quest ${questType} already claimed today, marking as collected`);
-                                this.smartQuests[questType].rewardCollected = true;
-                                this.smartQuests[questType].completed = true;
-                            }
-                        });
-                    }
+                    // Log the reward collection status
+                    Object.keys(this.smartQuests).forEach(questType => {
+                        const quest = this.smartQuests[questType];
+                        console.log(`[LOAD SMART QUEST DATA] Quest ${questType}: completed=${quest.completed}, rewardCollected=${quest.rewardCollected}`);
+                    });
                     
                     console.log('[LOAD SMART QUEST DATA] Smart quests initialized from backend:', this.smartQuests);
                 } else {
@@ -341,6 +335,7 @@ class EnhancedDashboardGamification {
                 target: 2000,
                 currentProgress: 0,
                 completed: false,
+                rewardCollected: false,
                 xpReward: 30,
                 coinReward: 10,
                 scaling: false
@@ -351,6 +346,7 @@ class EnhancedDashboardGamification {
                 target: 100,
                 currentProgress: 0,
                 completed: false,
+                rewardCollected: false,
                 xpReward: 25,
                 coinReward: 8,
                 scaling: false
@@ -2204,6 +2200,17 @@ class EnhancedDashboardGamification {
 
             if (response.ok) {
                 const questData = await response.json();
+                
+                // Preserve reward collection status when refreshing
+                if (questData.quests) {
+                    Object.keys(questData.quests).forEach(questType => {
+                        if (this.smartQuests && this.smartQuests[questType]) {
+                            // Preserve existing reward collection status if backend doesn't have it
+                            questData.quests[questType].rewardCollected = questData.quests[questType].rewardCollected ?? this.smartQuests[questType].rewardCollected ?? false;
+                        }
+                    });
+                }
+                
                 this.smartQuests = questData.quests;
                 console.log('Smart quest data refreshed:', questData);
             } else {
