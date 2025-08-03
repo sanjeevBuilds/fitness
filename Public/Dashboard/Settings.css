@@ -108,6 +108,10 @@ body.dark-mode .hint-text {
     color: rgba(240,255,250,0.7);
 }
 
+body.dark-mode .form-hint {
+    color: rgba(240,255,250,0.6);
+}
+
 body.dark-mode .nav-link {
     color: rgb(240,255,250);
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -336,6 +340,13 @@ input:checked + .slider:active:before {
 .hint-text {
     font-size: 0.875rem;
     color: var(--text-light);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin-top: 0.25rem;
 }
 
 /* Link List Styles */

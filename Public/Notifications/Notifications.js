@@ -106,9 +106,9 @@ class NotificationManager {
             const card = document.createElement('div');
             card.className = 'friend-request-card';
             card.innerHTML = `
-                <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName}" class="friend-avatar">
+                <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.username || req.profileName}" class="friend-avatar">
                 <div class="friend-info">
-                    <div class="friend-name">${req.profileName}</div>
+                    <div class="friend-name">${req.username || req.profileName}</div>
                     <div class="friend-email">${req.email}</div>
                 </div>
                 <div class="friend-actions">

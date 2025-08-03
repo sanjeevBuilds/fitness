@@ -608,9 +608,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const info = document.createElement('div');
                     info.className = 'friend-info';
                     info.style.flex = '1';
-                    // Name (show real name for search results)
+                    // Name (prioritize username for search results)
                     const name = document.createElement('h3');
-                    const displayName = user.profileName || user.fullName || user.username || 'User';
+                    const displayName = user.username || user.profileName || user.fullName || 'User';
                     name.textContent = displayName;
                     name.setAttribute('data-email', user.email);
                     name.style.marginBottom = '0.3rem';
@@ -761,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const requestData = {
                                     toEmail: user.email,
                                     fromEmail: currentUser.email,
-                                    fromProfileName: currentUser.profileName,
+                                    fromProfileName: currentUser.username || currentUser.profileName,
                                     fromAvatar: currentUser.avatar
                                 };
                                 console.log('Sending friend request with data:', requestData);
@@ -852,7 +852,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 friendDiv.innerHTML = `
                     <img src="../../assets/${friend.avatar || 'avator1.jpeg'}" alt="${friend.profileName || friend.email}" class="friend-avatar">
                     <div class="friend-info">
-                        <h3>${friend.profileName || friend.email}</h3>
+                        <h3>${friend.username || friend.profileName || friend.email}</h3>
                         <span class="friend-level">Level ${friend.level || 1}</span>
                         <span class="friend-xp">${friend.exp || 0} XP</span>
                     </div>
@@ -959,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 reqDiv.innerHTML = `
                     <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
                     <div class="request-info">
-                        <h3>${req.profileName || req.email}</h3>
+                        <h3>${req.username || req.profileName || req.email}</h3>
                         <span class="level-tag">Friend Request</span>
                     </div>
                     <div class="request-actions">
@@ -1010,26 +1010,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const end = start + USERS_PER_PAGE;
         const pageUsers = leaderboardUsers.slice(start, end);
         pageUsers.forEach((user, idx) => {
-            // Debug: Log the original profileName
-            console.log('Original profileName:', user.profileName, 'Email:', user.email);
+            // Debug: Log the original username and profileName
+            console.log('Username:', user.username, 'ProfileName:', user.profileName, 'Email:', user.email);
             
-            // Clean up the profile name to prevent duplicates
-            let displayName = user.profileName || user.email;
+            // Prioritize username over profileName for display
+            let displayName = user.username || user.profileName || user.email;
             
-            // If profileName contains duplicates (like "Jamie LeeJamie Lee"), clean it up
-            if (displayName && displayName.length > 20) {
-                // Try to find a reasonable name by taking the first part
-                const nameParts = displayName.split(/(?=[A-Z])/);
-                console.log('Name parts:', nameParts);
-                if (nameParts.length > 2) {
-                    displayName = nameParts.slice(0, 2).join(' ').trim();
+            // If username is available, use it directly
+            if (user.username) {
+                displayName = user.username;
+            } else {
+                // Fallback to profileName with cleanup for duplicates
+                if (displayName && displayName.length > 20) {
+                    // Try to find a reasonable name by taking the first part
+                    const nameParts = displayName.split(/(?=[A-Z])/);
+                    console.log('Name parts:', nameParts);
+                    if (nameParts.length > 2) {
+                        displayName = nameParts.slice(0, 2).join(' ').trim();
+                    }
                 }
-            }
-            
-            // Additional check for exact duplicates like "Jamie LeeJamie Lee"
-            if (displayName && displayName.includes(displayName.substring(0, displayName.length / 2))) {
-                const halfLength = Math.floor(displayName.length / 2);
-                displayName = displayName.substring(0, halfLength).trim();
+                
+                // Additional check for exact duplicates like "Jamie LeeJamie Lee"
+                if (displayName && displayName.includes(displayName.substring(0, displayName.length / 2))) {
+                    const halfLength = Math.floor(displayName.length / 2);
+                    displayName = displayName.substring(0, halfLength).trim();
+                }
             }
             
             // Fallback to email if name is still problematic

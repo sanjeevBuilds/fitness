@@ -35,7 +35,7 @@ router.get('/getUser', async (req, res) => {
 router.get('/rankings', async (req, res) => {
   try {
     const users = await UserModel.find()
-      .select('email profileName exp level')
+      .select('email username profileName exp level')
       .sort({ exp: -1, level: -1 }) // Sort by exp descending, then by level descending
       .limit(100); // Limit to top 100 users
     
@@ -102,11 +102,11 @@ router.get('/searchUsers', async (req, res) => {
 
     const searchQuery = query.trim();
     
-    // Search in profileName, username, and email fields
+    // Search in username, profileName, and email fields (prioritize username)
     const users = await UserModel.find({
       $or: [
-        { profileName: { $regex: searchQuery, $options: 'i' } },
         { username: { $regex: searchQuery, $options: 'i' } },
+        { profileName: { $regex: searchQuery, $options: 'i' } },
         { email: { $regex: searchQuery, $options: 'i' } }
       ]
     }).select('-password').limit(10);
@@ -262,7 +262,7 @@ router.post('/respondFriendRequest', async (req, res) => {
       // Add to friends list for both users
       const recipientFriend = {
         email: sender.email,
-        profileName: sender.profileName,
+        profileName: sender.username || sender.profileName,
         avatar: sender.avatar,
         level: sender.level,
         exp: sender.exp,
@@ -271,7 +271,7 @@ router.post('/respondFriendRequest', async (req, res) => {
 
       const senderFriend = {
         email: recipient.email,
-        profileName: recipient.profileName,
+        profileName: recipient.username || recipient.profileName,
         avatar: recipient.avatar,
         level: recipient.level,
         exp: recipient.exp,
@@ -1028,6 +1028,18 @@ router.put('/updateUser/:email', async (req, res) => {
       return res.status(400).json({ error: 'Cannot remove required fields: email, password, or profileName.' });
     }
 
+    // Check for username uniqueness if username is being updated
+    if (updateData.username) {
+      const existingUserWithUsername = await UserModel.findOne({ 
+        username: updateData.username,
+        email: { $ne: currentEmail } // Exclude current user
+      });
+      
+      if (existingUserWithUsername) {
+        return res.status(400).json({ error: 'Username already taken. Please choose a different username.' });
+      }
+    }
+
     const updatedUser = await UserModel.findOneAndUpdate(
       { email: currentEmail },
       updateData,
@@ -1040,6 +1052,11 @@ router.put('/updateUser/:email', async (req, res) => {
 
     res.json(updatedUser);
   } catch (err) {
+    console.error('Update user error:', err);
+    if (err.code === 11000) {
+      // MongoDB duplicate key error
+      return res.status(400).json({ error: 'Username already taken. Please choose a different username.' });
+    }
     res.status(500).json({ error: 'Failed to update user' });
   }
 });

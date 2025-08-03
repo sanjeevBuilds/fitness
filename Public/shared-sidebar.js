@@ -85,7 +85,7 @@ class SharedSidebarManager {
         const userName = document.createElement('h3');
         userName.className = 'user-name';
         userName.id = 'sidebar-username';
-        const displayName = this.userData.profileName || this.userData.fullName || 'User';
+        const displayName = this.userData.username || this.userData.profileName || this.userData.fullName || 'User';
         userName.textContent = displayName;
         userName.style.display = 'block'; // Ensure it's visible
         userName.style.visibility = 'visible'; // Ensure it's visible
@@ -226,7 +226,7 @@ class SharedSidebarManager {
             // Badge selection removed - only titles are used now
 
             // Always show the actual username
-            const displayName = this.userData.profileName || this.userData.fullName || 'User';
+            const displayName = this.userData.username || this.userData.profileName || this.userData.fullName || 'User';
             sidebarUsername.textContent = displayName;
             
             // Handle title display separately

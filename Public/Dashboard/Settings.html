@@ -40,6 +40,17 @@
                 </div>
             </section>
 
+            <!-- Username Section -->
+            <section class="settings-section">
+                <h2>Username</h2>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                    <small class="form-hint">This is your unique username for the platform</small>
+                </div>
+                <button class="update-btn" id="update-username-btn">Update Username</button>
+            </section>
+
             <!-- Avatar Change Section -->
             <section class="settings-section" id="avatar-section">
                 <h2>Change Avatar</h2>
@@ -129,16 +140,7 @@
                 </div>
             </section>
 
-            <!-- Connected Devices Section -->
-            <section class="settings-section">
-                <h2>Connected Devices</h2>
-                <div class="link-list">
-                    <a href="#" class="nav-link">
-                        Manage Devices
-                        <span class="arrow">→</span>
-                    </a>
-                </div>
-            </section>
+
 
 
 
@@ -160,8 +162,10 @@
             // Form fields
             const profileInput = document.getElementById('profile-name');
             const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
             if (profileInput) profileInput.value = userData.profileName || '';
             if (emailInput) emailInput.value = userData.email || '';
+            if (usernameInput) usernameInput.value = userData.username || '';
         }
     })();
     </script>

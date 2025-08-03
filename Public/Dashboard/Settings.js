@@ -100,6 +100,81 @@ class SettingsManager {
             });
         }
 
+        // Username update button logic
+        const updateUsernameBtn = document.getElementById('update-username-btn');
+        if (updateUsernameBtn) {
+            updateUsernameBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                // Get username value
+                const username = document.getElementById('username').value.trim();
+
+                // Get current user data from localStorage
+                const userData = JSON.parse(localStorage.getItem('userData'));
+                const originalEmail = userData?.email;
+                if (!originalEmail) {
+                    this.showToast('❌ User not found in localStorage', 'error');
+                    return;
+                }
+
+                // Validate username
+                if (!username) {
+                    this.showToast('❌ Username cannot be empty', 'error');
+                    return;
+                }
+
+                if (username.length < 3) {
+                    this.showToast('❌ Username must be at least 3 characters long', 'error');
+                    return;
+                }
+
+                if (username.length > 20) {
+                    this.showToast('❌ Username cannot exceed 20 characters', 'error');
+                    return;
+                }
+
+                // Check if username contains only valid characters
+                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    this.showToast('❌ Username can only contain letters, numbers, and underscores', 'error');
+                    return;
+                }
+
+                // Check if username changed
+                if (userData.username === username) {
+                    this.showToast('⚠️ Username is already set to this value', 'error');
+                    return;
+                }
+
+                // Show loading state
+                const originalText = updateUsernameBtn.textContent;
+                updateUsernameBtn.textContent = 'Updating...';
+                updateUsernameBtn.disabled = true;
+
+                try {
+                    const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(originalEmail)}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        // Update localStorage
+                        localStorage.setItem('userData', JSON.stringify({ ...userData, username }));
+                        this.showToast('🎉 Username updated successfully!', 'success');
+                    } else {
+                        this.showToast('❌ ' + (result.error || 'Failed to update username'), 'error');
+                    }
+                } catch (err) {
+                    console.error('Username update error:', err);
+                    this.showToast('❌ Server error. Please try again.', 'error');
+                } finally {
+                    // Restore button state
+                    updateUsernameBtn.textContent = originalText;
+                    updateUsernameBtn.disabled = false;
+                }
+            });
+        }
+
         // Add drag functionality to all toggle switches
         this.setupDragFunctionality();
 
