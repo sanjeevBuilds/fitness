@@ -6,14 +6,8 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/Public/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/Public/$1"
-    }
+  "rewrites": [
+    { "source": "/", "destination": "/Public/Home/home.html" },
+    { "source": "/(.*)", "destination": "/Public/$1" }
   ]
 } 
