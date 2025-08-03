@@ -11,6 +11,5 @@
       "src": "/(.*)",
       "dest": "/Public/$1"
     }
-  ],
-  "outputDirectory": "Public"
+  ]
 } 
