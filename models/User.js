@@ -187,6 +187,16 @@ const UserSchema = new mongoose.Schema({
     default: 'important'
   },
   
+  // Notification Preferences
+  friendRequests: {
+    type: Boolean,
+    default: true
+  },
+  activityUpdates: {
+    type: Boolean,
+    default: true
+  },
+  
   // Health Metrics
   bmi: {
     type: Number,

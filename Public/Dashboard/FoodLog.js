@@ -1,29 +1,35 @@
 // --- JWT Auth Check (Protected Page) ---
-(function() {
+(async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Public/test/login.html';
+        window.location.href = '/Public/Login/login.html';
     };
+    
     const token = localStorage.getItem('authToken');
     if (!token) {
         redirectToLogin();
         return;
     }
+    
+    // Validate token with server
     try {
-        const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
-        if (!decoded || !decoded.exp) {
+        const response = await fetch('http://localhost:8000/api/validateToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
             localStorage.removeItem('authToken');
             redirectToLogin();
             return;
         }
-        const now = Math.floor(Date.now() / 1000);
-        if (decoded.exp < now) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-    } catch (e) {
+    } catch (error) {
+        console.error('Auth validation failed:', error);
         localStorage.removeItem('authToken');
         redirectToLogin();
+        return;
     }
 })();
 

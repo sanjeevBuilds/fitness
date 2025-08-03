@@ -14,7 +14,11 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  jwt.verify(token, 'your_jwt_secret', (err, user) => {
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Invalid token' });
     req.user = user;
     next();
@@ -88,6 +92,23 @@ router.get('/getUser/:email', async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// POST validate token (for frontend authentication check)
+router.post('/validateToken', authenticateToken, async (req, res) => {
+  try {
+    // If we reach here, the token is valid (authenticateToken middleware passed)
+    const user = await UserModel.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ 
+      valid: true, 
+      user: user 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Token validation failed' });
   }
 });
 
@@ -400,7 +421,7 @@ router.post('/createUser', async (req, res) => {
     const level = calculateLevel(newUser.exp);
     const token = jwt.sign(
       { _id: newUser._id, email: newUser.email },
-      'your_jwt_secret',
+      process.env.JWT_SECRET,
       { expiresIn: '2d' }
     );
 
@@ -452,7 +473,7 @@ router.post('/login', async (req, res) => {
     const level = calculateLevel(user.exp);
     const token = jwt.sign(
       { _id: user._id, email: user.email },
-      'your_jwt_secret',
+      process.env.JWT_SECRET,
       { expiresIn: '2d' }
     );
 

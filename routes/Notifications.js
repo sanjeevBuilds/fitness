@@ -6,26 +6,28 @@ const UserModel = require('../models/User');
 router.get('/all/:email', async (req, res) => {
   try {
     const user = await UserModel.findOne({ email: req.params.email.toLowerCase() })
-      .select('friendRequests notifications activityLog');
+      .select('friendRequests notifications activityLog activityUpdates');
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get pending friend requests
-    const pendingRequests = user.friendRequests.filter(request => request.status === 'pending');
+    // Get pending friend requests (only if friendRequests is enabled)
+    const pendingRequests = user.friendRequests && user.friendRequests !== false 
+      ? user.friendRequests.filter(request => request.status === 'pending')
+      : [];
     
     // Get unread notifications
     const unreadNotifications = user.notifications.filter(notification => !notification.read);
     
-    // Get recent activity logs (last 30 days)
+    // Get recent activity logs (last 30 days) - only if activityUpdates is enabled
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentActivityLogs = user.activityLog.filter(activity => 
-      new Date(activity.date) >= thirtyDaysAgo
-    );
+    const recentActivityLogs = user.activityLog && user.activityUpdates !== false
+      ? user.activityLog.filter(activity => new Date(activity.date) >= thirtyDaysAgo)
+      : [];
 
-    // Calculate unread counts
+    // Calculate unread counts (respect notification preferences)
     const unreadCounts = {
       friendRequests: pendingRequests.length,
       notifications: unreadNotifications.length,
@@ -157,13 +159,17 @@ router.patch('/mark-read/:email', async (req, res) => {
 router.get('/unread-counts/:email', async (req, res) => {
   try {
     const user = await UserModel.findOne({ email: req.params.email.toLowerCase() })
-      .select('friendRequests notifications');
+      .select('friendRequests notifications activityUpdates');
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const pendingRequests = user.friendRequests.filter(request => request.status === 'pending');
+    // Only count friend requests if the preference is enabled
+    const pendingRequests = user.friendRequests && user.friendRequests !== false
+      ? user.friendRequests.filter(request => request.status === 'pending')
+      : [];
+    
     const unreadNotifications = user.notifications.filter(notification => !notification.read);
 
     res.json({

@@ -13,6 +13,12 @@ router.get('/friends/:email', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Check if activity updates are enabled
+        if (user.activityUpdates === false) {
+            console.log('Activity updates disabled for user:', req.params.email);
+            return res.json({ activities: [] });
+        }
+
         // Get user's friends
         const friends = user.friends || [];
         console.log('User friends count:', friends.length);
@@ -96,6 +102,12 @@ router.post('/add', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Check if activity updates are enabled for this user
+        if (user.activityUpdates === false) {
+            console.log('Activity updates disabled for user:', userEmail);
+            return res.json({ message: 'Activity updates disabled' });
+        }
+
         // Check if the friend is actually in the user's friends list
         const isFriend = user.friends && user.friends.some(friend => friend.email === friendEmail);
         if (!isFriend) {
@@ -176,10 +188,10 @@ router.post('/share-levelup', async (req, res) => {
             return res.json({ message: 'No friends to share with' });
         }
 
-        // Share level up activity with all friends
+        // Share level up activity with all friends (only if they have activity updates enabled)
         const sharePromises = friends.map(async (friend) => {
             const friendUser = await UserModel.findOne({ email: friend.email.toLowerCase() });
-            if (friendUser) {
+            if (friendUser && friendUser.activityUpdates !== false) {
                 const levelUpActivity = {
                     userEmail: friend.email.toLowerCase(),
                     friendEmail: userEmail.toLowerCase(),
@@ -236,10 +248,10 @@ router.post('/share-achievement', async (req, res) => {
             return res.json({ message: 'No friends to share with' });
         }
 
-        // Share achievement activity with all friends
+        // Share achievement activity with all friends (only if they have activity updates enabled)
         const sharePromises = friends.map(async (friend) => {
             const friendUser = await UserModel.findOne({ email: friend.email.toLowerCase() });
-            if (friendUser) {
+            if (friendUser && friendUser.activityUpdates !== false) {
                 const achievementActivity = {
                     userEmail: friend.email.toLowerCase(),
                     friendEmail: userEmail.toLowerCase(),

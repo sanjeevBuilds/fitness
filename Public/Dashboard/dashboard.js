@@ -1,6 +1,41 @@
 // Enhanced Dashboard Gamification Class - Fixed Version
 console.log('=== DASHBOARD.JS LOADED ===');
 
+// --- JWT Auth Check (Protected Page) ---
+(async function() {
+    const redirectToLogin = () => {
+        window.location.href = '/Public/Login/login.html';
+    };
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        redirectToLogin();
+        return;
+    }
+    
+    // Validate token with server
+    try {
+        const response = await fetch('http://localhost:8000/api/validateToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            localStorage.removeItem('authToken');
+            redirectToLogin();
+            return;
+        }
+    } catch (error) {
+        console.error('Auth validation failed:', error);
+        localStorage.removeItem('authToken');
+        redirectToLogin();
+        return;
+    }
+})();
+
 // Global variable to access dashboard instance
 let dashboardInstance = null;
 
@@ -2957,7 +2992,7 @@ document.head.appendChild(style);
     
     const redirectToLogin = () => {
         console.log('[AUTH CHECK] Redirecting to login...');
-        window.location.href = '/Public/test/login.html';
+        window.location.href = '/Public/Login/login.html';
     };
 
     const token = localStorage.getItem('authToken');

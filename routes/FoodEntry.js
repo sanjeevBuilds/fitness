@@ -6,8 +6,12 @@ const jwt = require('jsonwebtoken');
 const https = require('https');
 
 // Nutritionix API credentials for food search
-const NUTRITIONIX_APP_ID = '8faf5aed';
-const NUTRITIONIX_APP_KEY = '88409220ce915ba9f6416710b7c27c97';
+const NUTRITIONIX_APP_ID = process.env.NUTRITIONIX_APP_ID;
+const NUTRITIONIX_APP_KEY = process.env.NUTRITIONIX_APP_KEY;
+
+
+
+
 
 // Fallback food database (free, no API key required)
 const FALLBACK_FOODS = [
@@ -114,7 +118,7 @@ router.post('/add', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -261,7 +265,7 @@ router.post('/migrate-foodlogs', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -307,7 +311,7 @@ router.delete('/delete/:foodLogId', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -360,7 +364,7 @@ router.post('/cleanup-old-logs', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -389,7 +393,7 @@ router.post('/search', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -503,7 +507,7 @@ router.post('/nutrition', async (req, res) => {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }

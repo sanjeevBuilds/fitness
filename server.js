@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express(); // ✅ Declare app FIRST
 
@@ -7,7 +8,6 @@ const foodEntryRoute = require('./routes/FoodEntry');
 const userRoutes = require('./routes/UserRoute');
 const notificationRoutes = require('./routes/Notifications');
 const activitiesRoutes = require('./routes/Activities');
-require('dotenv').config();
 const bcrypt = require('bcrypt');
 
 
@@ -37,6 +37,13 @@ app.use('/Public', express.static('Public'));
 
 const PORT = process.env.PORT || 8000;
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/Health';
+
+// Validate JWT_SECRET exists
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is not set in environment variables!');
+  console.error('❌ Please add JWT_SECRET to your .env file');
+  process.exit(1);
+}
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URL)

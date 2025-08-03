@@ -1,7 +1,9 @@
 // Settings Page Management
 class SettingsManager {
     constructor() {
-        this.initializeSettings();
+        this.initializeSettings().catch(error => {
+            console.error('Error initializing settings:', error);
+        });
         this.setupEventListeners();
         this.setupDragFunctionality();
         this.initializeTitles().catch(error => {
@@ -9,9 +11,9 @@ class SettingsManager {
         });
     }
 
-    initializeSettings() {
-        // Load saved settings from localStorage
-        this.loadSettings();
+    async initializeSettings() {
+        // Load saved settings from localStorage and backend
+        await this.loadSettings();
         
         // Apply current settings
         this.applySettings();
@@ -31,7 +33,7 @@ class SettingsManager {
         const friendRequestsToggle = document.getElementById('friend-requests');
         if (friendRequestsToggle) {
             friendRequestsToggle.addEventListener('change', (e) => {
-                this.updateSetting('friendRequests', e.target.checked);
+                this.updateSetting('friendRequestsEnabled', e.target.checked);
             });
         }
 
@@ -39,7 +41,7 @@ class SettingsManager {
         const activityUpdatesToggle = document.getElementById('activity-updates');
         if (activityUpdatesToggle) {
             activityUpdatesToggle.addEventListener('change', (e) => {
-                this.updateSetting('activityUpdates', e.target.checked);
+                this.updateSetting('activityUpdatesEnabled', e.target.checked);
             });
         }
 
@@ -55,7 +57,7 @@ class SettingsManager {
                 const password = document.getElementById('password').value.trim();
 
                 // Get current user data from localStorage
-                const userData = JSON.parse(localStorage.getItem('userData'));
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 const originalEmail = userData?.email;
                 if (!originalEmail) {
                     this.showToast('❌ User not found in localStorage', 'error');
@@ -110,7 +112,7 @@ class SettingsManager {
                 const username = document.getElementById('username').value.trim();
 
                 // Get current user data from localStorage
-                const userData = JSON.parse(localStorage.getItem('userData'));
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 const originalEmail = userData?.email;
                 if (!originalEmail) {
                     this.showToast('❌ User not found in localStorage', 'error');
@@ -257,7 +259,7 @@ class SettingsManager {
             confirmAvatarBtn.addEventListener('click', async () => {
                 console.log('Confirm Avatar clicked');
                 if (!selectedAvatar) return;
-                const userData = JSON.parse(localStorage.getItem('userData'));
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 console.log(userData);
                 if (!userData || !userData.email) return;
                 try {
@@ -697,7 +699,7 @@ class SettingsManager {
         });
     }
 
-    loadSettings() {
+    async loadSettings() {
         // Load dark mode setting
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const darkModeToggle = document.getElementById('dark-mode');
@@ -705,17 +707,48 @@ class SettingsManager {
             darkModeToggle.checked = darkMode;
         }
 
-        // Load other settings
-        const friendRequests = localStorage.getItem('friendRequests') !== 'false'; // Default to true
+        // Load notification preferences from backend
+        await this.loadNotificationPreferences();
+
+        // Load other settings from localStorage as fallback
+        const friendRequests = localStorage.getItem('friendRequestsEnabled') !== 'false'; // Default to true
         const friendRequestsToggle = document.getElementById('friend-requests');
         if (friendRequestsToggle) {
             friendRequestsToggle.checked = friendRequests;
         }
 
-        const activityUpdates = localStorage.getItem('activityUpdates') !== 'false'; // Default to true
+        const activityUpdates = localStorage.getItem('activityUpdatesEnabled') !== 'false'; // Default to true
         const activityUpdatesToggle = document.getElementById('activity-updates');
         if (activityUpdatesToggle) {
             activityUpdatesToggle.checked = activityUpdates;
+        }
+    }
+
+    async loadNotificationPreferences() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (!userData?.email) return;
+
+            const response = await fetch(`http://localhost:8000/api/getUser/${encodeURIComponent(userData.email)}`);
+            if (!response.ok) return;
+
+            const user = await response.json();
+            
+            // Update toggles based on backend data
+            const friendRequestsToggle = document.getElementById('friend-requests');
+            const activityUpdatesToggle = document.getElementById('activity-updates');
+            
+            if (friendRequestsToggle) {
+                friendRequestsToggle.checked = user.friendRequestsEnabled !== false; // Default to true
+                localStorage.setItem('friendRequestsEnabled', user.friendRequestsEnabled !== false ? 'true' : 'false');
+            }
+            
+            if (activityUpdatesToggle) {
+                activityUpdatesToggle.checked = user.activityUpdatesEnabled !== false; // Default to true
+                localStorage.setItem('activityUpdatesEnabled', user.activityUpdatesEnabled !== false ? 'true' : 'false');
+            }
+        } catch (error) {
+            console.error('Error loading notification preferences:', error);
         }
     }
 
@@ -747,8 +780,56 @@ class SettingsManager {
     updateSetting(key, value) {
         localStorage.setItem(key, value.toString());
         
+        // Save notification preferences to backend
+        if (key === 'friendRequestsEnabled' || key === 'activityUpdatesEnabled') {
+            this.saveNotificationPreferences(key, value);
+        }
+        
         // Show feedback
         this.showToast(`${key} ${value ? 'enabled' : 'disabled'}`);
+        
+        // Update sidebar notification display
+        this.updateSidebarNotificationDisplay();
+    }
+
+    async saveNotificationPreferences(key, value) {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (!userData?.email) return;
+
+            const response = await fetch(`http://localhost:8000/api/updateUser/${encodeURIComponent(userData.email)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [key]: value })
+            });
+
+            if (response.ok) {
+                console.log(`Notification preference ${key} saved:`, value);
+            } else {
+                console.error('Failed to save notification preference');
+            }
+        } catch (error) {
+            console.error('Error saving notification preference:', error);
+        }
+    }
+
+    updateSidebarNotificationDisplay() {
+        // Update sidebar notification badge visibility based on preferences
+        const friendRequestsEnabled = localStorage.getItem('friendRequestsEnabled') !== 'false';
+        const activityUpdatesEnabled = localStorage.getItem('activityUpdatesEnabled') !== 'false';
+        
+        // If friend requests are disabled, hide the notification badge
+        if (!friendRequestsEnabled) {
+            const badge = document.getElementById('sidebar-notification-badge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        } else {
+            // If enabled, let the normal notification system handle it
+            if (window.updateNotificationCount) {
+                window.updateNotificationCount();
+            }
+        }
     }
 
     showToast(message, type = 'success') {
@@ -798,7 +879,7 @@ class SettingsManager {
 document.addEventListener('DOMContentLoaded', function() {
     window.settingsManager = new SettingsManager();
     // Set sidebar avatar on load
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     if (userData && userData.avatar) {
         const sidebarAvatar = document.getElementById('sidebar-avatar');
         if (sidebarAvatar) sidebarAvatar.src = `../../assets/${userData.avatar}`;
@@ -828,37 +909,43 @@ applyGlobalDarkMode();
 function showLogoutToast() {
     let toast = document.createElement('div');
     toast.className = 'gamified-toast logout-toast';
-    toast.innerHTML = '<span class="toast-icon">🚪</span> Logged out! See you soon, adventurer!';
+    toast.innerHTML = '<span class="toast-icon"></span> Logged out! See you soon, adventurer!';
     document.body.appendChild(toast);
     setTimeout(() => { toast.classList.add('show'); }, 10);
     setTimeout(() => { toast.classList.remove('show'); setTimeout(()=>toast.remove(), 400); }, 1100);
 }
 
 // --- JWT Auth Check (Protected Page) ---
-(function() {
+(async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Public/test/login.html';
+        window.location.href = '/Public/Login/login.html';
     };
+    
     const token = localStorage.getItem('authToken');
     if (!token) {
         redirectToLogin();
         return;
     }
+    
+    // Validate token with server
     try {
-        const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
-        if (!decoded || !decoded.exp) {
+        const response = await fetch('http://localhost:8000/api/validateToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
             localStorage.removeItem('authToken');
             redirectToLogin();
             return;
         }
-        const now = Math.floor(Date.now() / 1000);
-        if (decoded.exp < now) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-    } catch (e) {
+    } catch (error) {
+        console.error('Auth validation failed:', error);
         localStorage.removeItem('authToken');
         redirectToLogin();
+        return;
     }
 })();
