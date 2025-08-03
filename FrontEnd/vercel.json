@@ -14,6 +14,10 @@
     {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/Public/$1"
     }
   ]
 } 
