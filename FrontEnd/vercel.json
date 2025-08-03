@@ -6,9 +6,8 @@
       "use": "@vercel/static"
     }
   ],
-  "outputDirectory": "Public",
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/", "destination": "/Public/index.html" },
+    { "source": "/(.*)", "destination": "/Public/$1" }
   ]
 } 
