@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthQuest - Step 2</title>
+  <link rel="stylesheet" href="ongoing2.css">
+  <link href="https://fonts.cdnfonts.com/css/hurme-geometric-sans-1" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
+      </div>
+                      <nav class="nav-links">
+                    <a href="#" class="signout" onclick="signOut()">Sign Out</a>
+                </nav>
+    </div>
+  </header>
+
+  <main class="form-wrapper">
+    <p class="step">Step 2 of 4</p>
+    <div class="progress-bar"><div class="progress" style="width: 50%"></div></div>
+
+    <h1>Your Lifestyle Habits</h1>
+    <p class="subtext">Tell us more about your daily habits so we can personalize your experience.</p>
+
+    <form id="lifestyle-form">
+      <select required>
+        <option value="" disabled selected>Activity Level</option>
+        <option value="sedentary">Sedentary (little or no exercise)</option>
+        <option value="light">Lightly Active (1–3 days/week)</option>
+        <option value="moderate">Moderately Active (3–5 days/week)</option>
+        <option value="very">Very Active (6–7 days/week)</option>
+      </select>
+
+      <input type="number" placeholder="Average Sleep (hours/day)" required>
+
+      <input type="number" placeholder="Water Intake (liters/day)" required>
+
+      <select required>
+        <option value="" disabled selected>Meal Frequency</option>
+        <option value="2">2 meals/day</option>
+        <option value="3">3 meals/day</option>
+        <option value="4+">4 or more meals/day</option>
+      </select>
+
+      <button type="submit" class="next-btn">Next</button>
+    </form>
+    <button id="sample-fill-btn" type="button" style="margin-top: 1rem; margin-bottom: 1rem; background: #7aee8c; color: #0d1c14; border: none; border-radius: 20px; padding: 0.8rem; font-weight: bold; cursor: pointer;">Fill Sample Data</button>
+  </main>
+
+  <script src="ongoing2.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthQuest - Welcome to Your Journey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="welcome.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
+      </div>
+             <nav class="nav-links">
+         <a href="#" class="signout" onclick="signOut()">Sign Out</a>
+       </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="onboarding-main">
+    <div class="onboarding-container">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <h1 class="onboarding-title">Welcome to HealthQuest! <i class="fas fa-sword"></i></h1>
+          <h2 class="onboarding-subtitle">Your quest begins now!</h2>
+          <p class="welcome-description">
+            Level up by completing daily quests. Earn XP, collect coins, and unlock badges.
+            Form buddy squads, rise in the leaderboard, and dominate your fitness journey — one mission at a time!
+          </p>
+        </div>
+
+        <div class="welcome-image-section">
+                <img src="/assets/avator.jpeg" alt="Welcome to HealthQuest" class="welcome-image" onerror="this.src='https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop'; this.onerror=null;" />
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot active"></span>
+          </div>
+        </div>
+
+                 <div class="welcome-actions">
+           <button class="btn btn-primary enter-btn">Enter Dashboard</button>
+         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Super Animation Overlay -->
+  <div id="super-animation-overlay" class="super-animation-overlay">
+    <div class="super-animation-content">
+             <h1 class="super-title">Welcome to HealthQuest!</h1>
+      <p class="super-subtitle">Your fitness journey begins now!</p>
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
+  <script src="welcome.js"></script>
+</body>
+</html>

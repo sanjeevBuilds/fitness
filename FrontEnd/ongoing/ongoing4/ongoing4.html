@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthQuest - Step 4</title>
+  <link rel="stylesheet" href="ongoing4.css">
+  <link href="https://fonts.cdnfonts.com/css/hurme-geometric-sans-1" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-text">HealthQuest</span>
+      </div>
+                      <nav class="nav-links">
+                    <a href="#" class="signout" onclick="signOut()">Sign Out</a>
+                </nav>
+    </div>
+  </header>
+
+  <main class="form-wrapper">
+    <p class="step">Step 4 of 4</p>
+    <div class="progress-bar"><div class="progress" style="width: 100%"></div></div>
+
+    <h1>Finish Setting Up</h1>
+    <p class="subtext">Set your preferences so we can personalize your HealthQuest experience from day one.</p>
+
+    <form id="account-form">
+      <input type="text" placeholder="Choose a Username" required>
+
+      <select required>
+        <option value="" disabled selected>Notification Preference</option>
+        <option value="all">All Notifications</option>
+        <option value="important">Only Important</option>
+        <option value="none">No Notifications</option>
+      </select>
+
+<!--      <label for="start-date" style="text-align: left; font-size: 0.9rem; color: #122119; padding-top: 0.5rem;">Start Date</label>
+      <input type="date" id="start-date" required> -->
+
+      <button type="submit" class="next-btn">Complete Setup</button>
+    </form>
+    <button id="sample-fill-btn" type="button" style="margin-top: 1rem; margin-bottom: 1rem; background: #7aee8c; color: #0d1c14; border: none; border-radius: 20px; padding: 0.8rem; font-weight: bold; cursor: pointer;">Fill Sample Data</button>
+  </main>
+
+  <script src="ongoing4.js"></script>
+</body>
+</html>
