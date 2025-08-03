@@ -45,12 +45,28 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-// Connect to MongoDB
-mongoose.connect(MONGO_URL)
+// Connect to MongoDB with retry logic
+const connectWithRetry = () => {
+  mongoose.connect(MONGO_URL, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    bufferCommands: false,
+    bufferMaxEntries: 0,
+    maxPoolSize: 10,
+    retryWrites: true,
+    w: 'majority'
+  })
   .then(() => {
     console.log("✅ MongoDB connected to:", MONGO_URL);
   })
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+  .catch(err => {
+    console.error("❌ MongoDB connection error:", err);
+    console.log("🔄 Retrying connection in 5 seconds...");
+    setTimeout(connectWithRetry, 5000);
+  });
+};
+
+connectWithRetry();
 
 // Use routes
 app.use('/api', userRoutes);
