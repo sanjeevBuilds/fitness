@@ -32,6 +32,34 @@
       "dest": "/Public/assets/$1"
     },
     {
+      "src": "/Home/(.*)",
+      "dest": "/Public/Home/$1"
+    },
+    {
+      "src": "/Notifications/(.*)",
+      "dest": "/Public/Notifications/$1"
+    },
+    {
+      "src": "/FoodSuggestion/(.*)",
+      "dest": "/Public/FoodSuggestion/$1"
+    },
+    {
+      "src": "/Insights/(.*)",
+      "dest": "/Public/Insights/$1"
+    },
+    {
+      "src": "/Loading/(.*)",
+      "dest": "/Public/Loading/$1"
+    },
+    {
+      "src": "/HelpSupport/(.*)",
+      "dest": "/Public/HelpSupport/$1"
+    },
+    {
+      "src": "/ongoing/(.*)",
+      "dest": "/Public/ongoing/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/Public/$1"
     }
