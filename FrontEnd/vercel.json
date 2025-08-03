@@ -4,14 +4,7 @@
     {
       "src": "Public/**/*",
       "use": "@vercel/static"
-    },
-    {
-      "src": "assets/**/*",
-      "use": "@vercel/static"
     }
   ],
-  "outputDirectory": "Public",
-  "rewrites": [
-    { "source": "/assets/(.*)", "destination": "/assets/$1" }
-  ]
+  "outputDirectory": "Public"
 } 
