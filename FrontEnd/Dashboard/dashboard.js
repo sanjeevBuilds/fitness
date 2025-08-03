@@ -148,7 +148,7 @@ class EnhancedDashboardGamification {
                 localStorage.setItem('userData', JSON.stringify(userData));
             }
 
-            const response = await fetch(`${this.API_BASE}/getUser/${email}`, {
+            const response = await fetch(`${getApiUrl('/api/getUser')}/${email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -243,7 +243,7 @@ class EnhancedDashboardGamification {
     async loadSmartQuestData(email, token) {
         try {
             console.log('[LOAD SMART QUEST DATA] Loading smart quest data for email:', email);
-            const response = await fetch(`${this.API_BASE}/getSmartQuestData/${email}`, {
+            const response = await fetch(`${getApiUrl('/api/getSmartQuestData')}/${email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -304,7 +304,7 @@ class EnhancedDashboardGamification {
         try {
             console.log('Loading daily quest status for:', email);
             
-            const response = await fetch(`${this.API_BASE}/getDailyQuestStatus/${email}`, {
+            const response = await fetch(`${getApiUrl('/api/getDailyQuestStatus')}/${email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -721,7 +721,7 @@ class EnhancedDashboardGamification {
             const decoded = window.jwt_decode(token);
             const userId = decoded._id;
 
-            const response = await fetch(`${this.API_BASE}/foodentry/daily-totals/${userId}?date=${this.todayDate}`, {
+            const response = await fetch(`${getApiUrl('/api/foodentry/daily-totals')}/${userId}?date=${this.todayDate}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -753,7 +753,7 @@ class EnhancedDashboardGamification {
             const decoded = window.jwt_decode(token);
             const userId = decoded._id;
 
-            const response = await fetch(`${this.API_BASE}/foodentry/daily-totals/${userId}?date=${this.todayDate}`, {
+            const response = await fetch(`${getApiUrl('/api/foodentry/daily-totals')}/${userId}?date=${this.todayDate}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -844,7 +844,7 @@ class EnhancedDashboardGamification {
             }
 
             // Update quest in backend
-            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
+            const response = await fetch(`${getApiUrl('/api/updateDailyQuest')}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1003,7 +1003,7 @@ class EnhancedDashboardGamification {
                 return;
             }
 
-            const response = await fetch(`${this.API_BASE}/updateDailyQuest`, {
+            const response = await fetch(`${getApiUrl('/api/updateDailyQuest')}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1084,7 +1084,7 @@ class EnhancedDashboardGamification {
 
             console.log('[SYNC USER DATA] Sending updated user data to backend:', requestBody);
 
-            const response = await fetch(`${this.API_BASE}/updateUser`, {
+            const response = await fetch(`${getApiUrl('/api/updateUser')}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1246,7 +1246,7 @@ class EnhancedDashboardGamification {
                 };
                 console.log('🏆 Sending title unlock to backend:', requestBody);
                 
-                const response = await fetch(`${this.API_BASE}/updateUser`, {
+                const response = await fetch(`${getApiUrl('/api/updateUser')}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1831,7 +1831,7 @@ class EnhancedDashboardGamification {
 
             // Call backend to claim smart quest reward
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`${this.API_BASE}/claimSmartQuestReward`, {
+            const response = await fetch(`${getApiUrl('/api/claimSmartQuestReward')}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2196,7 +2196,7 @@ class EnhancedDashboardGamification {
             const email = decoded.email;
 
             // Refresh smart quest data from backend
-            const response = await fetch(`${this.API_BASE}/getSmartQuestData/${email}`, {
+            const response = await fetch(`${getApiUrl('/api/getSmartQuestData')}/${email}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
