@@ -7,7 +7,13 @@
     }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/Public/Home/home.html" },
+    { "source": "/", "destination": "/Public/index.html" },
     { "source": "/(.*)", "destination": "/Public/$1" }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    }
   ]
 } 
