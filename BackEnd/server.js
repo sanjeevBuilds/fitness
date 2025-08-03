@@ -48,7 +48,7 @@ if (!process.env.JWT_SECRET) {
 // Connect to MongoDB with retry logic
 const connectWithRetry = () => {
   mongoose.connect(MONGO_URL, {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     bufferCommands: false,
     bufferMaxEntries: 0,
