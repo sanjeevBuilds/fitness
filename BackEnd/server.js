@@ -50,8 +50,6 @@ const connectWithRetry = () => {
   mongoose.connect(MONGO_URL, {
     serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
-    bufferCommands: false,
-    bufferMaxEntries: 0,
     maxPoolSize: 10,
     retryWrites: true,
     w: 'majority'
