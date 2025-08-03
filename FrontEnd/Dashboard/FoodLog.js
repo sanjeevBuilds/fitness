@@ -437,17 +437,29 @@ async function addFoodToLog() {
                 return;
             }
             
+            // Create food log with just the new meal data
+            const newMeal = {
+                name: selectedFood.food_name,
+                brand: selectedFood.brand_name || 'Generic',
+                quantity: quantitySelect.value,
+                calories: Math.round(food.nf_calories),
+                protein: Math.round(food.nf_protein),
+                carbs: Math.round(food.nf_total_carbohydrate),
+                fat: Math.round(food.nf_total_fat),
+                timestamp: new Date().toISOString()
+            };
+            
             const foodLog = {
                 date: new Date().toISOString().slice(0, 10),
-                calories: dailyTotals.calories,
-                protein: dailyTotals.protein,
-                carbs: dailyTotals.carbs,
-                fat: dailyTotals.fat,
-                meals: currentMeals.map(meal => ({
-                    name: meal.name,
-                    items: [meal.name], // or meal.items if you have more details
-                    totalCalories: meal.calories
-                }))
+                calories: newMeal.calories,
+                protein: newMeal.protein,
+                carbs: newMeal.carbs,
+                fat: newMeal.fat,
+                meals: [{
+                    name: newMeal.name,
+                    items: [newMeal.name],
+                    totalCalories: newMeal.calories
+                }]
             };
             
             syncFoodLogWithBackend(foodLog);

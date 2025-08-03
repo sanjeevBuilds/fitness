@@ -1640,7 +1640,7 @@ class EnhancedDashboardGamification {
 
             // Hide quest if reward has been collected today
             if (quest.rewardCollected) {
-                console.log(`Hiding ${questType} quest - reward already collected today`);
+                console.log(`[UPDATE SMART QUEST UI] Hiding ${questType} quest - reward already collected today`);
                 
                 // Add classes for styling
                 questItem.classList.add('quest-completed');
@@ -1746,6 +1746,7 @@ class EnhancedDashboardGamification {
 
                             // Handle completion state and collect button
             if (quest.completed && !quest.rewardCollected) {
+                console.log(`[UPDATE SMART QUEST UI] ${questType} is completed but reward not collected - showing collect button`);
                 questItem.classList.add('quest-completed');
                 questItem.classList.add('reward-available');
 
@@ -1759,6 +1760,7 @@ class EnhancedDashboardGamification {
                 // Add pulsing animation for completed quests
                 questItem.style.animation = 'pulse 2s infinite';
                             } else if (quest.completed && quest.rewardCollected) {
+                                console.log(`[UPDATE SMART QUEST UI] ${questType} is completed and reward collected - hiding quest`);
                     questItem.classList.add('quest-completed');
                     questItem.classList.remove('reward-available');
 
@@ -1816,12 +1818,17 @@ class EnhancedDashboardGamification {
 
     async collectSmartQuestReward(questType) {
         try {
+            console.log(`[COLLECT REWARD] Starting reward collection for ${questType}`);
             const quest = this.smartQuests[questType];
+            console.log(`[COLLECT REWARD] Quest data:`, quest);
+            
             if (!quest || !quest.completed || quest.rewardCollected) {
+                console.log(`[COLLECT REWARD] Cannot collect reward: quest=${!!quest}, completed=${quest?.completed}, rewardCollected=${quest?.rewardCollected}`);
                 this.showNotification('No reward available to collect', 'warning');
                 return;
             }
 
+            console.log(`[COLLECT REWARD] Marking reward as collected for ${questType}`);
             // Mark reward as collected
             quest.rewardCollected = true;
 
@@ -2206,7 +2213,14 @@ class EnhancedDashboardGamification {
                     Object.keys(questData.quests).forEach(questType => {
                         if (this.smartQuests && this.smartQuests[questType]) {
                             // Preserve existing reward collection status if backend doesn't have it
-                            questData.quests[questType].rewardCollected = questData.quests[questType].rewardCollected ?? this.smartQuests[questType].rewardCollected ?? false;
+                            const backendRewardCollected = questData.quests[questType].rewardCollected;
+                            const localRewardCollected = this.smartQuests[questType].rewardCollected;
+                            
+                            // Use backend status if available, otherwise preserve local status
+                            questData.quests[questType].rewardCollected = 
+                                backendRewardCollected !== undefined ? backendRewardCollected : localRewardCollected;
+                            
+                            console.log(`[REFRESH SMART QUEST] ${questType}: backend=${backendRewardCollected}, local=${localRewardCollected}, final=${questData.quests[questType].rewardCollected}`);
                         }
                     });
                 }
