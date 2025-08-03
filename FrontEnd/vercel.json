@@ -8,6 +8,7 @@
   ],
   "rewrites": [
     { "source": "/", "destination": "/Public/index.html" },
+    { "source": "/assets/(.*)", "destination": "/Public/assets/$1" },
     { "source": "/(.*)", "destination": "/Public/$1" }
   ]
 } 
