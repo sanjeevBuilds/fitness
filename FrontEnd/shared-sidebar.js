@@ -146,32 +146,53 @@ class SharedSidebarManager {
         toggle.className = 'mobile-menu-toggle';
         toggle.innerHTML = '<div class="hamburger"></div>';
         toggle.setAttribute('aria-label', 'Toggle mobile menu');
+        toggle.setAttribute('type', 'button'); // Ensure it's a button
         
-        // Ensure it's visible on mobile
-        toggle.style.display = 'flex';
-        toggle.style.position = 'fixed';
-        toggle.style.top = '1rem';
-        toggle.style.left = '1rem';
-        toggle.style.zIndex = '1003';
-        toggle.style.background = 'rgb(41, 236, 139)';
-        toggle.style.border = 'none';
-        toggle.style.borderRadius = '50%';
-        toggle.style.width = '50px';
-        toggle.style.height = '50px';
-        toggle.style.cursor = 'pointer';
-        toggle.style.boxShadow = '0 4px 12px rgba(41, 236, 139, 0.3)';
-        toggle.style.transition = 'all 0.3s ease';
-        toggle.style.alignItems = 'center';
-        toggle.style.justifyContent = 'center';
+        // Ensure it's visible and clickable on mobile
+        toggle.style.cssText = `
+            position: fixed !important;
+            top: 1rem !important;
+            left: 1rem !important;
+            z-index: 1003 !important;
+            background: rgb(41, 236, 139) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3) !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 24px !important;
+            color: white !important;
+            font-weight: bold !important;
+            pointer-events: auto !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: rgba(41, 236, 139, 0.3) !important;
+            touch-action: manipulation !important;
+        `;
         
         // Add text for debugging
         toggle.textContent = '☰';
-        toggle.style.fontSize = '24px';
-        toggle.style.color = 'white';
-        toggle.style.fontWeight = 'bold';
         
-        toggle.addEventListener('click', () => {
+        // Add multiple event listeners to ensure it works
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Mobile menu toggle clicked!');
+            this.toggleMobileMenu();
+        });
+        
+        toggle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            console.log('Mobile menu touch start!');
+        });
+        
+        toggle.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            console.log('Mobile menu touch end!');
             this.toggleMobileMenu();
         });
 
@@ -687,28 +708,50 @@ if (document.readyState === 'loading') {
         const toggle = document.createElement('button');
         toggle.className = 'mobile-menu-toggle-fallback';
         toggle.textContent = '☰';
+        toggle.setAttribute('type', 'button');
         toggle.style.cssText = `
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 1003;
-            background: rgb(41, 236, 139);
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            font-weight: bold;
+            position: fixed !important;
+            top: 1rem !important;
+            left: 1rem !important;
+            z-index: 1003 !important;
+            background: rgb(41, 236, 139) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 24px !important;
+            color: white !important;
+            font-weight: bold !important;
+            pointer-events: auto !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: rgba(41, 236, 139, 0.3) !important;
+            touch-action: manipulation !important;
         `;
         
-        toggle.addEventListener('click', () => {
+        // Add multiple event listeners to ensure it works
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Fallback mobile menu clicked!');
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-open');
+            }
+        });
+        
+        toggle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            console.log('Fallback mobile menu touch start!');
+        });
+        
+        toggle.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            console.log('Fallback mobile menu touch end!');
             const sidebar = document.querySelector('.sidebar');
             if (sidebar) {
                 sidebar.classList.toggle('mobile-open');
