@@ -3,39 +3,41 @@ console.log('=== DASHBOARD.JS LOADED ===');
 console.log('=== INITIALIZING DASHBOARD ===');
 
 // --- JWT Auth Check (Protected Page) ---
-(async function() {
-    const redirectToLogin = () => {
-        window.location.href = '/Login/login.html';
-    };
+//
+// (async function() {
+//     const redirectToLogin = () => {
+//         window.location.href = '../Login/login.html';
+//     };
     
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        redirectToLogin();
-        return;
-    }
+//     const token = localStorage.getItem('authToken');
+//     if (!token) {
+//         redirectToLogin();
+//         return;
+//     }
     
-    // Validate token with server
-    try {
-                    const response = await fetch(getApiUrl('/api/validateToken'), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
+//     // Validate token with server
+//     try {
+//                     const response = await fetch(getApiUrl('/api/validateToken'), {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+//             }
+//         });
         
-        if (!response.ok) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-    } catch (error) {
-        console.error('Auth validation failed:', error);
-        localStorage.removeItem('authToken');
-        redirectToLogin();
-        return;
-    }
-})();
+//         if (!response.ok) {
+//             localStorage.removeItem('authToken');
+//             redirectToLogin();
+//             return;
+//         }
+//     } catch (error) {
+//         console.error('Auth validation failed:', error);
+//         localStorage.removeItem('authToken');
+//         redirectToLogin();
+//         return;
+//     }
+// })();
+//
 
 // Global variable to access dashboard instance
 let dashboardInstance = null;
@@ -3008,53 +3010,53 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Auth Check
-(function () {
-    console.log('[AUTH CHECK] Starting auth validation...');
+// // Auth Check
+// (function () {
+//     console.log('[AUTH CHECK] Starting auth validation...');
     
-    const redirectToLogin = () => {
-        console.log('[AUTH CHECK] Redirecting to login...');
-        window.location.href = '/Login/login.html';
-    };
+//     const redirectToLogin = () => {
+//         console.log('[AUTH CHECK] Redirecting to login...');
+//         window.location.href = '../Login/login.html';
+//     };
 
-    const token = localStorage.getItem('authToken');
-    console.log('[AUTH CHECK] Token found:', !!token);
+//     const token = localStorage.getItem('authToken');
+//     console.log('[AUTH CHECK] Token found:', !!token);
     
-    if (!token) {
-        console.log('[AUTH CHECK] No token found, redirecting...');
-        redirectToLogin();
-        return;
-    }
+//     if (!token) {
+//         console.log('[AUTH CHECK] No token found, redirecting...');
+//         redirectToLogin();
+//         return;
+// //     }
 
-    try {
-        const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
-        console.log('[AUTH CHECK] Token decoded:', !!decoded);
+//     try {
+//         const decoded = window.jwt_decode ? window.jwt_decode(token) : null;
+//         console.log('[AUTH CHECK] Token decoded:', !!decoded);
         
-        if (!decoded || !decoded.exp) {
-            console.log('[AUTH CHECK] Invalid token structure, redirecting...');
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
+//         if (!decoded || !decoded.exp) {
+//             console.log('[AUTH CHECK] Invalid token structure, redirecting...');
+//             localStorage.removeItem('authToken');
+//             redirectToLogin();
+//             return;
+//         }
 
-        const now = Math.floor(Date.now() / 1000);
-        console.log('[AUTH CHECK] Token expires:', new Date(decoded.exp * 1000));
-        console.log('[AUTH CHECK] Current time:', new Date(now * 1000));
+//         const now = Math.floor(Date.now() / 1000);
+//         console.log('[AUTH CHECK] Token expires:', new Date(decoded.exp * 1000));
+//         console.log('[AUTH CHECK] Current time:', new Date(now * 1000));
         
-        if (decoded.exp < now) {
-            console.log('[AUTH CHECK] Token expired, redirecting...');
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
+//         if (decoded.exp < now) {
+//             console.log('[AUTH CHECK] Token expired, redirecting...');
+//             localStorage.removeItem('authToken');
+//             redirectToLogin();
+//             return;
+//         }
         
-        console.log('[AUTH CHECK] Auth validation passed!');
-    } catch (e) {
-        console.error('[AUTH CHECK] Token validation error:', e);
-        localStorage.removeItem('authToken');
-        redirectToLogin();
-    }
-})();
+//         console.log('[AUTH CHECK] Auth validation passed!');
+//     } catch (e) {
+//         console.error('[AUTH CHECK] Token validation error:', e);
+//         localStorage.removeItem('authToken');
+//         redirectToLogin();
+//     }
+// })();
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

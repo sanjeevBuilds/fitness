@@ -1,7 +1,7 @@
 // --- JWT Auth Check (Protected Page) ---
 (async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Login/login.html';
+        window.location.href = '../Login/login.html';
     };
     
     const token = localStorage.getItem('authToken');

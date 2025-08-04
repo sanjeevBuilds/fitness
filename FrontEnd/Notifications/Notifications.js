@@ -1,37 +1,37 @@
-// --- JWT Auth Check (Protected Page) ---
-(async function() {
-    const redirectToLogin = () => {
-        window.location.href = '/Login/login.html';
-    };
+// // --- JWT Auth Check (Protected Page) ---
+// (async function() {
+//     const redirectToLogin = () => {
+//         window.location.href = '../Login/login.html';
+//     };
     
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        redirectToLogin();
-        return;
-    }
+//     const token = localStorage.getItem('authToken');
+//     if (!token) {
+//         redirectToLogin();
+//         return;
+//     }
     
-    // Validate token with server
-    try {
-        const response = await fetch(getApiUrl('/api/validateToken'), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
+//     // Validate token with server
+//     try {
+//         const response = await fetch(getApiUrl('/api/validateToken'), {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+//             }
+//         });
         
-        if (!response.ok) {
-            localStorage.removeItem('authToken');
-            redirectToLogin();
-            return;
-        }
-    } catch (error) {
-        console.error('Auth validation failed:', error);
-        localStorage.removeItem('authToken');
-        redirectToLogin();
-        return;
-    }
-})();
+//         if (!response.ok) {
+//             localStorage.removeItem('authToken');
+//             redirectToLogin();
+//             return;
+//         }
+//     } catch (error) {
+//         console.error('Auth validation failed:', error);
+//         localStorage.removeItem('authToken');
+//         redirectToLogin();
+//         return;
+//     }
+// })();
 
 class NotificationManager {
     constructor() {

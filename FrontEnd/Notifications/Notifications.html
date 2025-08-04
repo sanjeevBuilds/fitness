@@ -6,90 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - FitWarrior</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Dashboard/dashboard.css">
-  <link rel="stylesheet" href="../Dashboard/Buddies.css">
-  <link rel="stylesheet" href="Notifications.css">
   <link rel="stylesheet" href="../shared-sidebar.css">
+  <link rel="stylesheet" href="../Dashboard/dashboard.css">
+  <link rel="stylesheet" href="Notifications.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
 
-    body {
-      display: flex;
-      background-color: #f5f5f5;
-      min-height: 100vh;
-    }
-
-    .container {
-      display: flex;
-      flex: 1;
-    }
-
-    .content {
-      flex: 1;
-      padding: 40px;
-    }
-
-    .content h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    .content p {
-      margin-bottom: 30px;
-      font-size: 16px;
-      color: #555;
-    }
-
-    .notifications {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .notification {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .notification.read {
-      opacity: 0.6;
-      text-decoration: line-through;
-    }
-
-    .clear-btn {
-      background-color: #ff5252;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 25px;
-      float: right;
-    }
-
-    /* Toast animations */
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-  </style>
 </head>
 
 <body>

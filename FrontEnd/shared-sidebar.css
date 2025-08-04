@@ -36,7 +36,6 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
     transition: all 0.3s ease;
-    display: flex;
     align-items: center;
     justify-content: center;
 }
@@ -279,14 +278,14 @@ body.dark-mode .title-display {
 
 /* Level Badge */
 .level-badge {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    background: linear-gradient(135deg, rgb(41, 236, 139), rgb(35, 201, 118));
+    color: rgb(18, 24, 22);
     padding: 0.3rem 0.8rem;
     border-radius: 15px;
     font-size: 0.8rem;
     font-weight: 600;
     margin-top: 0.5rem;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(41, 236, 139, 0.3);
 }
 
 /* Avatar */
