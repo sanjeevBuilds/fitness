@@ -544,7 +544,6 @@ body.dark-mode .no-activity {
   .notifications-main {
     padding: var(--mobile-padding);
     margin-left: 0;
-    margin-top: 80px; /* Account for mobile sidebar */
   }
 
   .notifications-header {
