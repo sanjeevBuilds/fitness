@@ -1,74 +1,42 @@
 // Shared Sidebar Management for Titles Only
 class SharedSidebarManager {
     constructor() {
-        this.userData = null;
-        this.availableTitles = [];
-        this.selectedTitle = null;
-        this.isMobile = this.detectMobile();
-        console.log('SharedSidebarManager initialized, Mobile:', this.isMobile);
-        
-        // Initialize immediately if DOM is ready
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            this.init();
-        }
-    }
+        this.availableTitles = [
+            { id: 'meal-master', name: 'Meal Master', icon: '<i class="fas fa-utensils"></i>', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: true },
+            { id: 'strength-warrior', name: 'Strength Warrior', icon: '<i class="fas fa-dumbbell"></i>', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
+            { id: 'cardio-king', name: 'Cardio King', icon: '<i class="fas fa-running"></i>', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
+            { id: 'yoga-guru', name: 'Yoga Guru', icon: '<i class="fas fa-pray"></i>', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
+            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '<i class="fas fa-apple-alt"></i>', description: '5+ day calorie streak', requirement: 'Track nutrition for 30 days', unlocked: true },
+            { id: 'consistency-champion', name: 'Consistency Champion', icon: '<i class="fas fa-chart-line"></i>', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
+            { id: 'goal-crusher', name: 'Goal Crusher', icon: '<i class="fas fa-bullseye"></i>', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
+            { id: 'fitness-legend', name: 'Fitness Legend', icon: '<i class="fas fa-crown"></i>', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
+            { id: 'wellness-guru', name: 'Wellness Guru', icon: '<i class="fas fa-star"></i>', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
+            { id: 'protein-beast', name: 'Protein Beast', icon: '<i class="fas fa-dumbbell"></i>', description: '5+ day protein streak', requirement: 'Complete protein goals', unlocked: false },
+            { id: 'streak-legend', name: 'Streak Legend', icon: '<i class="fas fa-fire"></i>', description: '7+ day quest streak', requirement: 'Maintain quest streak', unlocked: false }
+        ];
 
-    detectMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-               window.innerWidth <= 768;
+        // Badges removed - only titles are used now
+
+        // Mobile menu state
+        this.isMobileMenuOpen = false;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+
+        this.init();
     }
 
     init() {
-        console.log('SharedSidebarManager init called, Mobile:', this.isMobile);
-        console.log('User Agent:', navigator.userAgent);
-        console.log('Screen width:', window.innerWidth);
-        
         this.loadUserData();
         this.setupUserProfileStructure();
+        this.updateSidebarDisplay();
+        this.startNotificationPolling();
         
-        // Setup mobile menu if on mobile
-        if (this.isMobile) {
-            console.log('Setting up mobile menu...');
+        // Add a small delay to ensure DOM is fully loaded
+        setTimeout(() => {
             this.setupMobileMenu();
             this.setupResizeHandler();
             this.ensureMobileMenuSetup();
-            
-            // Check if mobile menu was created properly after a delay
-            setTimeout(() => {
-                const mobileToggle = document.querySelector('.mobile-menu-toggle');
-                if (mobileToggle) {
-                    console.log('Mobile menu toggle found after delay:', mobileToggle);
-                    console.log('Mobile menu toggle display:', getComputedStyle(mobileToggle).display);
-                    console.log('Mobile menu toggle visibility:', getComputedStyle(mobileToggle).visibility);
-                } else {
-                    console.error('Mobile menu toggle not found after delay!');
-                }
-            }, 1000);
-        }
-        
-        this.startNotificationPolling();
-        
-        // Test mobile functionality
-        this.testMobileFunctionality();
-    }
-    
-    testMobileFunctionality() {
-        if (this.isMobile) {
-            console.log('Testing mobile functionality...');
-            // Add a test event listener to the body to verify touch events work
-            document.body.addEventListener('touchstart', (e) => {
-                console.log('Touch detected on body');
-            }, { passive: true });
-            
-            // Check if mobile menu exists, if not create it
-            setTimeout(() => {
-                const mobileToggle = document.querySelector('.mobile-menu-toggle');
-                if (!mobileToggle) {
-                    console.log('Mobile menu toggle missing, creating it...');
-                    this.createMobileMenuToggle();
-                }
-            }, 500);
-        }
+        }, 100);
     }
 
     setupResizeHandler() {
@@ -115,8 +83,6 @@ class SharedSidebarManager {
     }
 
     setupMobileMenu() {
-        console.log('Setting up mobile menu...');
-        
         // Create mobile menu toggle button
         this.createMobileMenuToggle();
         
@@ -126,19 +92,14 @@ class SharedSidebarManager {
         // Setup touch events for swipe to close
         this.setupTouchEvents();
         
-        // Setup keyboard events
+        // Setup keyboard events (ESC to close)
         this.setupKeyboardEvents();
-        
-        console.log('Mobile menu setup complete');
     }
 
     createMobileMenuToggle() {
-        console.log('Creating mobile menu toggle...');
-        
         // Remove existing toggle if any
         const existingToggle = document.querySelector('.mobile-menu-toggle');
         if (existingToggle) {
-            console.log('Removing existing mobile menu toggle');
             existingToggle.remove();
         }
 
@@ -146,79 +107,12 @@ class SharedSidebarManager {
         toggle.className = 'mobile-menu-toggle';
         toggle.innerHTML = '<div class="hamburger"></div>';
         toggle.setAttribute('aria-label', 'Toggle mobile menu');
-        toggle.setAttribute('type', 'button'); // Ensure it's a button
         
-        // Ensure it's visible and clickable on mobile
-        toggle.style.cssText = `
-            position: fixed !important;
-            top: 1rem !important;
-            left: 1rem !important;
-            z-index: 1003 !important;
-            background: rgb(41, 236, 139) !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 50px !important;
-            height: 50px !important;
-            cursor: pointer !important;
-            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3) !important;
-            transition: all 0.3s ease !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 24px !important;
-            color: white !important;
-            font-weight: bold !important;
-            pointer-events: auto !important;
-            user-select: none !important;
-            -webkit-tap-highlight-color: rgba(41, 236, 139, 0.3) !important;
-            touch-action: manipulation !important;
-        `;
-        
-        // Add text for debugging
-        toggle.textContent = '☰';
-        
-        // Add multiple event listeners to ensure it works
-        toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Mobile menu toggle clicked!');
+        toggle.addEventListener('click', () => {
             this.toggleMobileMenu();
         });
-        
-        toggle.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            console.log('Mobile menu touch start!');
-        });
-        
-        toggle.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            console.log('Mobile menu touch end!');
-            this.toggleMobileMenu();
-        });
-
-        // Add a simple test click handler
-        toggle.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Simple onclick triggered!');
-            this.toggleMobileMenu();
-        };
 
         document.body.appendChild(toggle);
-        console.log('Mobile menu toggle created and appended to body');
-        
-        // Verify it's in the DOM
-        const createdToggle = document.querySelector('.mobile-menu-toggle');
-        if (createdToggle) {
-            console.log('Mobile menu toggle found in DOM:', createdToggle);
-            // Test if it's clickable
-            createdToggle.style.backgroundColor = 'red'; // Make it red to test visibility
-            setTimeout(() => {
-                createdToggle.style.backgroundColor = 'rgb(41, 236, 139)'; // Change back to green
-            }, 2000);
-        } else {
-            console.error('Mobile menu toggle not found in DOM!');
-        }
     }
 
     createMobileOverlay() {
@@ -279,7 +173,6 @@ class SharedSidebarManager {
     }
 
     toggleMobileMenu() {
-        console.log('toggleMobileMenu called, current state:', this.isMobileMenuOpen);
         if (this.isMobileMenuOpen) {
             this.closeMobileMenu();
         } else {
@@ -288,15 +181,18 @@ class SharedSidebarManager {
     }
 
     openMobileMenu() {
-        console.log('Opening mobile menu...');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.mobile-overlay');
         const toggle = document.querySelector('.mobile-menu-toggle');
 
         if (sidebar) {
             sidebar.classList.add('mobile-open');
-            this.isMobileMenuOpen = true;
-            console.log('Mobile menu opened, sidebar class added');
+            // Ensure sidebar is properly positioned and sized
+            sidebar.style.height = '100vh';
+            sidebar.style.maxHeight = '100vh';
+            sidebar.style.overflowY = 'auto';
+            sidebar.style.overflowX = 'hidden';
+            sidebar.style.webkitOverflowScrolling = 'touch';
         }
         if (overlay) {
             overlay.classList.add('active');
@@ -304,24 +200,51 @@ class SharedSidebarManager {
         if (toggle) {
             toggle.classList.add('active');
         }
+
+        this.isMobileMenuOpen = true;
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Ensure nav-menu is properly scrollable
+        const navMenu = sidebar?.querySelector('.nav-menu');
+        if (navMenu) {
+            navMenu.style.maxHeight = 'calc(100vh - 200px)';
+            navMenu.style.overflowY = 'auto';
+            navMenu.style.overflowX = 'hidden';
+            navMenu.style.webkitOverflowScrolling = 'touch';
+        }
     }
 
     closeMobileMenu() {
-        console.log('Closing mobile menu...');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.mobile-overlay');
         const toggle = document.querySelector('.mobile-menu-toggle');
 
         if (sidebar) {
             sidebar.classList.remove('mobile-open');
-            this.isMobileMenuOpen = false;
-            console.log('Mobile menu closed, sidebar class removed');
+            // Reset sidebar styles
+            sidebar.style.height = '';
+            sidebar.style.maxHeight = '';
+            sidebar.style.overflowY = '';
+            sidebar.style.overflowX = '';
+            sidebar.style.webkitOverflowScrolling = '';
         }
         if (overlay) {
             overlay.classList.remove('active');
         }
         if (toggle) {
             toggle.classList.remove('active');
+        }
+
+        this.isMobileMenuOpen = false;
+        document.body.style.overflow = ''; // Restore scrolling
+        
+        // Reset nav-menu styles
+        const navMenu = sidebar?.querySelector('.nav-menu');
+        if (navMenu) {
+            navMenu.style.maxHeight = '';
+            navMenu.style.overflowY = '';
+            navMenu.style.overflowX = '';
+            navMenu.style.webkitOverflowScrolling = '';
         }
     }
 
@@ -467,59 +390,6 @@ class SharedSidebarManager {
             navItem.href = item.href;
             navItem.className = 'nav-item';
             navItem.style.position = 'relative'; // For notification badge positioning
-            
-            // Ensure the link is clickable
-            navItem.style.pointerEvents = 'auto';
-            navItem.style.cursor = 'pointer';
-            navItem.style.textDecoration = 'none';
-            
-            // Add click event listener for debugging
-            navItem.addEventListener('click', (e) => {
-                console.log('Navigation item clicked:', item.text, 'href:', item.href);
-                // Allow default navigation
-            });
-            
-            // Add mobile-specific touch events if on mobile
-            if (this.isMobile) {
-                navItem.addEventListener('touchstart', (e) => {
-                    console.log('Touch start on:', item.text);
-                    e.preventDefault();
-                    navItem.style.transform = 'scale(0.95)';
-                    navItem.style.opacity = '0.8';
-                });
-                
-                navItem.addEventListener('touchend', (e) => {
-                    console.log('Touch end on:', item.text);
-                    e.preventDefault();
-                    navItem.style.transform = 'scale(1)';
-                    navItem.style.opacity = '1';
-                    // Trigger navigation
-                    window.location.href = item.href;
-                });
-                
-                // Prevent default touch behavior that might interfere
-                navItem.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                });
-                
-                // Fallback: ensure click works even if touch events fail
-                navItem.addEventListener('click', (e) => {
-                    console.log('Fallback click on mobile:', item.text);
-                    if (this.isMobile) {
-                        e.preventDefault();
-                        window.location.href = item.href;
-                    }
-                });
-            } else {
-                // Desktop mouse events
-                navItem.addEventListener('mousedown', (e) => {
-                    navItem.style.transform = 'scale(0.95)';
-                });
-                
-                navItem.addEventListener('mouseup', (e) => {
-                    navItem.style.transform = 'scale(1)';
-                });
-            }
             
             // Check if this is the current page
             const itemPath = item.href.split('/').pop();
@@ -670,7 +540,6 @@ if (document.readyState === 'loading') {
         console.log('DOM loaded, initializing shared sidebar...');
         if (!window.sharedSidebar) {
             window.sharedSidebar = new SharedSidebarManager();
-            window.sharedSidebar.init(); // CRITICAL: Call init() method
         }
     });
 } else {
@@ -678,97 +547,8 @@ if (document.readyState === 'loading') {
     console.log('DOM already loaded, initializing shared sidebar immediately...');
     if (!window.sharedSidebar) {
         window.sharedSidebar = new SharedSidebarManager();
-        window.sharedSidebar.init(); // CRITICAL: Call init() method
     }
 }
-
-// IMMEDIATE FALLBACK: Create mobile menu if on mobile
-(function() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    if (isMobile) {
-        console.log('IMMEDIATE FALLBACK: Creating mobile menu...');
-        
-        // Create a simple mobile menu button immediately
-        const toggle = document.createElement('button');
-        toggle.className = 'mobile-menu-toggle-fallback';
-        toggle.textContent = '☰';
-        toggle.setAttribute('type', 'button');
-        toggle.style.cssText = `
-            position: fixed !important;
-            top: 1rem !important;
-            left: 1rem !important;
-            z-index: 1003 !important;
-            background: rgb(41, 236, 139) !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 50px !important;
-            height: 50px !important;
-            cursor: pointer !important;
-            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 24px !important;
-            color: white !important;
-            font-weight: bold !important;
-            pointer-events: auto !important;
-            user-select: none !important;
-            -webkit-tap-highlight-color: rgba(41, 236, 139, 0.3) !important;
-            touch-action: manipulation !important;
-        `;
-        
-        // Add multiple event listeners to ensure it works
-        toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Fallback mobile menu clicked!');
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                sidebar.classList.toggle('mobile-open');
-                console.log('Sidebar mobile-open class toggled');
-            }
-        });
-        
-        toggle.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            console.log('Fallback mobile menu touch start!');
-        });
-        
-        toggle.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            console.log('Fallback mobile menu touch end!');
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                sidebar.classList.toggle('mobile-open');
-                console.log('Sidebar mobile-open class toggled from touch');
-            }
-        });
-        
-        // Add simple onclick
-        toggle.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Fallback simple onclick triggered!');
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                sidebar.classList.toggle('mobile-open');
-                console.log('Sidebar mobile-open class toggled from simple onclick');
-            }
-        };
-        
-        document.body.appendChild(toggle);
-        console.log('Fallback mobile menu created!');
-        
-        // Test the button
-        setTimeout(() => {
-            console.log('Testing fallback mobile menu button...');
-            toggle.style.backgroundColor = 'blue'; // Make it blue to test
-            setTimeout(() => {
-                toggle.style.backgroundColor = 'rgb(41, 236, 139)'; // Change back
-            }, 1000);
-        }, 1000);
-    }
-})();
 
 // Global function to refresh sidebar display
 function refreshSidebarDisplay() {
@@ -783,18 +563,6 @@ function updateNotificationCount() {
         window.sharedSidebar.updateNotificationCount();
     }
 }
-
-// Global click handler to test mobile menu
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('mobile-menu-toggle') || 
-        e.target.classList.contains('mobile-menu-toggle-fallback') ||
-        e.target.closest('.mobile-menu-toggle') ||
-        e.target.closest('.mobile-menu-toggle-fallback')) {
-        console.log('Global click handler detected mobile menu click!');
-        console.log('Clicked element:', e.target);
-        console.log('Element classes:', e.target.className);
-    }
-});
 
 // Listen for storage changes to update sidebar when user data changes
 window.addEventListener('storage', function(e) {
