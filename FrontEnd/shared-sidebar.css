@@ -141,6 +141,9 @@
     overflow: hidden;
     /* Ensure touch targets are large enough */
     min-height: 44px;
+    /* Make buttons interactive */
+    cursor: pointer;
+    user-select: none;
 }
 
 .nav-item:hover {
@@ -356,7 +359,7 @@ body.dark-mode .title-display {
         flex: 1;
         gap: 0.75rem;
         margin-top: 1rem;
-        padding-bottom: 6rem;
+        padding-bottom: 8rem;
         /* Ensure proper mobile scrolling */
         overflow-y: auto;
         overflow-x: hidden;
@@ -365,8 +368,8 @@ body.dark-mode .title-display {
         scrollbar-width: thin;
         scrollbar-color: rgba(30, 200, 120, 0.3) transparent;
         /* Ensure proper height for scrolling */
-        max-height: calc(100vh - 200px);
-        min-height: 400px;
+        max-height: calc(100vh - 180px);
+        min-height: 500px;
         /* Ensure smooth scrolling */
         scroll-behavior: smooth;
         /* iOS Safari improvements */
@@ -407,6 +410,9 @@ body.dark-mode .title-display {
         /* Ensure proper touch response */
         touch-action: manipulation;
         -webkit-tap-highlight-color: rgba(30, 200, 120, 0.2);
+        /* Make buttons interactive */
+        cursor: pointer;
+        user-select: none;
     }
     
     .nav-item:hover {
@@ -548,9 +554,9 @@ body.dark-mode .title-display {
     }
     
     .nav-menu {
-        max-height: calc(100vh - 180px);
-        min-height: 350px;
-        padding-bottom: 4rem;
+        max-height: calc(100vh - 160px);
+        min-height: 450px;
+        padding-bottom: 6rem;
         scroll-behavior: smooth;
     }
     
@@ -561,6 +567,9 @@ body.dark-mode .title-display {
         margin-bottom: 0.4rem;
         touch-action: manipulation;
         -webkit-tap-highlight-color: rgba(30, 200, 120, 0.2);
+        /* Make buttons interactive */
+        cursor: pointer;
+        user-select: none;
     }
     
     .nav-icon {

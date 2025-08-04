@@ -190,35 +190,42 @@
                     </div>
                 </div>
                 <div class="user-stats">
-                    <div class="stat-item">
-                        <span class="stat-icon"><i class="fas fa-trophy"></i></span>
-                        <span class="stat-value" data-stat="rank">#42</span>
-                        <span class="stat-label">Rank</span>
-                    </div>
-                    <div class="stat-item">
+                    <!-- First line: Level only -->
+                    <div class="stat-item level-stat">
                         <span class="stat-icon"><i class="fas fa-star"></i></span>
                         <span class="stat-value" data-stat="level">1</span>
                         <span class="stat-label">Level</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-icon"><i class="fas fa-gem"></i></span>
-                        <span class="stat-value" data-stat="xp">0</span>
-                        <span class="stat-label">XP</span>
+                    
+                    <!-- Second line: Rank, XP, Protein, Calorie in a row -->
+                    <div class="stats-row-2">
+                        <div class="stat-item">
+                            <span class="stat-icon"><i class="fas fa-trophy"></i></span>
+                            <span class="stat-value" data-stat="rank">#42</span>
+                            <span class="stat-label">Rank</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon"><i class="fas fa-gem"></i></span>
+                            <span class="stat-value" data-stat="xp">0</span>
+                            <span class="stat-label">XP</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon"><i class="fas fa-drumstick-bite"></i></span>
+                            <span class="stat-value" data-stat="protein-streak">0</span>
+                            <span class="stat-label">Protein</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon"><i class="fas fa-apple-alt"></i></span>
+                            <span class="stat-value" data-stat="calorie-streak">0</span>
+                            <span class="stat-label">Calorie</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
+                    
+                    <!-- Third line: Streak only -->
+                    <div class="stat-item streak-stat">
                         <span class="stat-icon"><i class="fas fa-fire"></i></span>
                         <span class="stat-value" data-stat="streak">0</span>
                         <span class="stat-label">Streak</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon"><i class="fas fa-drumstick-bite"></i></span>
-                        <span class="stat-value" data-stat="protein-streak">0</span>
-                        <span class="stat-label">Protein</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon"><i class="fas fa-apple-alt"></i></span>
-                        <span class="stat-value" data-stat="calorie-streak">0</span>
-                        <span class="stat-label">Calorie</span>
                     </div>
                 </div>
             </div>
