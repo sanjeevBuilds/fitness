@@ -6,6 +6,11 @@ class SharedSidebarManager {
         this.selectedTitle = null;
         this.isMobile = this.detectMobile();
         console.log('SharedSidebarManager initialized, Mobile:', this.isMobile);
+        
+        // Initialize immediately if DOM is ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            this.init();
+        }
     }
 
     detectMobile() {
@@ -158,6 +163,12 @@ class SharedSidebarManager {
         toggle.style.transition = 'all 0.3s ease';
         toggle.style.alignItems = 'center';
         toggle.style.justifyContent = 'center';
+        
+        // Add text for debugging
+        toggle.textContent = '☰';
+        toggle.style.fontSize = '24px';
+        toggle.style.color = 'white';
+        toggle.style.fontWeight = 'bold';
         
         toggle.addEventListener('click', () => {
             console.log('Mobile menu toggle clicked!');
@@ -654,6 +665,7 @@ if (document.readyState === 'loading') {
         console.log('DOM loaded, initializing shared sidebar...');
         if (!window.sharedSidebar) {
             window.sharedSidebar = new SharedSidebarManager();
+            window.sharedSidebar.init(); // CRITICAL: Call init() method
         }
     });
 } else {
@@ -661,8 +673,52 @@ if (document.readyState === 'loading') {
     console.log('DOM already loaded, initializing shared sidebar immediately...');
     if (!window.sharedSidebar) {
         window.sharedSidebar = new SharedSidebarManager();
+        window.sharedSidebar.init(); // CRITICAL: Call init() method
     }
 }
+
+// IMMEDIATE FALLBACK: Create mobile menu if on mobile
+(function() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    if (isMobile) {
+        console.log('IMMEDIATE FALLBACK: Creating mobile menu...');
+        
+        // Create a simple mobile menu button immediately
+        const toggle = document.createElement('button');
+        toggle.className = 'mobile-menu-toggle-fallback';
+        toggle.textContent = '☰';
+        toggle.style.cssText = `
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1003;
+            background: rgb(41, 236, 139);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        `;
+        
+        toggle.addEventListener('click', () => {
+            console.log('Fallback mobile menu clicked!');
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-open');
+            }
+        });
+        
+        document.body.appendChild(toggle);
+        console.log('Fallback mobile menu created!');
+    }
+})();
 
 // Global function to refresh sidebar display
 function refreshSidebarDisplay() {
