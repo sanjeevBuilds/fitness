@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthQuest - Buddies</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared-sidebar.css">
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="Buddies.css">
-    <link rel="stylesheet" href="../shared-sidebar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="Buddies.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
@@ -85,6 +84,7 @@
         </main>
     </div>
     <script src="../config.js"></script>
+    <script src="Buddies.js"></script>
     <script src="../shared-sidebar.js"></script>
     <script>
         // Global Dark Mode Application
@@ -104,6 +104,11 @@
             // Initialize SharedSidebarManager if not already done
             if (typeof SharedSidebarManager !== 'undefined' && !window.sharedSidebarManager) {
                 window.sharedSidebarManager = new SharedSidebarManager();
+            }
+            
+            // Load user data for the page
+            if (typeof loadUserData === 'function') {
+                loadUserData();
             }
         });
     </script>
