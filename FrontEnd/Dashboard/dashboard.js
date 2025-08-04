@@ -1,5 +1,6 @@
 // Enhanced Dashboard Gamification Class - Fixed Version
 console.log('=== DASHBOARD.JS LOADED ===');
+console.log('=== INITIALIZING DASHBOARD ===');
 
 // --- JWT Auth Check (Protected Page) ---
 (async function() {

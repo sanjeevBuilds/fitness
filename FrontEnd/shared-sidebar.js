@@ -1,42 +1,48 @@
 // Shared Sidebar Management for Titles Only
 class SharedSidebarManager {
     constructor() {
-        this.availableTitles = [
-            { id: 'meal-master', name: 'Meal Master', icon: '<i class="fas fa-utensils"></i>', description: 'Expert at planning healthy meals', requirement: 'Log 50 meals', unlocked: true },
-            { id: 'strength-warrior', name: 'Strength Warrior', icon: '<i class="fas fa-dumbbell"></i>', description: 'Master of strength training', requirement: 'Complete 100 strength workouts', unlocked: false },
-            { id: 'cardio-king', name: 'Cardio King', icon: '<i class="fas fa-running"></i>', description: 'Endurance and cardio expert', requirement: 'Run 100km total', unlocked: false },
-            { id: 'yoga-guru', name: 'Yoga Guru', icon: '<i class="fas fa-pray"></i>', description: 'Flexibility and mindfulness master', requirement: 'Complete 50 yoga sessions', unlocked: false },
-            { id: 'nutrition-expert', name: 'Nutrition Expert', icon: '<i class="fas fa-apple-alt"></i>', description: '5+ day calorie streak', requirement: 'Track nutrition for 30 days', unlocked: true },
-            { id: 'consistency-champion', name: 'Consistency Champion', icon: '<i class="fas fa-chart-line"></i>', description: 'Unwavering dedication to fitness', requirement: '7-day streak', unlocked: true },
-            { id: 'goal-crusher', name: 'Goal Crusher', icon: '<i class="fas fa-bullseye"></i>', description: 'Achieved multiple fitness goals', requirement: 'Complete 5 goals', unlocked: false },
-            { id: 'fitness-legend', name: 'Fitness Legend', icon: '<i class="fas fa-crown"></i>', description: 'Ultimate fitness achievement', requirement: 'Complete all challenges', unlocked: false },
-            { id: 'wellness-guru', name: 'Wellness Guru', icon: '<i class="fas fa-star"></i>', description: 'Master of holistic wellness', requirement: 'Balance fitness, nutrition, and mindfulness', unlocked: true },
-            { id: 'protein-beast', name: 'Protein Beast', icon: '<i class="fas fa-dumbbell"></i>', description: '5+ day protein streak', requirement: 'Complete protein goals', unlocked: false },
-            { id: 'streak-legend', name: 'Streak Legend', icon: '<i class="fas fa-fire"></i>', description: '7+ day quest streak', requirement: 'Maintain quest streak', unlocked: false }
-        ];
+        this.userData = null;
+        this.availableTitles = [];
+        this.selectedTitle = null;
+        this.isMobile = this.detectMobile();
+        console.log('SharedSidebarManager initialized, Mobile:', this.isMobile);
+    }
 
-        // Badges removed - only titles are used now
-
-        // Mobile menu state
-        this.isMobileMenuOpen = false;
-        this.touchStartX = 0;
-        this.touchStartY = 0;
-
-        this.init();
+    detectMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 768;
     }
 
     init() {
+        console.log('SharedSidebarManager init called, Mobile:', this.isMobile);
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Screen width:', window.innerWidth);
+        
         this.loadUserData();
         this.setupUserProfileStructure();
-        this.updateSidebarDisplay();
-        this.startNotificationPolling();
         
-        // Add a small delay to ensure DOM is fully loaded
-        setTimeout(() => {
+        // Setup mobile menu if on mobile
+        if (this.isMobile) {
+            console.log('Setting up mobile menu...');
             this.setupMobileMenu();
             this.setupResizeHandler();
             this.ensureMobileMenuSetup();
-        }, 100);
+        }
+        
+        this.startNotificationPolling();
+        
+        // Test mobile functionality
+        this.testMobileFunctionality();
+    }
+    
+    testMobileFunctionality() {
+        if (this.isMobile) {
+            console.log('Testing mobile functionality...');
+            // Add a test event listener to the body to verify touch events work
+            document.body.addEventListener('touchstart', (e) => {
+                console.log('Touch detected on body');
+            }, { passive: true });
+        }
     }
 
     setupResizeHandler() {
@@ -390,6 +396,59 @@ class SharedSidebarManager {
             navItem.href = item.href;
             navItem.className = 'nav-item';
             navItem.style.position = 'relative'; // For notification badge positioning
+            
+            // Ensure the link is clickable
+            navItem.style.pointerEvents = 'auto';
+            navItem.style.cursor = 'pointer';
+            navItem.style.textDecoration = 'none';
+            
+            // Add click event listener for debugging
+            navItem.addEventListener('click', (e) => {
+                console.log('Navigation item clicked:', item.text, 'href:', item.href);
+                // Allow default navigation
+            });
+            
+            // Add mobile-specific touch events if on mobile
+            if (this.isMobile) {
+                navItem.addEventListener('touchstart', (e) => {
+                    console.log('Touch start on:', item.text);
+                    e.preventDefault();
+                    navItem.style.transform = 'scale(0.95)';
+                    navItem.style.opacity = '0.8';
+                });
+                
+                navItem.addEventListener('touchend', (e) => {
+                    console.log('Touch end on:', item.text);
+                    e.preventDefault();
+                    navItem.style.transform = 'scale(1)';
+                    navItem.style.opacity = '1';
+                    // Trigger navigation
+                    window.location.href = item.href;
+                });
+                
+                // Prevent default touch behavior that might interfere
+                navItem.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                });
+                
+                // Fallback: ensure click works even if touch events fail
+                navItem.addEventListener('click', (e) => {
+                    console.log('Fallback click on mobile:', item.text);
+                    if (this.isMobile) {
+                        e.preventDefault();
+                        window.location.href = item.href;
+                    }
+                });
+            } else {
+                // Desktop mouse events
+                navItem.addEventListener('mousedown', (e) => {
+                    navItem.style.transform = 'scale(0.95)';
+                });
+                
+                navItem.addEventListener('mouseup', (e) => {
+                    navItem.style.transform = 'scale(1)';
+                });
+            }
             
             // Check if this is the current page
             const itemPath = item.href.split('/').pop();
