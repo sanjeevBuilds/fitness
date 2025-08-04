@@ -27,7 +27,7 @@
     position: fixed;
     top: 1rem;
     left: 1rem;
-    z-index: 1001;
+    z-index: 1003;
     background: var(--primary-btn, rgb(41, 236, 139));
     border: none;
     border-radius: 50%;
@@ -322,6 +322,7 @@ body.dark-mode .title-display {
         width: 85%;
         max-width: 320px;
         height: 100vh;
+        max-height: 100vh;
         padding: 1.5rem;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
         /* Ensure proper mobile scrolling */
@@ -344,7 +345,7 @@ body.dark-mode .title-display {
     }
     
     .user-profile {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         padding: 1rem;
         background: rgba(41, 236, 139, 0.1);
         border-radius: var(--border-radius, 16px);
@@ -355,7 +356,7 @@ body.dark-mode .title-display {
         flex: 1;
         gap: 0.75rem;
         margin-top: 1rem;
-        padding-bottom: 2rem;
+        padding-bottom: 6rem;
         /* Ensure proper mobile scrolling */
         overflow-y: auto;
         overflow-x: hidden;
@@ -363,6 +364,13 @@ body.dark-mode .title-display {
         /* Custom scrollbar for mobile */
         scrollbar-width: thin;
         scrollbar-color: rgba(30, 200, 120, 0.3) transparent;
+        /* Ensure proper height for scrolling */
+        max-height: calc(100vh - 200px);
+        min-height: 400px;
+        /* Ensure smooth scrolling */
+        scroll-behavior: smooth;
+        /* iOS Safari improvements */
+        overscroll-behavior: contain;
     }
     
     .nav-menu::-webkit-scrollbar {
@@ -395,6 +403,10 @@ body.dark-mode .title-display {
         /* Prevent text wrapping issues */
         white-space: nowrap;
         text-overflow: ellipsis;
+        margin-bottom: 0.5rem;
+        /* Ensure proper touch response */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(30, 200, 120, 0.2);
     }
     
     .nav-item:hover {
@@ -492,10 +504,6 @@ body.dark-mode .title-display {
         box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
     }
     
-    .nav-item {
-        margin-bottom: 0.5rem;
-    }
-    
     @keyframes slideInFromTop {
         0% {
             opacity: 0;
@@ -533,29 +541,37 @@ body.dark-mode .title-display {
 @media (max-width: 480px) {
     .sidebar {
         width: 90%;
+        max-width: 300px;
         padding: 1rem;
-        /* Ensure proper height on small screens */
         height: 100vh;
         max-height: 100vh;
     }
     
+    .nav-menu {
+        max-height: calc(100vh - 180px);
+        min-height: 350px;
+        padding-bottom: 4rem;
+        scroll-behavior: smooth;
+    }
+    
     .nav-item {
         padding: 1rem 0.75rem;
-        font-size: 0.95rem;
-        /* Ensure touch targets are large enough */
         min-height: 44px;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(30, 200, 120, 0.2);
     }
     
     .nav-icon {
-        margin-right: 1rem;
         font-size: 1.2rem;
-        width: 20px;
+        margin-right: 1rem;
     }
     
     .notification-badge {
         padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-        min-width: 1.5rem;
+        font-size: 0.7rem;
+        min-width: 1.6rem;
         top: -6px;
         right: -6px;
     }
@@ -754,5 +770,18 @@ body.dark-mode .title-display {
     
     .nav-menu {
         -webkit-overflow-scrolling: touch;
+    }
+} 
+
+/* iOS Safari scrolling improvements */
+@supports (-webkit-touch-callout: none) {
+    .nav-menu {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+    
+    .sidebar {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 } 
