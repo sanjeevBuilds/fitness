@@ -41,6 +41,15 @@
     justify-content: center;
 }
 
+/* Ensure mobile menu toggle is visible on mobile */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
 .mobile-menu-toggle:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 16px rgba(41, 236, 139, 0.4);

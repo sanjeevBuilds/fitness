@@ -27,6 +27,18 @@ class SharedSidebarManager {
             this.setupMobileMenu();
             this.setupResizeHandler();
             this.ensureMobileMenuSetup();
+            
+            // Check if mobile menu was created properly after a delay
+            setTimeout(() => {
+                const mobileToggle = document.querySelector('.mobile-menu-toggle');
+                if (mobileToggle) {
+                    console.log('Mobile menu toggle found after delay:', mobileToggle);
+                    console.log('Mobile menu toggle display:', getComputedStyle(mobileToggle).display);
+                    console.log('Mobile menu toggle visibility:', getComputedStyle(mobileToggle).visibility);
+                } else {
+                    console.error('Mobile menu toggle not found after delay!');
+                }
+            }, 1000);
         }
         
         this.startNotificationPolling();
@@ -42,6 +54,15 @@ class SharedSidebarManager {
             document.body.addEventListener('touchstart', (e) => {
                 console.log('Touch detected on body');
             }, { passive: true });
+            
+            // Check if mobile menu exists, if not create it
+            setTimeout(() => {
+                const mobileToggle = document.querySelector('.mobile-menu-toggle');
+                if (!mobileToggle) {
+                    console.log('Mobile menu toggle missing, creating it...');
+                    this.createMobileMenuToggle();
+                }
+            }, 500);
         }
     }
 
@@ -89,6 +110,8 @@ class SharedSidebarManager {
     }
 
     setupMobileMenu() {
+        console.log('Setting up mobile menu...');
+        
         // Create mobile menu toggle button
         this.createMobileMenuToggle();
         
@@ -98,14 +121,19 @@ class SharedSidebarManager {
         // Setup touch events for swipe to close
         this.setupTouchEvents();
         
-        // Setup keyboard events (ESC to close)
+        // Setup keyboard events
         this.setupKeyboardEvents();
+        
+        console.log('Mobile menu setup complete');
     }
 
     createMobileMenuToggle() {
+        console.log('Creating mobile menu toggle...');
+        
         // Remove existing toggle if any
         const existingToggle = document.querySelector('.mobile-menu-toggle');
         if (existingToggle) {
+            console.log('Removing existing mobile menu toggle');
             existingToggle.remove();
         }
 
@@ -114,11 +142,38 @@ class SharedSidebarManager {
         toggle.innerHTML = '<div class="hamburger"></div>';
         toggle.setAttribute('aria-label', 'Toggle mobile menu');
         
+        // Ensure it's visible on mobile
+        toggle.style.display = 'flex';
+        toggle.style.position = 'fixed';
+        toggle.style.top = '1rem';
+        toggle.style.left = '1rem';
+        toggle.style.zIndex = '1003';
+        toggle.style.background = 'rgb(41, 236, 139)';
+        toggle.style.border = 'none';
+        toggle.style.borderRadius = '50%';
+        toggle.style.width = '50px';
+        toggle.style.height = '50px';
+        toggle.style.cursor = 'pointer';
+        toggle.style.boxShadow = '0 4px 12px rgba(41, 236, 139, 0.3)';
+        toggle.style.transition = 'all 0.3s ease';
+        toggle.style.alignItems = 'center';
+        toggle.style.justifyContent = 'center';
+        
         toggle.addEventListener('click', () => {
+            console.log('Mobile menu toggle clicked!');
             this.toggleMobileMenu();
         });
 
         document.body.appendChild(toggle);
+        console.log('Mobile menu toggle created and appended to body');
+        
+        // Verify it's in the DOM
+        const createdToggle = document.querySelector('.mobile-menu-toggle');
+        if (createdToggle) {
+            console.log('Mobile menu toggle found in DOM:', createdToggle);
+        } else {
+            console.error('Mobile menu toggle not found in DOM!');
+        }
     }
 
     createMobileOverlay() {
