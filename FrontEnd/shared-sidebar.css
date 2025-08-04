@@ -107,6 +107,7 @@
 }
 
 .mobile-overlay.active {
+    display: block;
     opacity: 1;
 }
 
@@ -539,7 +540,7 @@ body.dark-mode .title-display {
     }
     
     .mobile-overlay {
-        display: block;
+        display: none;
     }
 }
 
@@ -589,6 +590,8 @@ body.dark-mode .title-display {
 .main-content {
     margin-left: 280px;
     transition: margin-left 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 768px) {
