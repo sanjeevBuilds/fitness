@@ -99,7 +99,13 @@
         applyGlobalDarkMode();
     </script>
     <script>
-    // Sidebar is now handled by shared-sidebar.js
+        // Ensure SharedSidebarManager is properly initialized for mobile menu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize SharedSidebarManager if not already done
+            if (typeof SharedSidebarManager !== 'undefined' && !window.sharedSidebarManager) {
+                window.sharedSidebarManager = new SharedSidebarManager();
+            }
+        });
     </script>
 </body>
 </html>

@@ -155,20 +155,25 @@
     <script src="Settings.js"></script>
     <script src="../shared-sidebar.js"></script>
     <script>
-    // Sidebar is now handled by shared-sidebar.js
-    // Autofill form fields from localStorage if available
-    (function() {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            // Form fields
-            const profileInput = document.getElementById('profile-name');
-            const emailInput = document.getElementById('email');
-            const usernameInput = document.getElementById('username');
-            if (profileInput) profileInput.value = userData.profileName || '';
-            if (emailInput) emailInput.value = userData.email || '';
-            if (usernameInput) usernameInput.value = userData.username || '';
+        // Global Dark Mode Application
+        function applyGlobalDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
         }
-    })();
+        
+        // Apply dark mode immediately for faster loading
+        applyGlobalDarkMode();
+    </script>
+    <script>
+        // Ensure SharedSidebarManager is properly initialized for mobile menu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize SharedSidebarManager if not already done
+            if (typeof SharedSidebarManager !== 'undefined' && !window.sharedSidebarManager) {
+                window.sharedSidebarManager = new SharedSidebarManager();
+            }
+        });
     </script>
 </body>
 </html>

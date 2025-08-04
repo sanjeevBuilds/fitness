@@ -30,7 +30,56 @@ class SharedSidebarManager {
         this.setupUserProfileStructure();
         this.updateSidebarDisplay();
         this.startNotificationPolling();
-        this.setupMobileMenu();
+        
+        // Add a small delay to ensure DOM is fully loaded
+        setTimeout(() => {
+            this.setupMobileMenu();
+            this.setupResizeHandler();
+            this.ensureMobileMenuSetup();
+        }, 100);
+    }
+
+    setupResizeHandler() {
+        // Handle window resize and orientation changes
+        window.addEventListener('resize', () => {
+            // Close mobile menu on large screens
+            if (window.innerWidth > 768 && this.isMobileMenuOpen) {
+                this.closeMobileMenu();
+            }
+            
+            // Ensure proper mobile menu setup on small screens
+            if (window.innerWidth <= 768) {
+                this.ensureMobileMenuSetup();
+            }
+        });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (window.innerWidth <= 768) {
+                    this.ensureMobileMenuSetup();
+                }
+            }, 100);
+        });
+    }
+
+    ensureMobileMenuSetup() {
+        const sidebar = document.querySelector('.sidebar');
+        const navMenu = sidebar?.querySelector('.nav-menu');
+        
+        if (sidebar && navMenu) {
+            // Ensure proper mobile styling
+            sidebar.style.height = '100vh';
+            sidebar.style.maxHeight = '100vh';
+            sidebar.style.overflowY = 'auto';
+            sidebar.style.overflowX = 'hidden';
+            sidebar.style.webkitOverflowScrolling = 'touch';
+            
+            navMenu.style.maxHeight = 'calc(100vh - 200px)';
+            navMenu.style.overflowY = 'auto';
+            navMenu.style.overflowX = 'hidden';
+            navMenu.style.webkitOverflowScrolling = 'touch';
+        }
     }
 
     setupMobileMenu() {
@@ -138,6 +187,12 @@ class SharedSidebarManager {
 
         if (sidebar) {
             sidebar.classList.add('mobile-open');
+            // Ensure sidebar is properly positioned and sized
+            sidebar.style.height = '100vh';
+            sidebar.style.maxHeight = '100vh';
+            sidebar.style.overflowY = 'auto';
+            sidebar.style.overflowX = 'hidden';
+            sidebar.style.webkitOverflowScrolling = 'touch';
         }
         if (overlay) {
             overlay.classList.add('active');
@@ -148,6 +203,15 @@ class SharedSidebarManager {
 
         this.isMobileMenuOpen = true;
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Ensure nav-menu is properly scrollable
+        const navMenu = sidebar?.querySelector('.nav-menu');
+        if (navMenu) {
+            navMenu.style.maxHeight = 'calc(100vh - 200px)';
+            navMenu.style.overflowY = 'auto';
+            navMenu.style.overflowX = 'hidden';
+            navMenu.style.webkitOverflowScrolling = 'touch';
+        }
     }
 
     closeMobileMenu() {
@@ -157,6 +221,12 @@ class SharedSidebarManager {
 
         if (sidebar) {
             sidebar.classList.remove('mobile-open');
+            // Reset sidebar styles
+            sidebar.style.height = '';
+            sidebar.style.maxHeight = '';
+            sidebar.style.overflowY = '';
+            sidebar.style.overflowX = '';
+            sidebar.style.webkitOverflowScrolling = '';
         }
         if (overlay) {
             overlay.classList.remove('active');
@@ -167,6 +237,15 @@ class SharedSidebarManager {
 
         this.isMobileMenuOpen = false;
         document.body.style.overflow = ''; // Restore scrolling
+        
+        // Reset nav-menu styles
+        const navMenu = sidebar?.querySelector('.nav-menu');
+        if (navMenu) {
+            navMenu.style.maxHeight = '';
+            navMenu.style.overflowY = '';
+            navMenu.style.overflowX = '';
+            navMenu.style.webkitOverflowScrolling = '';
+        }
     }
 
     loadUserData() {

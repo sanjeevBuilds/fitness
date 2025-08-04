@@ -16,6 +16,9 @@
     flex-direction: column;
     align-items: stretch;
     transition: transform 0.3s ease-in-out;
+    /* Ensure proper scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 /* Mobile Hamburger Menu Button */
@@ -33,6 +36,9 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mobile-menu-toggle:hover {
@@ -46,6 +52,9 @@
     background: white;
     position: relative;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mobile-menu-toggle .hamburger::before,
@@ -56,6 +65,7 @@
     height: 2px;
     background: white;
     transition: all 0.3s ease;
+    left: 0;
 }
 
 .mobile-menu-toggle .hamburger::before {
@@ -74,11 +84,13 @@
 .mobile-menu-toggle.active .hamburger::before {
     transform: rotate(45deg);
     top: 0;
+    left: 0;
 }
 
 .mobile-menu-toggle.active .hamburger::after {
     transform: rotate(-45deg);
     bottom: 0;
+    left: 0;
 }
 
 /* Mobile overlay */
@@ -101,35 +113,47 @@
 
 /* Navigation Menu */
 .nav-menu {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-top: 2rem;
+    margin-top: 1rem;
+    /* Ensure proper scrolling */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Mobile scroll improvements */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(30, 200, 120, 0.3) transparent;
 }
 
 /* Navigation Items */
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius, 16px);
     text-decoration: none;
     color: var(--text-dark, #333);
-    border-radius: var(--border-radius, 16px);
-    transition: all 0.3s ease;
     font-weight: 500;
-    position: relative; /* For notification badge positioning */
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    /* Ensure touch targets are large enough */
+    min-height: 44px;
 }
 
 .nav-item:hover {
     background: rgba(30, 200, 120, 0.1);
-    transform: translateX(5px);
+    transform: translateX(8px);
 }
 
 .nav-item.active {
     background: var(--primary-btn, rgb(41, 236, 139));
     color: rgb(18, 24, 22);
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(41, 236, 139, 0.3);
+    box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
+    transform: translateX(8px);
 }
 
 /* Navigation Icons */
@@ -142,94 +166,83 @@
 
 /* Notification Badge */
 .notification-badge {
-    background: linear-gradient(135deg, var(--primary-btn, rgb(41, 236, 139)), var(--primary-btn-hover, rgb(35, 201, 118)));
+    background: linear-gradient(135deg, #ff4757, #ff3742);
     color: white;
     border-radius: 50%;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    min-width: 1.5rem;
+    min-width: 1.8rem;
     text-align: center;
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -8px;
+    right: -8px;
     display: none;
     animation: pulse 2s infinite;
-    box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
 }
 
 @keyframes pulse {
     0% {
         transform: scale(1);
-        box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
     }
     50% {
         transform: scale(1.1);
-        box-shadow: 0 4px 8px rgba(41, 236, 139, 0.5);
     }
     100% {
         transform: scale(1);
-        box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
     }
 }
 
-/* User Info Container */
+/* User Info Section */
 .user-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     text-align: center;
+    padding: 1.5rem;
+    background: rgba(41, 236, 139, 0.05);
+    border-radius: var(--border-radius, 16px);
+    border: 1px solid rgba(41, 236, 139, 0.1);
 }
 
-/* User Name - Simple and clean */
+/* User Name */
 .user-name {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
+    margin-bottom: 0.5rem;
     color: var(--text-dark, #333);
-    line-height: 1.3;
-    word-wrap: break-word;
-    max-width: 200px;
-    margin: 0;
-    transition: all 0.3s ease;
-    background: none !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    word-break: break-word;
+    max-width: 100%;
 }
 
-/* Title Display - Special achievement styling */
+/* Title Display */
 .title-display {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-dark, #333);
-    line-height: 1.3;
-    word-wrap: break-word;
-    max-width: 200px;
-    margin: 0.5rem 0;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, rgba(41, 236, 139, 0.1), rgba(30, 200, 120, 0.1));
+    font-size: 0.9rem;
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    border: 2px solid rgba(41, 236, 139, 0.3);
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
+    font-weight: 600;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(41, 236, 139, 0.2);
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    word-break: break-word;
+    max-width: 100%;
 }
 
-/* Override any inline styles that might interfere */
 .user-name[style*="background"] {
-    background: none !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 0.5rem;
 }
 
 /* Dark Mode Styles */
 body.dark-mode .sidebar {
-    background: rgb(28, 36, 34);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgb(28, 36, 34) 0%, rgb(32, 40, 38) 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 body.dark-mode .nav-item {
@@ -237,12 +250,14 @@ body.dark-mode .nav-item {
 }
 
 body.dark-mode .nav-item:hover {
-    background: rgba(30, 200, 120, 0.1);
+    background: rgba(30, 200, 120, 0.15);
+    box-shadow: 0 2px 8px rgba(30, 200, 120, 0.2);
 }
 
 body.dark-mode .nav-item.active {
-    background: rgb(30, 200, 120);
+    background: linear-gradient(135deg, rgb(30, 200, 120), rgb(25, 170, 100));
     color: rgb(18, 24, 22);
+    box-shadow: 0 4px 12px rgba(30, 200, 120, 0.4);
 }
 
 body.dark-mode .user-name {
@@ -250,27 +265,25 @@ body.dark-mode .user-name {
 }
 
 body.dark-mode .user-name[style*="background"] {
-    background: none !important;
-    color: rgb(240, 255, 250) !important;
-    border: none !important;
+    background: linear-gradient(135deg, rgb(30, 200, 120), rgb(25, 170, 100));
+    color: rgb(18, 24, 22);
 }
 
 body.dark-mode .title-display {
-    background: linear-gradient(135deg, rgba(30, 200, 120, 0.2), rgba(25, 170, 100, 0.2));
-    color: rgb(240, 255, 250);
-    border-color: rgba(30, 200, 120, 0.5);
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
 }
 
 /* Level Badge */
 .level-badge {
-    background: linear-gradient(135deg, var(--primary-btn, rgb(41, 236, 139)), var(--primary-btn-hover, rgb(35, 201, 118)));
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
     font-size: 0.8rem;
     font-weight: 600;
     margin-top: 0.5rem;
-    box-shadow: 0 2px 4px rgba(41, 236, 139, 0.3);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 /* Avatar */
@@ -279,15 +292,14 @@ body.dark-mode .title-display {
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--primary-btn, rgb(41, 236, 139));
+    border: 4px solid var(--primary-btn, rgb(41, 236, 139));
     box-shadow: 0 4px 12px rgba(41, 236, 139, 0.3);
-    transition: all 0.3s ease;
-    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
 }
 
 .avatar:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(41, 236, 139, 0.4);
 }
 
 /* User Profile Section */
@@ -296,21 +308,30 @@ body.dark-mode .title-display {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    margin-bottom: 2rem;
     padding: 1.5rem;
     background: rgba(41, 236, 139, 0.05);
-    border-radius: 16px;
+    border-radius: var(--border-radius, 16px);
     border: 1px solid rgba(41, 236, 139, 0.1);
-    margin-bottom: 1rem;
 }
 
-/* Enhanced Mobile Responsive Design */
+/* Mobile Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
         width: 85%;
         max-width: 320px;
+        height: 100vh;
         padding: 1.5rem;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        /* Ensure proper mobile scrolling */
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        /* Prevent horizontal scrolling */
+        overscroll-behavior: contain;
+        /* Ensure proper z-index */
+        z-index: 1002;
     }
     
     .sidebar.mobile-open {
@@ -335,10 +356,30 @@ body.dark-mode .title-display {
         gap: 0.75rem;
         margin-top: 1rem;
         padding-bottom: 2rem;
+        /* Ensure proper mobile scrolling */
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        /* Custom scrollbar for mobile */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(30, 200, 120, 0.3) transparent;
     }
     
     .nav-menu::-webkit-scrollbar {
         width: 4px;
+    }
+    
+    .nav-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .nav-menu::-webkit-scrollbar-thumb {
+        background: rgba(30, 200, 120, 0.3);
+        border-radius: 2px;
+    }
+    
+    .nav-menu::-webkit-scrollbar-thumb:hover {
+        background: rgba(30, 200, 120, 0.5);
     }
     
     .nav-item {
@@ -349,6 +390,11 @@ body.dark-mode .title-display {
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        /* Ensure touch targets are large enough */
+        min-height: 48px;
+        /* Prevent text wrapping issues */
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
     
     .nav-item:hover {
@@ -369,6 +415,7 @@ body.dark-mode .title-display {
         font-size: 1.3rem;
         width: 24px;
         text-align: center;
+        flex-shrink: 0;
     }
     
     .user-name {
@@ -376,6 +423,9 @@ body.dark-mode .title-display {
         font-weight: 600;
         margin-bottom: 0.5rem;
         color: var(--text-dark, #333);
+        /* Allow text wrapping on mobile */
+        white-space: normal;
+        word-break: break-word;
     }
     
     .title-display {
@@ -388,6 +438,9 @@ body.dark-mode .title-display {
         text-align: center;
         margin-top: 0.5rem;
         box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        /* Allow text wrapping on mobile */
+        white-space: normal;
+        word-break: break-word;
     }
     
     .user-name[style*="background"] {
@@ -395,6 +448,9 @@ body.dark-mode .title-display {
         border-radius: 20px;
         text-align: center;
         margin-bottom: 0.5rem;
+        /* Allow text wrapping on mobile */
+        white-space: normal;
+        word-break: break-word;
     }
     
     .avatar {
@@ -478,11 +534,16 @@ body.dark-mode .title-display {
     .sidebar {
         width: 90%;
         padding: 1rem;
+        /* Ensure proper height on small screens */
+        height: 100vh;
+        max-height: 100vh;
     }
     
     .nav-item {
         padding: 1rem 0.75rem;
         font-size: 0.95rem;
+        /* Ensure touch targets are large enough */
+        min-height: 44px;
     }
     
     .nav-icon {
@@ -578,6 +639,14 @@ body.dark-mode .title-display {
     .nav-menu {
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
+        /* Ensure proper scrolling container */
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        /* Better touch scrolling */
+        overscroll-behavior: contain;
+        /* Ensure proper positioning */
+        position: relative;
     }
 
     /* Touch-friendly tap targets */
@@ -585,7 +654,14 @@ body.dark-mode .title-display {
         min-height: 44px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        /* Prevent text overflow */
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        /* Better touch response */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(30, 200, 120, 0.2);
     }
 
     /* Mobile scroll indicator */
@@ -601,5 +677,82 @@ body.dark-mode .title-display {
         border-radius: 50%;
         pointer-events: none;
         opacity: 0.7;
+    }
+    
+    /* Ensure sidebar is always on top */
+    .sidebar {
+        z-index: 1002 !important;
+    }
+    
+    /* Better overlay handling */
+    .mobile-overlay {
+        z-index: 1001 !important;
+    }
+    
+    /* Ensure hamburger button is always visible */
+    .mobile-menu-toggle {
+        z-index: 1003 !important;
+    }
+}
+
+/* Additional mobile optimizations for very small screens */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 95%;
+        max-width: 300px;
+    }
+    
+    .nav-menu {
+        max-height: calc(100vh - 180px);
+    }
+    
+    .nav-item {
+        min-height: 48px;
+        padding: 1.2rem 1rem;
+    }
+}
+
+/* Landscape orientation fixes */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        height: 100vh;
+        max-height: 100vh;
+    }
+    
+    .nav-menu {
+        max-height: calc(100vh - 150px);
+    }
+    
+    .user-profile {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .avatar {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-name {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .title-display {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        margin-top: 0.25rem;
+    }
+}
+
+/* Ensure proper scrolling on iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .sidebar {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-menu {
+        -webkit-overflow-scrolling: touch;
     }
 } 

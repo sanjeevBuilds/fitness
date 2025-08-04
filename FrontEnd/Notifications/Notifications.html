@@ -148,21 +148,29 @@
       </div>
     </main>
   </div>
+  <script src="../config.js"></script>
+  <script src="../shared-sidebar.js"></script>
   <script>
     // Global Dark Mode Application
     function applyGlobalDarkMode() {
-        const isDark = localStorage.getItem('darkMode') === 'true';
-        if (isDark) {
-            document.body.classList.add('dark-mode');
-        }
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+      }
     }
     
     // Apply dark mode immediately for faster loading
     applyGlobalDarkMode();
-</script>
-  <!-- Load shared sidebar -->
-  <script src="../config.js"></script>
-  <script src="../shared-sidebar.js"></script>
+  </script>
+  <script>
+    // Ensure SharedSidebarManager is properly initialized for mobile menu
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize SharedSidebarManager if not already done
+      if (typeof SharedSidebarManager !== 'undefined' && !window.sharedSidebarManager) {
+        window.sharedSidebarManager = new SharedSidebarManager();
+      }
+    });
+  </script>
   <script src="Notifications.js"></script>
 </body>
 
