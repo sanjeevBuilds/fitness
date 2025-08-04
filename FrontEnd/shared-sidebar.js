@@ -17,6 +17,11 @@ class SharedSidebarManager {
 
         // Badges removed - only titles are used now
 
+        // Mobile menu state
+        this.isMobileMenuOpen = false;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+
         this.init();
     }
 
@@ -25,6 +30,143 @@ class SharedSidebarManager {
         this.setupUserProfileStructure();
         this.updateSidebarDisplay();
         this.startNotificationPolling();
+        this.setupMobileMenu();
+    }
+
+    setupMobileMenu() {
+        // Create mobile menu toggle button
+        this.createMobileMenuToggle();
+        
+        // Create mobile overlay
+        this.createMobileOverlay();
+        
+        // Setup touch events for swipe to close
+        this.setupTouchEvents();
+        
+        // Setup keyboard events (ESC to close)
+        this.setupKeyboardEvents();
+    }
+
+    createMobileMenuToggle() {
+        // Remove existing toggle if any
+        const existingToggle = document.querySelector('.mobile-menu-toggle');
+        if (existingToggle) {
+            existingToggle.remove();
+        }
+
+        const toggle = document.createElement('button');
+        toggle.className = 'mobile-menu-toggle';
+        toggle.innerHTML = '<div class="hamburger"></div>';
+        toggle.setAttribute('aria-label', 'Toggle mobile menu');
+        
+        toggle.addEventListener('click', () => {
+            this.toggleMobileMenu();
+        });
+
+        document.body.appendChild(toggle);
+    }
+
+    createMobileOverlay() {
+        // Remove existing overlay if any
+        const existingOverlay = document.querySelector('.mobile-overlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        
+        overlay.addEventListener('click', () => {
+            this.closeMobileMenu();
+        });
+
+        document.body.appendChild(overlay);
+    }
+
+    setupTouchEvents() {
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Touch start
+        sidebar.addEventListener('touchstart', (e) => {
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        // Touch move
+        sidebar.addEventListener('touchmove', (e) => {
+            if (!this.isMobileMenuOpen) return;
+            
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            const deltaX = this.touchStartX - touchX;
+            const deltaY = Math.abs(this.touchStartY - touchY);
+
+            // Only handle horizontal swipes
+            if (Math.abs(deltaX) > deltaY && deltaX > 50) {
+                this.closeMobileMenu();
+            }
+        }, { passive: true });
+
+        // Touch end
+        sidebar.addEventListener('touchend', (e) => {
+            this.touchStartX = 0;
+            this.touchStartY = 0;
+        }, { passive: true });
+    }
+
+    setupKeyboardEvents() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isMobileMenuOpen) {
+                this.closeMobileMenu();
+            }
+        });
+    }
+
+    toggleMobileMenu() {
+        if (this.isMobileMenuOpen) {
+            this.closeMobileMenu();
+        } else {
+            this.openMobileMenu();
+        }
+    }
+
+    openMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+
+        if (sidebar) {
+            sidebar.classList.add('mobile-open');
+        }
+        if (overlay) {
+            overlay.classList.add('active');
+        }
+        if (toggle) {
+            toggle.classList.add('active');
+        }
+
+        this.isMobileMenuOpen = true;
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    closeMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+
+        if (sidebar) {
+            sidebar.classList.remove('mobile-open');
+        }
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+        if (toggle) {
+            toggle.classList.remove('active');
+        }
+
+        this.isMobileMenuOpen = false;
+        document.body.style.overflow = ''; // Restore scrolling
     }
 
     loadUserData() {

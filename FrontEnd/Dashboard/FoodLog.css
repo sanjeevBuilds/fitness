@@ -526,6 +526,28 @@
         position: static;
         margin-top: 1rem;
     }
+    
+    /* Responsive numbers for mobile */
+    .nutrition-item .value,
+    .calories,
+    .macro,
+    .progress-text,
+    .remaining {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .nutrition-item .label {
+        font-size: 0.9rem;
+    }
+    
+    .meal-content h3 {
+        font-size: 1.1rem;
+    }
+    
+    .meal-content p {
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -536,6 +558,28 @@
 
     .food-search-section {
         padding: 1rem;
+    }
+    
+    /* Enhanced responsive numbers for small mobile */
+    .nutrition-item .value,
+    .calories,
+    .macro,
+    .progress-text,
+    .remaining {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    
+    .nutrition-item .label {
+        font-size: 0.85rem;
+    }
+    
+    .meal-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .meal-content p {
+        font-size: 0.85rem;
     }
 }
 

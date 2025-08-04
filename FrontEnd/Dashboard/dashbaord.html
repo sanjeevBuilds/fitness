@@ -544,6 +544,13 @@
     <script src="dashboard.js"></script>
     <script src="../shared-sidebar.js"></script>
     <script>
+        // Initialize mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // The SharedSidebarManager will handle mobile menu creation
+            // This ensures the mobile menu is created after the DOM is loaded
+        });
+    </script>
+    <script>
         (function() {
             const userData = JSON.parse(localStorage.getItem('userData'));
             if (userData) {
