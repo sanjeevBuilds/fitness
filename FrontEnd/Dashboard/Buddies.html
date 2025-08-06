@@ -50,8 +50,19 @@
             </section>
 
             <section class="leaderboard">
-                <h2>Leaderboard</h2>
-                <button class="leaderboard-next-btn" style="float:right;margin-top:-2.2rem;margin-right:0.5rem;">→</button>
+                <div class="leaderboard-header">
+                    <h2>Leaderboard</h2>
+                    <div class="leaderboard-navigation">
+                        <button class="leaderboard-nav-btn leaderboard-back-btn" id="leaderboard-back-btn" style="display: none;">
+                            <i class="fas fa-chevron-left"></i>
+                            <span class="nav-text">Previous</span>
+                        </button>
+                        <button class="leaderboard-nav-btn leaderboard-next-btn" id="leaderboard-next-btn">
+                            <span class="nav-text">Next</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -66,6 +77,9 @@
                             
                         </tbody>
                     </table>
+                </div>
+                <div class="leaderboard-pagination">
+                    <span class="page-info" id="page-info">Page 1</span>
                 </div>
             </section>
 

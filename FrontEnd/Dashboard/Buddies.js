@@ -1008,12 +1008,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function renderLeaderboardPage() {
         const tbody = document.getElementById('leaderboard-body');
-        const nextBtn = document.querySelector('.leaderboard-next-btn');
+        const nextBtn = document.getElementById('leaderboard-next-btn');
+        const backBtn = document.getElementById('leaderboard-back-btn');
+        const pageInfo = document.getElementById('page-info');
+        
         if (!tbody) return;
+        
         tbody.innerHTML = '';
         const start = leaderboardPage * USERS_PER_PAGE;
         const end = start + USERS_PER_PAGE;
         const pageUsers = leaderboardUsers.slice(start, end);
+        const totalPages = Math.ceil(leaderboardUsers.length / USERS_PER_PAGE);
+        
         pageUsers.forEach((user, idx) => {
             // Debug: Log the original username and profileName
             console.log('Username:', user.username, 'ProfileName:', user.profileName, 'Email:', user.email);
@@ -1053,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tr.innerHTML = `
                 <td>${start + idx + 1}</td>
                 <td class="user-cell">
-                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${displayName}" class="small-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:8px;vertical-align:middle;">
+                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${displayName}" class="small-avatar">
                     ${displayName}
                 </td>
                 <td>${user.level || 1}</td>
@@ -1061,18 +1067,50 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             tbody.appendChild(tr);
         });
-        // Show/hide next button
-        if (leaderboardUsers.length > end) {
-            nextBtn.style.display = '';
-        } else {
-            nextBtn.style.display = 'none';
+        
+        // Update pagination info
+        if (pageInfo) {
+            pageInfo.textContent = `Page ${leaderboardPage + 1} of ${totalPages}`;
         }
+        
+        // Show/hide navigation buttons
+        if (backBtn) {
+            backBtn.style.display = leaderboardPage > 0 ? 'flex' : 'none';
+        }
+        
+        if (nextBtn) {
+            nextBtn.style.display = leaderboardPage < totalPages - 1 ? 'flex' : 'none';
+        }
+        
+        // Add smooth animation for page transitions
+        tbody.style.opacity = '0';
+        tbody.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            tbody.style.transition = 'all 0.3s ease';
+            tbody.style.opacity = '1';
+            tbody.style.transform = 'translateY(0)';
+        }, 50);
     }
-    const nextBtn = document.querySelector('.leaderboard-next-btn');
+    
+    // Add event listeners for navigation buttons
+    const nextBtn = document.getElementById('leaderboard-next-btn');
+    const backBtn = document.getElementById('leaderboard-back-btn');
+    
     if (nextBtn) {
         nextBtn.addEventListener('click', function() {
-            leaderboardPage++;
-            renderLeaderboardPage();
+            if (leaderboardPage < Math.ceil(leaderboardUsers.length / USERS_PER_PAGE) - 1) {
+                leaderboardPage++;
+                renderLeaderboardPage();
+            }
+        });
+    }
+    
+    if (backBtn) {
+        backBtn.addEventListener('click', function() {
+            if (leaderboardPage > 0) {
+                leaderboardPage--;
+                renderLeaderboardPage();
+            }
         });
     }
     renderLeaderboard();
