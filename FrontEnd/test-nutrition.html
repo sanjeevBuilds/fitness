@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Nutrition API Test</h1>
+        <p>This page tests protein and carbs data from all three APIs to understand their response structures.</p>
+        
+        <div class="test-section">
+            <h3>API Tests</h3>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <button onclick="testDummyJSON()">Test DummyJSON Only</button>
+            <button onclick="testFoodish()">Test Foodish Only</button>
+            <button onclick="testNutritionix()">Test Nutritionix Only</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="results" class="results">Click "Run All Tests" to start...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Summary</h3>
+            <div id="summary"></div>
+        </div>
+    </div>
+
+    <script src="test-nutrition.js"></script>
+    <script>
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const resultsDiv = document.getElementById('results');
+        const summaryDiv = document.getElementById('summary');
+        
+        function addToResults(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.textContent += `[${timestamp}] ${message}\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToResults(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToResults('ERROR: ' + args.join(' '), 'error');
+        };
+        
+        function clearResults() {
+            resultsDiv.textContent = '';
+            summaryDiv.innerHTML = '';
+        }
+        
+        function updateSummary() {
+            summaryDiv.innerHTML = `
+                <div class="status info">
+                    <h4>API Response Structure Summary:</h4>
+                    <ul>
+                        <li><strong>DummyJSON:</strong> Provides recipes with caloriesPerServing, protein, carbs, fat</li>
+                        <li><strong>Foodish:</strong> Provides only food images, no nutrition data</li>
+                        <li><strong>Nutritionix:</strong> Provides detailed nutrition data per serving with serving weights</li>
+                        <li><strong>Nutritionix Natural:</strong> Provides most detailed nutrition data including fiber, sugar, sodium</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Override the runAllTests function to update summary
+        const originalRunAllTests = runAllTests;
+        runAllTests = async function() {
+            clearResults();
+            await originalRunAllTests();
+            updateSummary();
+        };
+    </script>
+</body>
+</html> 
