@@ -613,12 +613,12 @@ function convertNutritionData(food, quantity = 1) {
     converted.nf_total_carbohydrate = converted.nf_total_carbohydrate || 0;
     converted.nf_total_fat = converted.nf_total_fat || 0;
     
-    // Calculate nutrition based on quantity
-    const quantityMultiplier = parseFloat(quantity) || 1;
-    converted.nf_calories = Math.round(converted.nf_calories * quantityMultiplier);
-    converted.nf_protein = Math.round(converted.nf_protein * quantityMultiplier * 10) / 10;
-    converted.nf_total_carbohydrate = Math.round(converted.nf_total_carbohydrate * quantityMultiplier * 10) / 10;
-    converted.nf_total_fat = Math.round(converted.nf_total_fat * quantityMultiplier * 10) / 10;
+    // The backend already calculates nutrition based on quantity, so we don't multiply again
+    // Just round the values for display
+    converted.nf_calories = Math.round(converted.nf_calories);
+    converted.nf_protein = Math.round(converted.nf_protein * 10) / 10;
+    converted.nf_total_carbohydrate = Math.round(converted.nf_total_carbohydrate * 10) / 10;
+    converted.nf_total_fat = Math.round(converted.nf_total_fat * 10) / 10;
     
     return converted;
 }
