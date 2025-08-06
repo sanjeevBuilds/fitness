@@ -314,7 +314,10 @@ async function showNutritionalPreview() {
         const data = await response.json();
         if (data.foods && data.foods.length > 0) {
             const food = data.foods[0];
-            updateNutritionalPreview(food);
+            
+            // Convert Nutritionix response format to frontend-expected format
+            const convertedFood = convertNutritionData(food);
+            updateNutritionalPreview(convertedFood);
         }
     } catch (error) {
         console.error('Error fetching nutritional data:', error);
@@ -385,15 +388,19 @@ async function addFoodToLog() {
         const data = await response.json();
         if (data.foods && data.foods.length > 0) {
             const food = data.foods[0];
+            
+            // Convert Nutritionix response format to frontend-expected format
+            const convertedFood = convertNutritionData(food);
+            
             const meal = {
                 id: Date.now(),
                 name: selectedFood.food_name,
                 brand: selectedFood.brand_name || 'Generic',
                 quantity: quantitySelect.value,
-                calories: Math.round(food.nf_calories || 0),
-                protein: Math.round(food.nf_protein || 0),
-                carbs: Math.round(food.nf_total_carbohydrate || 0),
-                fat: Math.round(food.nf_total_fat || 0),
+                calories: Math.round(convertedFood.nf_calories || 0),
+                protein: Math.round(convertedFood.nf_protein || 0),
+                carbs: Math.round(convertedFood.nf_total_carbohydrate || 0),
+                fat: Math.round(convertedFood.nf_total_fat || 0),
                 timestamp: new Date().toISOString()
             };
 
@@ -569,6 +576,44 @@ async function syncFoodLogWithBackend(foodLog) {
 function safeNumber(value) {
     const num = Number(value);
     return isNaN(num) ? 0 : num;
+}
+
+// Convert Nutritionix API response to frontend-expected format
+function convertNutritionData(food) {
+    // If food already has nf_ fields, return as is
+    if (food.nf_calories !== undefined) {
+        return food;
+    }
+    
+    // Convert from full_nutrients format to nf_ format
+    const converted = { ...food };
+    
+    if (food.full_nutrients) {
+        food.full_nutrients.forEach(nutrient => {
+            switch (nutrient.attr_id) {
+                case 203: // Protein
+                    converted.nf_protein = nutrient.value;
+                    break;
+                case 204: // Total Fat
+                    converted.nf_total_fat = nutrient.value;
+                    break;
+                case 205: // Total Carbohydrate
+                    converted.nf_total_carbohydrate = nutrient.value;
+                    break;
+                case 208: // Calories
+                    converted.nf_calories = nutrient.value;
+                    break;
+            }
+        });
+    }
+    
+    // Set default values if not found
+    converted.nf_calories = converted.nf_calories || 0;
+    converted.nf_protein = converted.nf_protein || 0;
+    converted.nf_total_carbohydrate = converted.nf_total_carbohydrate || 0;
+    converted.nf_total_fat = converted.nf_total_fat || 0;
+    
+    return converted;
 }
 
 // Update daily totals
