@@ -316,7 +316,7 @@ async function showNutritionalPreview() {
             const food = data.foods[0];
             
             // Convert Nutritionix response format to frontend-expected format
-            const convertedFood = convertNutritionData(food);
+            const convertedFood = convertNutritionData(food, quantitySelect.value);
             updateNutritionalPreview(convertedFood);
         }
     } catch (error) {
@@ -390,7 +390,7 @@ async function addFoodToLog() {
             const food = data.foods[0];
             
             // Convert Nutritionix response format to frontend-expected format
-            const convertedFood = convertNutritionData(food);
+            const convertedFood = convertNutritionData(food, quantitySelect.value);
             
             const meal = {
                 id: Date.now(),
@@ -579,7 +579,7 @@ function safeNumber(value) {
 }
 
 // Convert Nutritionix API response to frontend-expected format
-function convertNutritionData(food) {
+function convertNutritionData(food, quantity = 1) {
     // If food already has nf_ fields, return as is
     if (food.nf_calories !== undefined) {
         return food;
@@ -612,6 +612,13 @@ function convertNutritionData(food) {
     converted.nf_protein = converted.nf_protein || 0;
     converted.nf_total_carbohydrate = converted.nf_total_carbohydrate || 0;
     converted.nf_total_fat = converted.nf_total_fat || 0;
+    
+    // Calculate nutrition based on quantity
+    const quantityMultiplier = parseFloat(quantity) || 1;
+    converted.nf_calories = Math.round(converted.nf_calories * quantityMultiplier);
+    converted.nf_protein = Math.round(converted.nf_protein * quantityMultiplier * 10) / 10;
+    converted.nf_total_carbohydrate = Math.round(converted.nf_total_carbohydrate * quantityMultiplier * 10) / 10;
+    converted.nf_total_fat = Math.round(converted.nf_total_fat * quantityMultiplier * 10) / 10;
     
     return converted;
 }
