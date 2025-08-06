@@ -331,19 +331,19 @@ function updateNutritionalPreview(food) {
                 <div class="nutrition-grid">
                     <div class="nutrition-item">
                         <span class="label">Calories:</span>
-                        <span class="value">${Math.round(food.nf_calories)}</span>
+                        <span class="value">${Math.round(food.nf_calories || 0)}</span>
                     </div>
                     <div class="nutrition-item">
                         <span class="label">Protein:</span>
-                        <span class="value">${Math.round(food.nf_protein)}g</span>
+                        <span class="value">${Math.round(food.nf_protein || 0)}g</span>
                     </div>
                     <div class="nutrition-item">
                         <span class="label">Carbs:</span>
-                        <span class="value">${Math.round(food.nf_total_carbohydrate)}g</span>
+                        <span class="value">${Math.round(food.nf_total_carbohydrate || 0)}g</span>
                     </div>
                     <div class="nutrition-item">
                         <span class="label">Fat:</span>
-                        <span class="value">${Math.round(food.nf_total_fat)}g</span>
+                        <span class="value">${Math.round(food.nf_total_fat || 0)}g</span>
                     </div>
                 </div>
             </div>
@@ -390,10 +390,10 @@ async function addFoodToLog() {
                 name: selectedFood.food_name,
                 brand: selectedFood.brand_name || 'Generic',
                 quantity: quantitySelect.value,
-                calories: Math.round(food.nf_calories),
-                protein: Math.round(food.nf_protein),
-                carbs: Math.round(food.nf_total_carbohydrate),
-                fat: Math.round(food.nf_total_fat),
+                calories: Math.round(food.nf_calories || 0),
+                protein: Math.round(food.nf_protein || 0),
+                carbs: Math.round(food.nf_total_carbohydrate || 0),
+                fat: Math.round(food.nf_total_fat || 0),
                 timestamp: new Date().toISOString()
             };
 
@@ -442,10 +442,10 @@ async function addFoodToLog() {
                 name: selectedFood.food_name,
                 brand: selectedFood.brand_name || 'Generic',
                 quantity: quantitySelect.value,
-                calories: Math.round(food.nf_calories),
-                protein: Math.round(food.nf_protein),
-                carbs: Math.round(food.nf_total_carbohydrate),
-                fat: Math.round(food.nf_total_fat),
+                calories: Math.round(food.nf_calories || 0),
+                protein: Math.round(food.nf_protein || 0),
+                carbs: Math.round(food.nf_total_carbohydrate || 0),
+                fat: Math.round(food.nf_total_fat || 0),
                 timestamp: new Date().toISOString()
             };
             
@@ -565,13 +565,19 @@ async function syncFoodLogWithBackend(foodLog) {
 }
 
 
+// Helper function to safely convert to number
+function safeNumber(value) {
+    const num = Number(value);
+    return isNaN(num) ? 0 : num;
+}
+
 // Update daily totals
 function updateDailyTotals() {
     dailyTotals = currentMeals.reduce((totals, meal) => {
-        totals.calories += meal.calories;
-        totals.protein += meal.protein;
-        totals.carbs += meal.carbs;
-        totals.fat += meal.fat;
+        totals.calories += safeNumber(meal.calories);
+        totals.protein += safeNumber(meal.protein);
+        totals.carbs += safeNumber(meal.carbs);
+        totals.fat += safeNumber(meal.fat);
         return totals;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
 }
@@ -585,11 +591,11 @@ function addMealToUI(meal) {
         <div class="meal-content">
             <h3>${meal.name}</h3>
             <p>${meal.brand} - ${meal.quantity}</p>
-            <span class="calories">${meal.calories} calories</span>
+            <span class="calories">${safeNumber(meal.calories)} calories</span>
             <div class="meal-macros">
-                <span class="macro">P: ${meal.protein}g</span>
-                <span class="macro">C: ${meal.carbs}g</span>
-                <span class="macro">F: ${meal.fat}g</span>
+                <span class="macro">P: ${safeNumber(meal.protein)}g</span>
+                <span class="macro">C: ${safeNumber(meal.carbs)}g</span>
+                <span class="macro">F: ${safeNumber(meal.fat)}g</span>
             </div>
         </div>
         <button class="btn btn-danger delete-meal-btn" onclick="deleteMealAsync(${meal.id})">×</button>
@@ -640,16 +646,16 @@ function updateSummary() {
     const targetCarbs = 300;
     const targetFat = 75;
 
-    const caloriesRemaining = Math.max(0, targetCalories - dailyTotals.calories);
-    const proteinRemaining = Math.max(0, targetProtein - dailyTotals.protein);
-    const carbsRemaining = Math.max(0, targetCarbs - dailyTotals.carbs);
-    const fatRemaining = Math.max(0, targetFat - dailyTotals.fat);
+    const caloriesRemaining = Math.max(0, targetCalories - safeNumber(dailyTotals.calories));
+    const proteinRemaining = Math.max(0, targetProtein - safeNumber(dailyTotals.protein));
+    const carbsRemaining = Math.max(0, targetCarbs - safeNumber(dailyTotals.carbs));
+    const fatRemaining = Math.max(0, targetFat - safeNumber(dailyTotals.fat));
 
     // Update progress bars
-    updateProgressBar('calories', dailyTotals.calories, targetCalories, caloriesRemaining);
-    updateProgressBar('protein', dailyTotals.protein, targetProtein, proteinRemaining);
-    updateProgressBar('carbs', dailyTotals.carbs, targetCarbs, carbsRemaining);
-    updateProgressBar('fat', dailyTotals.fat, targetFat, fatRemaining);
+    updateProgressBar('calories', safeNumber(dailyTotals.calories), targetCalories, caloriesRemaining);
+    updateProgressBar('protein', safeNumber(dailyTotals.protein), targetProtein, proteinRemaining);
+    updateProgressBar('carbs', safeNumber(dailyTotals.carbs), targetCarbs, carbsRemaining);
+    updateProgressBar('fat', safeNumber(dailyTotals.fat), targetFat, fatRemaining);
 }
 
 // Update individual progress bar
