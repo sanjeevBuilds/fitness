@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
            
-                // Store user data in localStorage
+                // Store user data in localStorage (without token)
                 localStorage.setItem('userData', JSON.stringify({
                     _id: data._id,
                     profileName: data.profileName,
@@ -57,13 +57,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     xp: data.xp,
                     level: data.level,
                     coins: data.coins || 0,
-                    createdAt: data.createdAt,
-                    token: data.token
+                    createdAt: data.createdAt
                 }));
-                console.log('User data stored in localStorage:', data.token);
-                // Store JWT token
+                console.log('User data stored in localStorage');
+                
+                // Store JWT token using TokenManager
                 if (data.token) {
-                    localStorage.setItem('authToken', data.token);
+                    TokenManager.setToken(data.token);
                 }
                 if (errorDiv) {
                     errorDiv.style.display = 'none';

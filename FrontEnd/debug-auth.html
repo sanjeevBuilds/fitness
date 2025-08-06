@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - HealthQuest</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.warning { background-color: #fff3cd; color: #856404; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button.danger { background-color: #dc3545; }
+        button.danger:hover { background-color: #c82333; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Authentication Debug Tool</h1>
+        <p>Use this page to test and debug authentication issues across different devices.</p>
+        
+        <div class="section">
+            <h2>📱 Device Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>User Agent:</strong><br>
+                    <span id="userAgent"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Screen Size:</strong><br>
+                    <span id="screenSize"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Platform:</strong><br>
+                    <span id="platform"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Time Zone:</strong><br>
+                    <span id="timezone"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔐 Token Status</h2>
+            <div id="tokenStatus"></div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Token in localStorage:</strong><br>
+                    <span id="localStorageToken"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Token in sessionStorage:</strong><br>
+                    <span id="sessionStorageToken"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Token Age:</strong><br>
+                    <span id="tokenAge"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Token Valid:</strong><br>
+                    <span id="tokenValid"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 Network Test</h2>
+            <div id="networkStatus"></div>
+            <button onclick="testBackendConnection()">Test Backend Connection</button>
+            <button onclick="testTokenValidation()">Test Token Validation</button>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ Actions</h2>
+            <button onclick="clearAllTokens()" class="danger">Clear All Tokens</button>
+            <button onclick="refreshPage()">Refresh Page</button>
+            <button onclick="goToLogin()">Go to Login</button>
+            <button onclick="goToDashboard()">Go to Dashboard</button>
+        </div>
+
+        <div class="section">
+            <h2>📊 Logs</h2>
+            <div id="logs"></div>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Logging function
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.innerHTML = `<strong>${timestamp}:</strong> ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Initialize page
+        function initPage() {
+            // Device info
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('screenSize').textContent = `${screen.width}x${screen.height}`;
+            document.getElementById('platform').textContent = navigator.platform;
+            document.getElementById('timezone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            // Token info
+            updateTokenStatus();
+            
+            log('Debug page loaded', 'success');
+        }
+
+        // Update token status
+        function updateTokenStatus() {
+            const localToken = localStorage.getItem('authToken');
+            const sessionToken = sessionStorage.getItem('authToken');
+            const timestamp = localStorage.getItem('tokenTimestamp') || sessionStorage.getItem('tokenTimestamp');
+
+            document.getElementById('localStorageToken').textContent = localToken ? 'Present' : 'Not found';
+            document.getElementById('sessionStorageToken').textContent = sessionToken ? 'Present' : 'Not found';
+            
+            if (timestamp) {
+                const age = Date.now() - parseInt(timestamp);
+                const hours = Math.floor(age / (1000 * 60 * 60));
+                const minutes = Math.floor((age % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('tokenAge').textContent = `${hours}h ${minutes}m`;
+            } else {
+                document.getElementById('tokenAge').textContent = 'Unknown';
+            }
+
+            // Check if TokenManager is available
+            if (typeof TokenManager !== 'undefined') {
+                const isValid = TokenManager.isTokenValid();
+                document.getElementById('tokenValid').textContent = isValid ? 'Yes' : 'No';
+                
+                const statusDiv = document.getElementById('tokenStatus');
+                if (isValid) {
+                    statusDiv.innerHTML = '<div class="status success">✅ Token is valid</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Token is invalid or expired</div>';
+                }
+            } else {
+                document.getElementById('tokenValid').textContent = 'TokenManager not available';
+                document.getElementById('tokenStatus').innerHTML = '<div class="status warning">⚠️ TokenManager not loaded</div>';
+            }
+        }
+
+        // Test backend connection
+        async function testBackendConnection() {
+            log('Testing backend connection...', 'info');
+            try {
+                const response = await fetch(getApiUrl('/api/validateToken'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    }
+                });
+                
+                if (response.status === 401) {
+                    log('✅ Backend is reachable (expected 401 for invalid token)', 'success');
+                } else {
+                    log(`⚠️ Backend responded with status: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ Backend connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test token validation
+        async function testTokenValidation() {
+            log('Testing token validation...', 'info');
+            if (typeof TokenManager === 'undefined') {
+                log('❌ TokenManager not available', 'error');
+                return;
+            }
+
+            try {
+                const isValid = await TokenManager.validateToken();
+                if (isValid) {
+                    log('✅ Token validation successful', 'success');
+                } else {
+                    log('❌ Token validation failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ Token validation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear all tokens
+        function clearAllTokens() {
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('tokenTimestamp');
+            sessionStorage.removeItem('tokenTimestamp');
+            localStorage.removeItem('userData');
+            sessionStorage.removeItem('userData');
+            
+            log('All tokens cleared', 'warning');
+            updateTokenStatus();
+        }
+
+        // Refresh page
+        function refreshPage() {
+            log('Refreshing page...', 'info');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        // Navigation functions
+        function goToLogin() {
+            window.location.href = '/Login/login.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = '/Dashboard/dashbaord.html';
+        }
+
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Auto-refresh token status every 5 seconds
+        setInterval(updateTokenStatus, 5000);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html> 
