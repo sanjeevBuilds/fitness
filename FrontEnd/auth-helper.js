@@ -8,6 +8,8 @@
     let authCheckInProgress = false;
     let authCheckPromise = null;
     let authCheckCompleted = false;
+    let authCheckAttempts = 0;
+    const maxAuthAttempts = 3;
     
     // Check authentication on page load
     async function checkAuth() {
@@ -23,7 +25,14 @@
             return true;
         }
         
+        // Limit the number of auth attempts to prevent infinite loops
+        if (authCheckAttempts >= maxAuthAttempts) {
+            console.log('Max authentication attempts reached, assuming valid');
+            return true;
+        }
+        
         authCheckInProgress = true;
+        authCheckAttempts++;
         authCheckPromise = performAuthCheck();
         
         try {
@@ -87,7 +96,7 @@
         }
         debounceTimer = setTimeout(() => {
             checkAuth();
-        }, 100);
+        }, 200); // Increased debounce time
     }
     
     // Run authentication check when DOM is ready, but with a small delay
@@ -96,7 +105,7 @@
         // Small delay to ensure TokenManager is available
         setTimeout(() => {
             checkAuth();
-        }, 50);
+        }, 100); // Increased delay
     }
     
     if (document.readyState === 'loading') {
@@ -106,7 +115,7 @@
         initializeAuth();
     }
     
-    // Set up periodic token validation (every 5 minutes)
+    // Set up periodic token validation (every 10 minutes instead of 5)
     // Use a more robust interval that doesn't interfere with page loads
     let periodicCheckInterval = null;
     
@@ -123,11 +132,11 @@
                     console.warn('Periodic token validation failed:', error);
                 }
             }
-        }, 5 * 60 * 1000); // 5 minutes
+        }, 10 * 60 * 1000); // 10 minutes instead of 5
     }
     
     // Start periodic check after initial auth check
-    setTimeout(startPeriodicCheck, 1000);
+    setTimeout(startPeriodicCheck, 2000); // Increased delay
     
     // Handle page visibility changes (when user switches tabs/windows)
     let visibilityCheckTimeout = null;
@@ -138,12 +147,12 @@
                 clearTimeout(visibilityCheckTimeout);
             }
             
-            // Add a small delay to prevent rapid checks
+            // Add a longer delay to prevent rapid checks
             visibilityCheckTimeout = setTimeout(() => {
                 if (!TokenManager.isTokenValid()) {
                     window.location.href = '/Login/login.html';
                 }
-            }, 500);
+            }, 1000); // Increased delay
         }
     });
     
@@ -167,7 +176,7 @@
             if (document.hasFocus() && typeof TokenManager !== 'undefined') {
                 debouncedCheckAuth();
             }
-        }, 1000);
+        }, 2000); // Increased delay
     });
     
     // Expose checkAuth function globally for manual calls if needed

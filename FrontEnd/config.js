@@ -33,7 +33,9 @@ const TokenManager = {
     // Track ongoing validation to prevent race conditions
     _validationPromise: null,
     _lastValidationTime: 0,
-    _validationCooldown: 2000, // 2 seconds cooldown between validations
+    _validationCooldown: 1000, // Reduced to 1 second cooldown
+    _lastSuccessfulValidation: 0,
+    _cachedValidationResult: null,
     
     // Get token with fallback
     getToken() {
@@ -52,6 +54,8 @@ const TokenManager = {
         // Reset validation state when setting new token
         this._validationPromise = null;
         this._lastValidationTime = 0;
+        this._lastSuccessfulValidation = 0;
+        this._cachedValidationResult = null;
     },
     
     // Remove token from both storages
@@ -64,6 +68,8 @@ const TokenManager = {
         // Reset validation state
         this._validationPromise = null;
         this._lastValidationTime = 0;
+        this._lastSuccessfulValidation = 0;
+        this._cachedValidationResult = null;
     },
     
     // Check if token exists and is not too old (24 hours)
@@ -88,14 +94,29 @@ const TokenManager = {
         
         // Check cooldown to prevent excessive API calls
         const now = Date.now();
-        if (now - this._lastValidationTime < this._validationCooldown) {
-            // Return cached result if within cooldown period
-            return this._validationPromise || false;
+        const timeSinceLastValidation = now - this._lastValidationTime;
+        
+        // If we have a recent successful validation, use cached result
+        if (this._cachedValidationResult && (now - this._lastSuccessfulValidation) < 30000) { // 30 seconds cache
+            console.log('Using cached validation result');
+            return this._cachedValidationResult;
         }
         
         // If there's already a validation in progress, wait for it
         if (this._validationPromise) {
+            console.log('Validation already in progress, waiting...');
             return this._validationPromise;
+        }
+        
+        // Check if we're in cooldown period
+        if (timeSinceLastValidation < this._validationCooldown) {
+            // During cooldown, if we have a cached result, use it
+            if (this._cachedValidationResult !== null) {
+                console.log('In cooldown, using cached result');
+                return this._cachedValidationResult;
+            }
+            // If no cached result, wait a bit and try again
+            await new Promise(resolve => setTimeout(resolve, this._validationCooldown - timeSinceLastValidation));
         }
         
         // Start new validation
@@ -104,6 +125,11 @@ const TokenManager = {
         
         try {
             const result = await this._validationPromise;
+            // Cache successful validations
+            if (result) {
+                this._cachedValidationResult = true;
+                this._lastSuccessfulValidation = now;
+            }
             return result;
         } finally {
             // Clear the promise after a short delay to allow for concurrent calls
@@ -134,8 +160,9 @@ const TokenManager = {
                 if (response.ok) {
                     return true;
                 } else if (response.status === 401 || response.status === 403) {
-                    // Token is invalid, remove it
+                    // Token is invalid, remove it and clear cache
                     this.removeToken();
+                    this._cachedValidationResult = false;
                     return false;
                 }
             } catch (error) {
@@ -156,6 +183,7 @@ const TokenManager = {
     async forceValidateToken() {
         this._validationPromise = null;
         this._lastValidationTime = 0;
+        this._cachedValidationResult = null;
         return this.validateToken();
     }
 };
