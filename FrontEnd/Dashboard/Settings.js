@@ -15,6 +15,9 @@ class SettingsManager {
         // Load saved settings from localStorage and backend
         await this.loadSettings();
         
+        // Load and populate user data
+        await this.loadUserData();
+        
         // Apply current settings
         this.applySettings();
         
@@ -724,6 +727,63 @@ class SettingsManager {
         }
     }
 
+    async loadUserData() {
+        try {
+            // First try to get user data from localStorage
+            let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            
+            // If we have an email, try to fetch fresh data from backend
+            if (userData?.email) {
+                try {
+                    const response = await fetch(getApiUrl(`/api/getUser/${encodeURIComponent(userData.email)}`));
+                    if (response.ok) {
+                        const freshUserData = await response.json();
+                        // Merge fresh data with existing data
+                        userData = { ...userData, ...freshUserData };
+                        // Update localStorage with fresh data
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                    }
+                } catch (error) {
+                    console.error('Error fetching fresh user data:', error);
+                    // Continue with localStorage data if backend fetch fails
+                }
+            }
+            
+            // Populate form fields with user data
+            const profileNameField = document.getElementById('profile-name');
+            const emailField = document.getElementById('email');
+            const usernameField = document.getElementById('username');
+            
+            if (profileNameField && userData.profileName) {
+                profileNameField.value = userData.profileName;
+            }
+            
+            if (emailField && userData.email) {
+                emailField.value = userData.email;
+            }
+            
+            if (usernameField && userData.username) {
+                usernameField.value = userData.username;
+            }
+            
+            console.log('User data loaded and populated:', {
+                profileName: userData.profileName,
+                email: userData.email,
+                username: userData.username
+            });
+            
+            // If no user data was found, show a helpful message
+            if (!userData.email && !userData.profileName && !userData.username) {
+                console.warn('No user data found in localStorage or backend');
+                this.showToast('⚠️ User data not found. Please log in again.', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            this.showToast('❌ Error loading user data. Please refresh the page.', 'error');
+        }
+    }
+
     async loadNotificationPreferences() {
         try {
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -892,6 +952,13 @@ document.addEventListener('DOMContentLoaded', function() {
 window.refreshSettingsTitles = async function() {
     if (window.settingsManager) {
         await window.settingsManager.refreshTitlesDisplay();
+    }
+};
+
+// Global function to refresh user data in settings page
+window.refreshSettingsUserData = async function() {
+    if (window.settingsManager) {
+        await window.settingsManager.loadUserData();
     }
 };
 
