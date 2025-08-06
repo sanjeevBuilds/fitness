@@ -357,7 +357,7 @@ function updateNutritionalPreview(food) {
 
 // Add food to log
 async function addFoodToLog() {
-    if (!selectedFood || !quantitySelect.value) {
+    if (!selectedFood || !selectedFood.food_name || !quantitySelect.value) {
         showError('Please select a food and quantity');
         return;
     }
@@ -445,27 +445,16 @@ async function addFoodToLog() {
             }
             
             // Create food log with just the new meal data
-            const newMeal = {
-                name: selectedFood.food_name,
-                brand: selectedFood.brand_name || 'Generic',
-                quantity: quantitySelect.value,
-                calories: Math.round(food.nf_calories || 0),
-                protein: Math.round(food.nf_protein || 0),
-                carbs: Math.round(food.nf_total_carbohydrate || 0),
-                fat: Math.round(food.nf_total_fat || 0),
-                timestamp: new Date().toISOString()
-            };
-            
             const foodLog = {
                 date: new Date().toISOString().slice(0, 10),
-                calories: newMeal.calories,
-                protein: newMeal.protein,
-                carbs: newMeal.carbs,
-                fat: newMeal.fat,
+                calories: meal.calories,
+                protein: meal.protein,
+                carbs: meal.carbs,
+                fat: meal.fat,
                 meals: [{
-                    name: newMeal.name,
-                    items: [newMeal.name],
-                    totalCalories: newMeal.calories
+                    name: meal.name,
+                    items: [meal.name],
+                    totalCalories: meal.calories
                 }]
             };
             
@@ -615,6 +604,13 @@ function convertNutritionData(food, quantity = 1) {
     converted.nf_protein = converted.nf_protein || 0;
     converted.nf_total_carbohydrate = converted.nf_total_carbohydrate || 0;
     converted.nf_total_fat = converted.nf_total_fat || 0;
+    
+    console.log('Final converted nutrition data:', {
+        calories: converted.nf_calories,
+        protein: converted.nf_protein,
+        carbs: converted.nf_total_carbohydrate,
+        fat: converted.nf_total_fat
+    });
     
     // The backend already calculates nutrition based on quantity, so we don't multiply again
     // Just round the values for display
