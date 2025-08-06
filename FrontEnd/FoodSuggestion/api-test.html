@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - FoodSuggestion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .api-test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .api-test h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .status.working {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Connectivity Test</h1>
+        <p>This page tests the connectivity to the external APIs used in the FoodSuggestion feature.</p>
+        
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div id="apiTests">
+            <div class="api-test">
+                <h3>DummyJSON API</h3>
+                <div id="dummyjson-status" class="status loading">Testing...</div>
+                <div id="dummyjson-response" class="response" style="display: none;"></div>
+            </div>
+            
+            <div class="api-test">
+                <h3>Foodish API</h3>
+                <div id="foodish-status" class="status loading">Testing...</div>
+                <div id="foodish-response" class="response" style="display: none;"></div>
+            </div>
+            
+            <div class="api-test">
+                <h3>Nutritionix API</h3>
+                <div id="nutritionix-status" class="status loading">Testing...</div>
+                <div id="nutritionix-response" class="response" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div id="summary" class="summary" style="display: none;">
+            <h3>Test Summary</h3>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const apis = [
+            {
+                name: 'dummyjson',
+                url: 'https://dummyjson.com/recipes',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            },
+            {
+                name: 'foodish',
+                url: 'https://foodish-api.com/api/',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            },
+            {
+                name: 'nutritionix',
+                url: 'https://trackapi.nutritionix.com/v2/search/instant?query=apple',
+                headers: {
+                    'x-app-id': '8faf5aed',
+                    'x-app-key': '88409220ce915ba9f6416710b7c27c97',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        ];
+
+        async function testApi(api) {
+            const statusEl = document.getElementById(`${api.name}-status`);
+            const responseEl = document.getElementById(`${api.name}-response`);
+            
+            statusEl.className = 'status loading';
+            statusEl.textContent = 'Testing...';
+            responseEl.style.display = 'none';
+            
+            try {
+                const response = await fetch(api.url, {
+                    method: 'GET',
+                    headers: api.headers,
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.className = 'status working';
+                    statusEl.textContent = `✅ Working (${response.status})`;
+                    responseEl.textContent = JSON.stringify(data, null, 2);
+                    responseEl.style.display = 'block';
+                    return { success: true, data };
+                } else {
+                    statusEl.className = 'status failed';
+                    statusEl.textContent = `❌ Failed (${response.status})`;
+                    responseEl.textContent = `HTTP ${response.status}: ${response.statusText}`;
+                    responseEl.style.display = 'block';
+                    return { success: false, error: `HTTP ${response.status}` };
+                }
+            } catch (error) {
+                statusEl.className = 'status failed';
+                statusEl.textContent = '❌ Failed (Network Error)';
+                responseEl.textContent = `Error: ${error.message}`;
+                responseEl.style.display = 'block';
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function runAllTests() {
+            const results = {};
+            
+            for (const api of apis) {
+                results[api.name] = await testApi(api);
+            }
+            
+            updateSummary(results);
+        }
+
+        function updateSummary(results) {
+            const summaryEl = document.getElementById('summary');
+            const contentEl = document.getElementById('summary-content');
+            
+            const workingApis = Object.values(results).filter(r => r.success).length;
+            const totalApis = apis.length;
+            
+            let summaryHtml = `<p><strong>Working APIs:</strong> ${workingApis}/${totalApis}</p>`;
+            
+            if (workingApis === totalApis) {
+                summaryHtml += '<p style="color: green;">🎉 All APIs are working perfectly!</p>';
+            } else if (workingApis > 0) {
+                summaryHtml += '<p style="color: orange;">⚠️ Some APIs are working. Features may be limited.</p>';
+            } else {
+                summaryHtml += '<p style="color: red;">❌ No APIs are working. Check your internet connection.</p>';
+            }
+            
+            summaryHtml += '<h4>Detailed Results:</h4><ul>';
+            for (const [name, result] of Object.entries(results)) {
+                const status = result.success ? '✅ Working' : '❌ Failed';
+                summaryHtml += `<li><strong>${name}:</strong> ${status}</li>`;
+            }
+            summaryHtml += '</ul>';
+            
+            contentEl.innerHTML = summaryHtml;
+            summaryEl.style.display = 'block';
+        }
+
+        function clearResults() {
+            apis.forEach(api => {
+                const statusEl = document.getElementById(`${api.name}-status`);
+                const responseEl = document.getElementById(`${api.name}-response`);
+                
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Ready to test';
+                responseEl.style.display = 'none';
+            });
+            
+            document.getElementById('summary').style.display = 'none';
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html> 
