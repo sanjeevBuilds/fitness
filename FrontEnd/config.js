@@ -28,8 +28,13 @@ function getApiUrl(endpoint) {
     return API_CONFIG.BASE_URL + endpoint;
 }
 
-// Simple Token Manager for better cross-device compatibility
+// Enhanced Token Manager for better cross-device compatibility and race condition prevention
 const TokenManager = {
+    // Track ongoing validation to prevent race conditions
+    _validationPromise: null,
+    _lastValidationTime: 0,
+    _validationCooldown: 2000, // 2 seconds cooldown between validations
+    
     // Get token with fallback
     getToken() {
         return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
@@ -43,6 +48,10 @@ const TokenManager = {
         const timestamp = Date.now();
         localStorage.setItem('tokenTimestamp', timestamp);
         sessionStorage.setItem('tokenTimestamp', timestamp);
+        
+        // Reset validation state when setting new token
+        this._validationPromise = null;
+        this._lastValidationTime = 0;
     },
     
     // Remove token from both storages
@@ -51,6 +60,10 @@ const TokenManager = {
         sessionStorage.removeItem('authToken');
         localStorage.removeItem('tokenTimestamp');
         sessionStorage.removeItem('tokenTimestamp');
+        
+        // Reset validation state
+        this._validationPromise = null;
+        this._lastValidationTime = 0;
     },
     
     // Check if token exists and is not too old (24 hours)
@@ -68,20 +81,55 @@ const TokenManager = {
         return tokenAge < maxAge;
     },
     
-    // Validate token with server (with retry)
+    // Validate token with server (with retry and race condition prevention)
     async validateToken(retries = 2) {
         const token = this.getToken();
         if (!token) return false;
         
+        // Check cooldown to prevent excessive API calls
+        const now = Date.now();
+        if (now - this._lastValidationTime < this._validationCooldown) {
+            // Return cached result if within cooldown period
+            return this._validationPromise || false;
+        }
+        
+        // If there's already a validation in progress, wait for it
+        if (this._validationPromise) {
+            return this._validationPromise;
+        }
+        
+        // Start new validation
+        this._lastValidationTime = now;
+        this._validationPromise = this._performValidation(token, retries);
+        
+        try {
+            const result = await this._validationPromise;
+            return result;
+        } finally {
+            // Clear the promise after a short delay to allow for concurrent calls
+            setTimeout(() => {
+                this._validationPromise = null;
+            }, 100);
+        }
+    },
+    
+    // Internal method to perform the actual validation
+    async _performValidation(token, retries) {
         for (let i = 0; i <= retries; i++) {
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                
                 const response = await fetch(getApiUrl('/api/validateToken'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    }
+                    },
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (response.ok) {
                     return true;
@@ -97,11 +145,18 @@ const TokenManager = {
                     // This prevents logout on temporary network issues
                     return true;
                 }
-                // Wait before retry
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Wait before retry with exponential backoff
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
             }
         }
         return false;
+    },
+    
+    // Force refresh validation (bypasses cooldown)
+    async forceValidateToken() {
+        this._validationPromise = null;
+        this._lastValidationTime = 0;
+        return this.validateToken();
     }
 };
 

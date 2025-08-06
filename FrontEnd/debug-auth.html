@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -45,6 +45,8 @@
         button:hover { background-color: #0056b3; }
         button.danger { background-color: #dc3545; }
         button.danger:hover { background-color: #c82333; }
+        button.success { background-color: #28a745; }
+        button.success:hover { background-color: #218838; }
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -61,12 +63,34 @@
             border-radius: 5px;
             overflow-x: auto;
         }
+        .reload-test {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .test-step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        .test-step.completed {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .test-step.failed {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Authentication Debug Tool</h1>
-        <p>Use this page to test and debug authentication issues across different devices.</p>
+        <h1>🔍 Enhanced Authentication Debug Tool</h1>
+        <p>Use this page to test and debug authentication issues, especially the "reload twice" problem.</p>
         
         <div class="section">
             <h2>📱 Device Information</h2>
@@ -111,6 +135,41 @@
                     <span id="tokenValid"></span>
                 </div>
             </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Validation Cooldown:</strong><br>
+                    <span id="validationCooldown"></span>
+                </div>
+                <div class="info-item">
+                    <strong>Last Validation:</strong><br>
+                    <span id="lastValidation"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Reload Test</h2>
+            <div class="reload-test">
+                <h3>Test the "Reload Twice" Issue</h3>
+                <p>This test will help identify what happens during consecutive page reloads.</p>
+                
+                <div class="test-step" id="step1">
+                    <strong>Step 1:</strong> Click "Start Reload Test" to begin monitoring
+                </div>
+                <div class="test-step" id="step2">
+                    <strong>Step 2:</strong> Go to a protected page (e.g., Dashboard) and reload it once
+                </div>
+                <div class="test-step" id="step3">
+                    <strong>Step 3:</strong> Reload the same page a second time
+                </div>
+                <div class="test-step" id="step4">
+                    <strong>Step 4:</strong> Check if you're redirected to login
+                </div>
+                
+                <button onclick="startReloadTest()" class="success">Start Reload Test</button>
+                <button onclick="resetReloadTest()">Reset Test</button>
+                <button onclick="simulateReload()">Simulate Page Reload</button>
+            </div>
         </div>
 
         <div class="section">
@@ -118,6 +177,7 @@
             <div id="networkStatus"></div>
             <button onclick="testBackendConnection()">Test Backend Connection</button>
             <button onclick="testTokenValidation()">Test Token Validation</button>
+            <button onclick="testForceValidation()">Force Token Validation</button>
         </div>
 
         <div class="section">
@@ -126,6 +186,7 @@
             <button onclick="refreshPage()">Refresh Page</button>
             <button onclick="goToLogin()">Go to Login</button>
             <button onclick="goToDashboard()">Go to Dashboard</button>
+            <button onclick="exportDebugData()">Export Debug Data</button>
         </div>
 
         <div class="section">
@@ -137,7 +198,7 @@
 
     <script src="config.js"></script>
     <script>
-        // Logging function
+        // Enhanced logging function
         function log(message, type = 'info') {
             const logsDiv = document.getElementById('logs');
             const timestamp = new Date().toLocaleTimeString();
@@ -147,6 +208,11 @@
             logsDiv.appendChild(logEntry);
             logsDiv.scrollTop = logsDiv.scrollHeight;
         }
+
+        // Reload test variables
+        let reloadTestActive = false;
+        let reloadCount = 0;
+        let testStartTime = null;
 
         // Initialize page
         function initPage() {
@@ -159,10 +225,17 @@
             // Token info
             updateTokenStatus();
             
-            log('Debug page loaded', 'success');
+            log('Enhanced debug page loaded', 'success');
+            
+            // Listen for page visibility changes
+            document.addEventListener('visibilitychange', () => {
+                if (reloadTestActive) {
+                    log(`Page visibility changed: ${document.hidden ? 'hidden' : 'visible'}`, 'info');
+                }
+            });
         }
 
-        // Update token status
+        // Update token status with enhanced information
         function updateTokenStatus() {
             const localToken = localStorage.getItem('authToken');
             const sessionToken = sessionStorage.getItem('authToken');
@@ -185,6 +258,16 @@
                 const isValid = TokenManager.isTokenValid();
                 document.getElementById('tokenValid').textContent = isValid ? 'Yes' : 'No';
                 
+                // Show validation cooldown info
+                const timeSinceLastValidation = Date.now() - TokenManager._lastValidationTime;
+                const cooldownRemaining = Math.max(0, TokenManager._validationCooldown - timeSinceLastValidation);
+                document.getElementById('validationCooldown').textContent = 
+                    cooldownRemaining > 0 ? `${Math.ceil(cooldownRemaining/1000)}s remaining` : 'Ready';
+                
+                document.getElementById('lastValidation').textContent = 
+                    TokenManager._lastValidationTime > 0 ? 
+                    new Date(TokenManager._lastValidationTime).toLocaleTimeString() : 'Never';
+                
                 const statusDiv = document.getElementById('tokenStatus');
                 if (isValid) {
                     statusDiv.innerHTML = '<div class="status success">✅ Token is valid</div>';
@@ -193,7 +276,71 @@
                 }
             } else {
                 document.getElementById('tokenValid').textContent = 'TokenManager not available';
+                document.getElementById('validationCooldown').textContent = 'N/A';
+                document.getElementById('lastValidation').textContent = 'N/A';
                 document.getElementById('tokenStatus').innerHTML = '<div class="status warning">⚠️ TokenManager not loaded</div>';
+            }
+        }
+
+        // Start reload test
+        function startReloadTest() {
+            reloadTestActive = true;
+            reloadCount = 0;
+            testStartTime = Date.now();
+            
+            document.getElementById('step1').className = 'test-step completed';
+            document.getElementById('step1').innerHTML = '<strong>Step 1:</strong> ✅ Reload test started at ' + new Date().toLocaleTimeString();
+            
+            log('Reload test started - monitoring page reloads', 'success');
+        }
+
+        // Reset reload test
+        function resetReloadTest() {
+            reloadTestActive = false;
+            reloadCount = 0;
+            testStartTime = null;
+            
+            document.getElementById('step1').className = 'test-step';
+            document.getElementById('step1').innerHTML = '<strong>Step 1:</strong> Click "Start Reload Test" to begin monitoring';
+            document.getElementById('step2').className = 'test-step';
+            document.getElementById('step2').innerHTML = '<strong>Step 2:</strong> Go to a protected page (e.g., Dashboard) and reload it once';
+            document.getElementById('step3').className = 'test-step';
+            document.getElementById('step3').innerHTML = '<strong>Step 3:</strong> Reload the same page a second time';
+            document.getElementById('step4').className = 'test-step';
+            document.getElementById('step4').innerHTML = '<strong>Step 4:</strong> Check if you\'re redirected to login';
+            
+            log('Reload test reset', 'info');
+        }
+
+        // Simulate page reload
+        function simulateReload() {
+            if (reloadTestActive) {
+                reloadCount++;
+                log(`Simulated reload #${reloadCount}`, 'info');
+                
+                if (reloadCount === 1) {
+                    document.getElementById('step2').className = 'test-step completed';
+                    document.getElementById('step2').innerHTML = '<strong>Step 2:</strong> ✅ First reload completed at ' + new Date().toLocaleTimeString();
+                } else if (reloadCount === 2) {
+                    document.getElementById('step3').className = 'test-step completed';
+                    document.getElementById('step3').innerHTML = '<strong>Step 3:</strong> ✅ Second reload completed at ' + new Date().toLocaleTimeString();
+                    
+                    // Check token status after second reload
+                    setTimeout(() => {
+                        updateTokenStatus();
+                        if (typeof TokenManager !== 'undefined' && !TokenManager.isTokenValid()) {
+                            document.getElementById('step4').className = 'test-step failed';
+                            document.getElementById('step4').innerHTML = '<strong>Step 4:</strong> ❌ Token became invalid after second reload';
+                            log('Token became invalid after second reload - ISSUE CONFIRMED', 'error');
+                        } else {
+                            document.getElementById('step4').className = 'test-step completed';
+                            document.getElementById('step4').innerHTML = '<strong>Step 4:</strong> ✅ Token still valid after second reload';
+                            log('Token still valid after second reload', 'success');
+                        }
+                    }, 1000);
+                }
+            } else {
+                log('Please start reload test first', 'warning');
             }
         }
 
@@ -239,6 +386,26 @@
             }
         }
 
+        // Test force validation
+        async function testForceValidation() {
+            log('Testing force token validation...', 'info');
+            if (typeof TokenManager === 'undefined') {
+                log('❌ TokenManager not available', 'error');
+                return;
+            }
+
+            try {
+                const isValid = await TokenManager.forceValidateToken();
+                if (isValid) {
+                    log('✅ Force token validation successful', 'success');
+                } else {
+                    log('❌ Force token validation failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ Force token validation error: ${error.message}`, 'error');
+            }
+        }
+
         // Clear all tokens
         function clearAllTokens() {
             localStorage.removeItem('authToken');
@@ -267,13 +434,48 @@
             window.location.href = '/Dashboard/dashbaord.html';
         }
 
+        // Export debug data
+        function exportDebugData() {
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                localStorage: {
+                    authToken: localStorage.getItem('authToken') ? 'Present' : 'Not found',
+                    tokenTimestamp: localStorage.getItem('tokenTimestamp'),
+                    userData: localStorage.getItem('userData') ? 'Present' : 'Not found'
+                },
+                sessionStorage: {
+                    authToken: sessionStorage.getItem('authToken') ? 'Present' : 'Not found',
+                    tokenTimestamp: sessionStorage.getItem('tokenTimestamp')
+                },
+                tokenManager: typeof TokenManager !== 'undefined' ? {
+                    isTokenValid: TokenManager.isTokenValid(),
+                    lastValidationTime: TokenManager._lastValidationTime,
+                    validationCooldown: TokenManager._validationCooldown
+                } : 'Not available'
+            };
+            
+            const dataStr = JSON.stringify(debugData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `auth-debug-${new Date().toISOString().slice(0, 19)}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log('Debug data exported', 'success');
+        }
+
         // Clear logs
         function clearLogs() {
             document.getElementById('logs').innerHTML = '';
         }
 
-        // Auto-refresh token status every 5 seconds
-        setInterval(updateTokenStatus, 5000);
+        // Auto-refresh token status every 3 seconds
+        setInterval(updateTokenStatus, 3000);
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initPage);

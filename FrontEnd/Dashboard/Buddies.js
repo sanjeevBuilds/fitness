@@ -2,7 +2,7 @@
 console.log('Buddies.js loaded successfully');
 
 // Authentication is now handled by auth-helper.js
-// This ensures consistent authentication across all protected pages
+// This ensures consistent authentication across all protected pagesg
 
 // Load user data for sidebar (match dashboard)
 (function() {
