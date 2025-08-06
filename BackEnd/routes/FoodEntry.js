@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 const https = require('https');
 
 // Nutritionix API credentials for food search
-const NUTRITIONIX_APP_ID = process.env.NUTRITIONIX_APP_ID;
-const NUTRITIONIX_APP_KEY = process.env.NUTRITIONIX_APP_KEY;
+const NUTRITIONIX_APP_ID = process.env.NUTRITIONIX_APP_ID || '8faf5aed';
+const NUTRITIONIX_APP_KEY = process.env.NUTRITIONIX_APP_KEY || '88409220ce915ba9f6416710b7c27c97';
 
 
 
