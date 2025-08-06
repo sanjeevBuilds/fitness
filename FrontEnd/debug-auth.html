@@ -258,15 +258,14 @@
                 const isValid = TokenManager.isTokenValid();
                 document.getElementById('tokenValid').textContent = isValid ? 'Yes' : 'No';
                 
-                // Show validation cooldown info
-                const timeSinceLastValidation = Date.now() - TokenManager._lastValidationTime;
-                const cooldownRemaining = Math.max(0, TokenManager._validationCooldown - timeSinceLastValidation);
-                document.getElementById('validationCooldown').textContent = 
-                    cooldownRemaining > 0 ? `${Math.ceil(cooldownRemaining/1000)}s remaining` : 'Ready';
+                // Show validation cache info
+                const cacheStatus = TokenManager._validationCache !== null ? 
+                    (TokenManager._validationCache ? 'Valid (cached)' : 'Invalid (cached)') : 'Not cached';
+                document.getElementById('validationCooldown').textContent = cacheStatus;
                 
                 document.getElementById('lastValidation').textContent = 
-                    TokenManager._lastValidationTime > 0 ? 
-                    new Date(TokenManager._lastValidationTime).toLocaleTimeString() : 'Never';
+                    TokenManager._lastValidation ? 
+                    new Date(TokenManager._lastValidation).toLocaleTimeString() : 'Never';
                 
                 const statusDiv = document.getElementById('tokenStatus');
                 if (isValid) {
@@ -395,7 +394,10 @@
             }
 
             try {
-                const isValid = await TokenManager.forceValidateToken();
+                // Clear cache and validate
+                TokenManager._validationCache = null;
+                TokenManager._lastValidation = null;
+                const isValid = await TokenManager.validateToken();
                 if (isValid) {
                     log('✅ Force token validation successful', 'success');
                 } else {
@@ -452,8 +454,8 @@
                 },
                 tokenManager: typeof TokenManager !== 'undefined' ? {
                     isTokenValid: TokenManager.isTokenValid(),
-                    lastValidationTime: TokenManager._lastValidationTime,
-                    validationCooldown: TokenManager._validationCooldown
+                    lastValidation: TokenManager._lastValidation,
+                    validationCache: TokenManager._validationCache
                 } : 'Not available'
             };
             

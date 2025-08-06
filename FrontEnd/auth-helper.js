@@ -1,59 +1,19 @@
-// Enhanced Authentication Helper for Protected Pages
+// Simple Authentication Helper for Protected Pages
 // Include this script in all protected pages
 
 (function() {
     'use strict';
     
-    // Prevent multiple authentication checks from running simultaneously
-    let authCheckInProgress = false;
-    let authCheckPromise = null;
-    let authCheckCompleted = false;
-    let authCheckAttempts = 0;
-    const maxAuthAttempts = 3;
+    let authChecked = false;
     
-    // Check authentication on page load
+    // Simple authentication check
     async function checkAuth() {
-        // Prevent multiple simultaneous auth checks
-        if (authCheckInProgress) {
-            console.log('Authentication check already in progress, waiting...');
-            return authCheckPromise;
-        }
-        
-        // If auth check already completed successfully, don't check again
-        if (authCheckCompleted) {
-            console.log('Authentication already verified, skipping check');
+        // Only check once per page load
+        if (authChecked) {
             return true;
         }
         
-        // Limit the number of auth attempts to prevent infinite loops
-        if (authCheckAttempts >= maxAuthAttempts) {
-            console.log('Max authentication attempts reached, assuming valid');
-            return true;
-        }
-        
-        authCheckInProgress = true;
-        authCheckAttempts++;
-        authCheckPromise = performAuthCheck();
-        
-        try {
-            const result = await authCheckPromise;
-            if (result) {
-                authCheckCompleted = true;
-            }
-            return result;
-        } finally {
-            authCheckInProgress = false;
-        }
-    }
-    
-    async function performAuthCheck() {
-        const redirectToLogin = () => {
-            console.log('Redirecting to login page');
-            // Add a small delay to prevent rapid redirects
-            setTimeout(() => {
-                window.location.href = '/Login/login.html';
-            }, 100);
-        };
+        console.log('Checking authentication...');
         
         // Check if TokenManager is available
         if (typeof TokenManager === 'undefined') {
@@ -79,105 +39,28 @@
             }
             
             console.log('Authentication check passed');
+            authChecked = true;
             return true;
         } catch (error) {
             console.error('Authentication check error:', error);
-            // On error, don't immediately redirect - give it another chance
-            // This prevents logout on temporary network issues
+            // On error, assume token is still valid to prevent false logouts
+            authChecked = true;
             return true;
         }
     }
     
-    // Debounced function to prevent rapid successive calls
-    let debounceTimer = null;
-    function debouncedCheckAuth() {
-        if (debounceTimer) {
-            clearTimeout(debounceTimer);
-        }
-        debounceTimer = setTimeout(() => {
-            checkAuth();
-        }, 200); // Increased debounce time
+    function redirectToLogin() {
+        console.log('Redirecting to login page');
+        window.location.href = '/Login/login.html';
     }
     
-    // Run authentication check when DOM is ready, but with a small delay
-    // to ensure all scripts are loaded
-    function initializeAuth() {
-        // Small delay to ensure TokenManager is available
-        setTimeout(() => {
-            checkAuth();
-        }, 100); // Increased delay
-    }
-    
+    // Run authentication check when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeAuth);
+        document.addEventListener('DOMContentLoaded', checkAuth);
     } else {
-        // If DOM is already loaded, run with a small delay
-        initializeAuth();
+        // If DOM is already loaded, run immediately
+        checkAuth();
     }
-    
-    // Set up periodic token validation (every 10 minutes instead of 5)
-    // Use a more robust interval that doesn't interfere with page loads
-    let periodicCheckInterval = null;
-    
-    function startPeriodicCheck() {
-        if (periodicCheckInterval) {
-            clearInterval(periodicCheckInterval);
-        }
-        
-        periodicCheckInterval = setInterval(async () => {
-            if (typeof TokenManager !== 'undefined' && TokenManager.isTokenValid()) {
-                try {
-                    await TokenManager.validateToken();
-                } catch (error) {
-                    console.warn('Periodic token validation failed:', error);
-                }
-            }
-        }, 10 * 60 * 1000); // 10 minutes instead of 5
-    }
-    
-    // Start periodic check after initial auth check
-    setTimeout(startPeriodicCheck, 2000); // Increased delay
-    
-    // Handle page visibility changes (when user switches tabs/windows)
-    let visibilityCheckTimeout = null;
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && typeof TokenManager !== 'undefined') {
-            // Clear any existing timeout
-            if (visibilityCheckTimeout) {
-                clearTimeout(visibilityCheckTimeout);
-            }
-            
-            // Add a longer delay to prevent rapid checks
-            visibilityCheckTimeout = setTimeout(() => {
-                if (!TokenManager.isTokenValid()) {
-                    window.location.href = '/Login/login.html';
-                }
-            }, 1000); // Increased delay
-        }
-    });
-    
-    // Handle beforeunload to clean up
-    window.addEventListener('beforeunload', () => {
-        if (periodicCheckInterval) {
-            clearInterval(periodicCheckInterval);
-        }
-        if (debounceTimer) {
-            clearTimeout(debounceTimer);
-        }
-        if (visibilityCheckTimeout) {
-            clearTimeout(visibilityCheckTimeout);
-        }
-    });
-    
-    // Handle page focus events (when user returns to the tab)
-    window.addEventListener('focus', () => {
-        // Only check if the page has been visible for a while
-        setTimeout(() => {
-            if (document.hasFocus() && typeof TokenManager !== 'undefined') {
-                debouncedCheckAuth();
-            }
-        }, 2000); // Increased delay
-    });
     
     // Expose checkAuth function globally for manual calls if needed
     window.checkAuth = checkAuth;

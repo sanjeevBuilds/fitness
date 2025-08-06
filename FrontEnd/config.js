@@ -28,14 +28,11 @@ function getApiUrl(endpoint) {
     return API_CONFIG.BASE_URL + endpoint;
 }
 
-// Enhanced Token Manager for better cross-device compatibility and race condition prevention
+// Simple and Reliable Token Manager
 const TokenManager = {
-    // Track ongoing validation to prevent race conditions
-    _validationPromise: null,
-    _lastValidationTime: 0,
-    _validationCooldown: 1000, // Reduced to 1 second cooldown
-    _lastSuccessfulValidation: 0,
-    _cachedValidationResult: null,
+    // Simple cache for validation results
+    _lastValidation: null,
+    _validationCache: null,
     
     // Get token with fallback
     getToken() {
@@ -51,11 +48,9 @@ const TokenManager = {
         localStorage.setItem('tokenTimestamp', timestamp);
         sessionStorage.setItem('tokenTimestamp', timestamp);
         
-        // Reset validation state when setting new token
-        this._validationPromise = null;
-        this._lastValidationTime = 0;
-        this._lastSuccessfulValidation = 0;
-        this._cachedValidationResult = null;
+        // Clear validation cache when setting new token
+        this._validationCache = null;
+        this._lastValidation = null;
     },
     
     // Remove token from both storages
@@ -65,11 +60,9 @@ const TokenManager = {
         localStorage.removeItem('tokenTimestamp');
         sessionStorage.removeItem('tokenTimestamp');
         
-        // Reset validation state
-        this._validationPromise = null;
-        this._lastValidationTime = 0;
-        this._lastSuccessfulValidation = 0;
-        this._cachedValidationResult = null;
+        // Clear validation cache
+        this._validationCache = null;
+        this._lastValidation = null;
     },
     
     // Check if token exists and is not too old (24 hours)
@@ -87,104 +80,47 @@ const TokenManager = {
         return tokenAge < maxAge;
     },
     
-    // Validate token with server (with retry and race condition prevention)
-    async validateToken(retries = 2) {
+    // Simple and reliable token validation
+    async validateToken() {
         const token = this.getToken();
         if (!token) return false;
         
-        // Check cooldown to prevent excessive API calls
+        // Check if we have a recent cached result (within 5 minutes)
         const now = Date.now();
-        const timeSinceLastValidation = now - this._lastValidationTime;
-        
-        // If we have a recent successful validation, use cached result
-        if (this._cachedValidationResult && (now - this._lastSuccessfulValidation) < 30000) { // 30 seconds cache
+        if (this._validationCache && this._lastValidation && (now - this._lastValidation) < 300000) {
             console.log('Using cached validation result');
-            return this._cachedValidationResult;
+            return this._validationCache;
         }
-        
-        // If there's already a validation in progress, wait for it
-        if (this._validationPromise) {
-            console.log('Validation already in progress, waiting...');
-            return this._validationPromise;
-        }
-        
-        // Check if we're in cooldown period
-        if (timeSinceLastValidation < this._validationCooldown) {
-            // During cooldown, if we have a cached result, use it
-            if (this._cachedValidationResult !== null) {
-                console.log('In cooldown, using cached result');
-                return this._cachedValidationResult;
-            }
-            // If no cached result, wait a bit and try again
-            await new Promise(resolve => setTimeout(resolve, this._validationCooldown - timeSinceLastValidation));
-        }
-        
-        // Start new validation
-        this._lastValidationTime = now;
-        this._validationPromise = this._performValidation(token, retries);
         
         try {
-            const result = await this._validationPromise;
-            // Cache successful validations
-            if (result) {
-                this._cachedValidationResult = true;
-                this._lastSuccessfulValidation = now;
-            }
-            return result;
-        } finally {
-            // Clear the promise after a short delay to allow for concurrent calls
-            setTimeout(() => {
-                this._validationPromise = null;
-            }, 100);
-        }
-    },
-    
-    // Internal method to perform the actual validation
-    async _performValidation(token, retries) {
-        for (let i = 0; i <= retries; i++) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-                
-                const response = await fetch(getApiUrl('/api/validateToken'), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    return true;
-                } else if (response.status === 401 || response.status === 403) {
-                    // Token is invalid, remove it and clear cache
-                    this.removeToken();
-                    this._cachedValidationResult = false;
-                    return false;
+            console.log('Validating token with server...');
+            const response = await fetch(getApiUrl('/api/validateToken'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (error) {
-                console.warn(`Token validation attempt ${i + 1} failed:`, error);
-                if (i === retries) {
-                    // On final retry, if it's a network error, assume token is still valid
-                    // This prevents logout on temporary network issues
-                    return true;
-                }
-                // Wait before retry with exponential backoff
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+            });
+            
+            const isValid = response.ok;
+            
+            // Cache the result for 5 minutes
+            this._validationCache = isValid;
+            this._lastValidation = now;
+            
+            if (!isValid) {
+                console.log('Token validation failed, removing token');
+                this.removeToken();
+            } else {
+                console.log('Token validation successful');
             }
+            
+            return isValid;
+        } catch (error) {
+            console.warn('Token validation error:', error);
+            // On network error, assume token is still valid to prevent false logouts
+            return true;
         }
-        return false;
-    },
-    
-    // Force refresh validation (bypasses cooldown)
-    async forceValidateToken() {
-        this._validationPromise = null;
-        this._lastValidationTime = 0;
-        this._cachedValidationResult = null;
-        return this.validateToken();
     }
 };
 
