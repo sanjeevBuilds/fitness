@@ -580,14 +580,17 @@ function safeNumber(value) {
 
 // Convert Nutritionix API response to frontend-expected format
 function convertNutritionData(food, quantity = 1) {
+    console.log('Converting nutrition data:', food);
     // If food already has nf_ fields, return as is
     if (food.nf_calories !== undefined) {
+        console.log('Food already has nf_ fields, returning as is');
         return food;
     }
     
     // Convert from full_nutrients format to nf_ format
     const converted = { ...food };
     
+    console.log('Full nutrients data:', food.full_nutrients);
     if (food.full_nutrients) {
         food.full_nutrients.forEach(nutrient => {
             switch (nutrient.attr_id) {
