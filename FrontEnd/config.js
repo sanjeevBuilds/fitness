@@ -33,6 +33,7 @@ const TokenManager = {
     // Simple cache for validation results
     _lastValidation: null,
     _validationCache: null,
+    _isValidating: false,
     
     // Get token with fallback
     getToken() {
@@ -51,6 +52,7 @@ const TokenManager = {
         // Clear validation cache when setting new token
         this._validationCache = null;
         this._lastValidation = null;
+        this._isValidating = false;
     },
     
     // Remove token from both storages
@@ -63,27 +65,49 @@ const TokenManager = {
         // Clear validation cache
         this._validationCache = null;
         this._lastValidation = null;
+        this._isValidating = false;
     },
     
     // Check if token exists and is not too old (24 hours)
     isTokenValid() {
         const token = this.getToken();
-        if (!token) return false;
+        if (!token) {
+            console.log('No token found');
+            return false;
+        }
         
         const timestamp = localStorage.getItem('tokenTimestamp') || sessionStorage.getItem('tokenTimestamp');
-        if (!timestamp) return false;
+        if (!timestamp) {
+            console.log('No token timestamp found');
+            return false;
+        }
         
         // Check if token is older than 24 hours
         const tokenAge = Date.now() - parseInt(timestamp);
         const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
         
-        return tokenAge < maxAge;
+        const isValid = tokenAge < maxAge;
+        console.log(`Token age: ${Math.floor(tokenAge / (1000 * 60))} minutes, valid: ${isValid}`);
+        return isValid;
     },
     
     // Simple and reliable token validation
     async validateToken() {
         const token = this.getToken();
-        if (!token) return false;
+        if (!token) {
+            console.log('No token to validate');
+            return false;
+        }
+        
+        // Prevent multiple simultaneous validations
+        if (this._isValidating) {
+            console.log('Validation already in progress, waiting...');
+            // Wait for current validation to complete
+            while (this._isValidating) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return this._validationCache;
+        }
         
         // Check if we have a recent cached result (within 5 minutes)
         const now = Date.now();
@@ -91,6 +115,8 @@ const TokenManager = {
             console.log('Using cached validation result');
             return this._validationCache;
         }
+        
+        this._isValidating = true;
         
         try {
             console.log('Validating token with server...');
@@ -119,7 +145,10 @@ const TokenManager = {
         } catch (error) {
             console.warn('Token validation error:', error);
             // On network error, assume token is still valid to prevent false logouts
+            // But don't cache this assumption
             return true;
+        } finally {
+            this._isValidating = false;
         }
     }
 };
