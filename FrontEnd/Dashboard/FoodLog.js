@@ -494,7 +494,7 @@ async function deleteFoodLogFromBackend(foodLogId) {
         if (response.ok) {
             console.log('Food log deleted successfully:', result);
             // Remove the stored foodLogId
-            localStorage.removeItem('currentFoodLogId');
+            removeFoodLogId();
             
             // Refresh smart quest UI if dashboard is available
             if (window.dashboard && window.dashboard.refreshSmartQuestData) {
@@ -539,7 +539,7 @@ async function syncFoodLogWithBackend(foodLog) {
             
             // Store the backend foodLogId for later deletion
             if (result.foodLogId) {
-                localStorage.setItem('currentFoodLogId', result.foodLogId);
+                saveFoodLogId(result.foodLogId);
                 console.log('Stored foodLogId for deletion:', result.foodLogId);
             }
             
@@ -608,12 +608,13 @@ async function deleteMeal(mealId) {
     
     // If no meals left, delete the food log from backend
     if (currentMeals.length === 0) {
-        const foodLogId = localStorage.getItem('currentFoodLogId');
+        const foodLogId = loadFoodLogId();
         if (foodLogId) {
             console.log('No meals left, deleting food log from backend');
             const deleted = await deleteFoodLogFromBackend(foodLogId);
             if (deleted) {
                 console.log('Food log deleted from backend successfully');
+                removeFoodLogId(); // Also remove from localStorage
             } else {
                 console.error('Failed to delete food log from backend');
             }
@@ -677,12 +678,13 @@ function resetForm() {
 
 // Clear all meals and delete from backend
 async function clearAllMeals() {
-    const foodLogId = localStorage.getItem('currentFoodLogId');
+    const foodLogId = loadFoodLogId();
     if (foodLogId) {
         console.log('Clearing all meals, deleting food log from backend');
         const deleted = await deleteFoodLogFromBackend(foodLogId);
         if (deleted) {
             console.log('Food log deleted from backend successfully');
+            removeFoodLogId(); // Also remove from localStorage
         }
     }
     
@@ -695,12 +697,16 @@ async function clearAllMeals() {
 
 // Save meals to localStorage
 function saveMeals() {
-    localStorage.setItem('foodLogMeals', JSON.stringify(currentMeals));
+    const userKey = getUserSpecificKey('foodLogMeals');
+    localStorage.setItem(userKey, JSON.stringify(currentMeals));
+    console.log(`Saving food log meals for user: ${userKey}`);
 }
 
 // Load meals from localStorage
 function loadStoredMeals() {
-    const stored = localStorage.getItem('foodLogMeals');
+    const userKey = getUserSpecificKey('foodLogMeals');
+    const stored = localStorage.getItem(userKey);
+    console.log(`Loading food log meals for user: ${userKey}`);
     if (stored) {
         currentMeals = JSON.parse(stored);
         refreshMealsUI();
@@ -785,4 +791,46 @@ if (typeof syncStepsQuestAfterFoodLog === 'function') {
   // Replace with actual step count value if available
   const newStepCount = 0; // TODO: get from UI or user input
   syncStepsQuestAfterFoodLog(newStepCount);
+}
+
+// Get user-specific localStorage keys
+function getUserSpecificKey(key) {
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    const userEmail = userData.email || 'unknown';
+    return `${userEmail}_${key}`;
+}
+
+// Save food log meals with user-specific key
+function saveFoodLogMeals(meals) {
+    const userKey = getUserSpecificKey('foodLogMeals');
+    localStorage.setItem(userKey, JSON.stringify(meals));
+    console.log(`Saved food log meals for user: ${userKey}`);
+}
+
+// Load food log meals with user-specific key
+function loadFoodLogMeals() {
+    const userKey = getUserSpecificKey('foodLogMeals');
+    const stored = localStorage.getItem(userKey);
+    console.log(`Loading food log meals for user: ${userKey}`);
+    return stored ? JSON.parse(stored) : [];
+}
+
+// Save food log ID with user-specific key
+function saveFoodLogId(foodLogId) {
+    const userKey = getUserSpecificKey('currentFoodLogId');
+    localStorage.setItem(userKey, foodLogId);
+    console.log(`Saved food log ID for user: ${userKey}`);
+}
+
+// Load food log ID with user-specific key
+function loadFoodLogId() {
+    const userKey = getUserSpecificKey('currentFoodLogId');
+    return localStorage.getItem(userKey);
+}
+
+// Remove food log ID with user-specific key
+function removeFoodLogId() {
+    const userKey = getUserSpecificKey('currentFoodLogId');
+    localStorage.removeItem(userKey);
+    console.log(`Removed food log ID for user: ${userKey}`);
 }

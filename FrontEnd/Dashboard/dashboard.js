@@ -220,9 +220,14 @@ class EnhancedDashboardGamification {
             console.log('User stats - Level:', this.currentUser.level, 'XP:', this.currentUser.exp, 'Coins:', this.currentUser.coins);
 
             // Force update smart quest UI to ensure it displays
-            setTimeout(() => {
+            setTimeout(async () => {
                 this.updateSmartQuestUI();
                 console.log('Forced smart quest UI update completed');
+                
+                // Check and update quest completion status
+                console.log('Checking quest completion status...');
+                await this.checkAndUpdateQuests();
+                console.log('Quest completion check completed');
             }, 100);
 
             await this.updateStatsUI();
@@ -2753,6 +2758,146 @@ class EnhancedDashboardGamification {
 
         const calorieStreakStatValue = document.querySelector('[data-stat="calorie-streak"]');
         if (calorieStreakStatValue) calorieStreakStatValue.textContent = this.currentUser.questStats?.calorieStreak || 0;
+    }
+
+    // Update quest completion status and persist to backend
+    async updateQuestCompletion(questId, isCompleted) {
+        try {
+            console.log(`[QUEST] Updating quest ${questId} completion status to: ${isCompleted}`);
+            
+            // Update local quest status
+            this.questCompletionStatus[questId] = isCompleted;
+            
+            // Get current user data
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const email = userData.email;
+            const token = localStorage.getItem('authToken');
+            
+            if (!email || !token) {
+                console.error('[QUEST] No user email or token found');
+                return false;
+            }
+            
+            // Send update to backend
+            const response = await fetch(getApiUrl('/api/updateQuestCompletion'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    email: email,
+                    questId: questId,
+                    isCompleted: isCompleted,
+                    completedAt: new Date().toISOString()
+                })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log(`[QUEST] Quest completion updated successfully:`, result);
+                
+                // Update UI immediately
+                this.updateSmartQuestUI();
+                
+                // Refresh quest data from backend
+                await this.loadSmartQuestData(email, token);
+                
+                return true;
+            } else {
+                console.error(`[QUEST] Failed to update quest completion: ${response.status}`);
+                return false;
+            }
+        } catch (error) {
+            console.error('[QUEST] Error updating quest completion:', error);
+            return false;
+        }
+    }
+
+    // Check and update quest completion based on current data
+    async checkAndUpdateQuests() {
+        try {
+            console.log('[QUEST] Checking and updating quest completion status...');
+            
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const email = userData.email;
+            const token = localStorage.getItem('authToken');
+            
+            if (!email || !token) {
+                console.error('[QUEST] No user email or token found for quest check');
+                return;
+            }
+            
+            // Get current user data for quest checking
+            const currentUser = this.currentUser;
+            if (!currentUser) {
+                console.error('[QUEST] No current user data found');
+                return;
+            }
+            
+            // Check each quest type
+            const questsToCheck = [
+                { id: 'calories', check: () => this.checkCaloriesQuest(currentUser) },
+                { id: 'protein', check: () => this.checkProteinQuest(currentUser) },
+                { id: 'steps', check: () => this.checkStepsQuest(currentUser) },
+                { id: 'water', check: () => this.checkWaterQuest(currentUser) },
+                { id: 'sleep', check: () => this.checkSleepQuest(currentUser) }
+            ];
+            
+            for (const quest of questsToCheck) {
+                const isCompleted = quest.check();
+                const currentStatus = this.questCompletionStatus[quest.id];
+                
+                // Only update if status changed
+                if (currentStatus !== isCompleted) {
+                    console.log(`[QUEST] Quest ${quest.id} status changed from ${currentStatus} to ${isCompleted}`);
+                    await this.updateQuestCompletion(quest.id, isCompleted);
+                }
+            }
+            
+            // Update UI after all checks
+            this.updateSmartQuestUI();
+            
+        } catch (error) {
+            console.error('[QUEST] Error checking and updating quests:', error);
+        }
+    }
+
+    // Check calories quest completion
+    checkCaloriesQuest(user) {
+        const todayLog = user.foodLogs?.find(log => log.date === this.todayDate);
+        const caloriesConsumed = todayLog ? todayLog.calories || 0 : 0;
+        const targetCalories = this.smartQuests.calories?.target || 2000;
+        return caloriesConsumed >= targetCalories;
+    }
+
+    // Check protein quest completion
+    checkProteinQuest(user) {
+        const todayLog = user.foodLogs?.find(log => log.date === this.todayDate);
+        const proteinConsumed = todayLog ? todayLog.protein || 0 : 0;
+        const targetProtein = this.smartQuests.protein?.target || 50;
+        return proteinConsumed >= targetProtein;
+    }
+
+    // Check steps quest completion
+    checkStepsQuest(user) {
+        const stepsToday = user.stepsToday || 0;
+        const targetSteps = this.smartQuests.steps?.target || 10000;
+        return stepsToday >= targetSteps;
+    }
+
+    // Check water quest completion
+    checkWaterQuest(user) {
+        const waterToday = user.waterIntake || 0;
+        const targetWater = this.smartQuests.water?.target || 8;
+        return waterToday >= targetWater;
+    }
+
+    // Check sleep quest completion
+    checkSleepQuest(user) {
+        const sleepHours = user.sleepHours || 0;
+        const targetSleep = this.smartQuests.sleep?.target || 8;
+        return sleepHours >= targetSleep;
     }
 }
 
