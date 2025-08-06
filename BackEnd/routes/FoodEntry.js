@@ -571,39 +571,10 @@ router.post('/nutrition', async (req, res) => {
       
              console.log(`[FOOD NUTRITION] Retrieved nutrition data from Nutritionix API for: "${query}"`);
        
-       // Convert Nutritionix response to frontend-expected format
-       const convertedFoods = (data.foods || []).map(food => {
-         // Extract nutrition values from full_nutrients array
-         const nutrients = {};
-         if (food.full_nutrients) {
-           food.full_nutrients.forEach(nutrient => {
-             switch (nutrient.attr_id) {
-               case 203: // Protein
-                 nutrients.nf_protein = nutrient.value;
-                 break;
-               case 204: // Total Fat
-                 nutrients.nf_total_fat = nutrient.value;
-                 break;
-               case 205: // Total Carbohydrate
-                 nutrients.nf_total_carbohydrate = nutrient.value;
-                 break;
-               case 208: // Calories
-                 nutrients.nf_calories = nutrient.value;
-                 break;
-             }
-           });
-         }
-         
-         return {
-           ...food,
-           ...nutrients
-         };
-       });
-       
        res.json({
          success: true,
-         foods: convertedFoods,
-         total: convertedFoods.length,
+         foods: data.foods || [],
+         total: data.foods ? data.foods.length : 0,
          source: 'nutritionix'
        });
 
@@ -622,10 +593,12 @@ router.post('/nutrition', async (req, res) => {
            photo: { thumb: null },
            tags: { item: searchTerm },
            brand_name: 'Generic',
-           nf_calories: 300,
-           nf_protein: 10,
-           nf_total_carbohydrate: 50,
-           nf_total_fat: 5
+           full_nutrients: [
+             { attr_id: 203, value: 100 }, // Protein
+             { attr_id: 204, value: 10 },  // Fat
+             { attr_id: 205, value: 200 }, // Carbs
+             { attr_id: 208, value: 1300 } // Calories
+           ]
          }]
        };
       
