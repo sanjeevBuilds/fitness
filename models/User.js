@@ -216,7 +216,10 @@ const UserSchema = new mongoose.Schema({
   foodLogs: [FoodLogSchema],
   mealPlan: MealPlanSchema,
   postureScans: [PostureScanSchema],
-  insights: [InsightSchema],
+  insights: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Insight'
+  }],
   friends: [{
     email: String,
     profileName: String,
