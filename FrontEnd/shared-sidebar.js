@@ -287,7 +287,7 @@ class SharedSidebarManager {
         // Clear existing content
         sidebar.innerHTML = '';
 
-        // Create user profile section
+        // Create user profile section - EXACT ORIGINAL STRUCTURE
         const userProfile = document.createElement('div');
         userProfile.className = 'user-profile';
         
@@ -298,38 +298,24 @@ class SharedSidebarManager {
         avatar.className = 'avatar';
         avatar.id = 'sidebar-avatar';
         
-        // Create user info container
-        const userInfo = document.createElement('div');
-        userInfo.className = 'user-info';
-        
-        // Create user name (actual username, not title)
+        // Create user name (actual username, not title) - NO WRAPPER DIV
         const userName = document.createElement('h3');
         userName.className = 'user-name';
         userName.id = 'sidebar-username';
         const displayName = this.userData.username || this.userData.profileName || this.userData.fullName || 'User';
         userName.textContent = displayName;
-        userName.style.display = 'block'; // Ensure it's visible
-        userName.style.visibility = 'visible'; // Ensure it's visible
         console.log('Setting username to:', displayName, 'from userData:', this.userData);
         
-        // Create title display (separate from username)
-        const titleDisplay = document.createElement('div');
-        titleDisplay.className = 'title-display';
-        titleDisplay.id = 'sidebar-title-display';
-        titleDisplay.style.display = 'none'; // Hidden by default, will be shown if title is selected
-        
-        // Create level badge
+        // Create level badge - NO WRAPPER DIV
         const levelBadge = document.createElement('span');
         levelBadge.className = 'level-badge user-level';
         levelBadge.id = 'sidebar-userlevel';
         levelBadge.textContent = this.userData.level ? `Level ${this.userData.level}` : 'Level 1';
         
-        // Assemble user profile
-        userInfo.appendChild(userName);
-        userInfo.appendChild(titleDisplay); // Title display below username
-        userInfo.appendChild(levelBadge);
+        // Assemble user profile - ORIGINAL STRUCTURE: avatar, h3, span (NO EXTRA DIVS)
         userProfile.appendChild(avatar);
-        userProfile.appendChild(userInfo);
+        userProfile.appendChild(userName);
+        userProfile.appendChild(levelBadge);
         
         // Create navigation menu
         const navMenu = document.createElement('nav');
@@ -456,33 +442,16 @@ class SharedSidebarManager {
         // Wait a bit for DOM elements to be created
         setTimeout(() => {
             const sidebarUsername = document.getElementById('sidebar-username') || document.querySelector('.user-name');
-            const titleDisplay = document.getElementById('sidebar-title-display');
             console.log('Looking for username element:', sidebarUsername);
-            console.log('Looking for title display element:', titleDisplay);
             
             if (!sidebarUsername) {
                 console.log('Sidebar username element not found, retrying...');
                 return;
             }
 
-            const selectedTitle = this.availableTitles.find(t => t.id === this.selectedTitle);
-            // Badge selection removed - only titles are used now
-
             // Always show the actual username
             const displayName = this.userData.username || this.userData.profileName || this.userData.fullName || 'User';
             sidebarUsername.textContent = displayName;
-            
-            // Handle title display separately
-            if (titleDisplay) {
-                if (selectedTitle) {
-                    titleDisplay.innerHTML = `${selectedTitle.icon} ${selectedTitle.name}`;
-                    titleDisplay.style.display = 'block';
-                } else {
-                    titleDisplay.style.display = 'none';
-                }
-            }
-            
-
 
             // Update avatar if available
             const avatar = document.querySelector('.avatar');
