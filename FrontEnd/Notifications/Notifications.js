@@ -113,7 +113,7 @@ class NotificationManager {
             const card = document.createElement('div');
             card.className = 'friend-request-card';
             card.innerHTML = `
-                <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.username || req.profileName}" class="friend-avatar">
+                <img src="../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.username || req.profileName}" class="friend-avatar">
                 <div class="friend-info">
                     <div class="friend-name">${req.username || req.profileName}</div>
                     <div class="friend-email">${req.email}</div>
@@ -179,7 +179,7 @@ class NotificationManager {
                 const timeAgo = this.getTimeAgo(activity.timestamp || activity.date);
                 card.innerHTML = `
                     <div class="friend-activity">
-                        <img src="../../assets/${activity.avatar || 'avator.jpeg'}" alt="${activity.friendName}" class="friend-avatar" onerror="this.src='../../assets/avator.jpeg'">
+                        <img src="../assets/${activity.avatar || 'avator.jpeg'}" alt="${activity.friendName}" class="friend-avatar" onerror="this.src='../assets/avator.jpeg'">
                         <div class="activity-content">
                             <div class="activity-details">
                                 <span class="friend-name">${activity.friendName}</span>

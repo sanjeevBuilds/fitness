@@ -233,7 +233,7 @@ class SettingsManager {
                 selectedAvatar = null;
                 avatarFilenames.forEach(filename => {
                     const img = document.createElement('img');
-                    img.src = `../../assets/${filename}`;
+                    img.src = `../assets/${filename}`;
                     img.alt = filename;
                     img.className = 'avatar-choice';
                     img.style.width = '64px';
@@ -280,7 +280,7 @@ class SettingsManager {
                         // Update localStorage and sidebar avatar
                         localStorage.setItem('userData', JSON.stringify({ ...userData, avatar: selectedAvatar }));
                         const sidebarAvatar = document.getElementById('sidebar-avatar');
-                        if (sidebarAvatar) sidebarAvatar.src = `../../assets/${selectedAvatar}`;
+                        if (sidebarAvatar) sidebarAvatar.src = `../assets/${selectedAvatar}`;
                         avatarOptionsDiv.style.display = 'none';
                         confirmAvatarBtn.style.display = 'none';
                         this.showToast('Avatar updated!', 'success');
@@ -946,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     if (userData && userData.avatar) {
         const sidebarAvatar = document.getElementById('sidebar-avatar');
-        if (sidebarAvatar) sidebarAvatar.src = `../../assets/${userData.avatar}`;
+        if (sidebarAvatar) sidebarAvatar.src = `../assets/${userData.avatar}`;
     }
     
     // Sidebar display update removed - only titles are used now

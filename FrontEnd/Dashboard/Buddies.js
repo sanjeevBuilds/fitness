@@ -11,7 +11,7 @@ console.log('Buddies.js loaded successfully');
         const avatar = document.getElementById('sidebar-avatar');
         const name = document.getElementById('sidebar-username');
         const level = document.getElementById('sidebar-userlevel');
-        if (avatar && userData.avatar) avatar.src = '../../assets/' + userData.avatar;
+        if (avatar && userData.avatar) avatar.src = '../assets/' + userData.avatar;
         if (name && userData.profileName) name.textContent = userData.profileName;
         if (level && userData.level) level.textContent = 'Level ' + userData.level;
     }
@@ -76,12 +76,12 @@ class ActivityManager {
     }
 
     createActivityHTML(activity) {
-        const avatarSrc = activity.avatar ? `../../assets/${activity.avatar}` : '../../assets/avator.jpeg';
+        const avatarSrc = activity.avatar ? `../assets/${activity.avatar}` : '../assets/avator.jpeg';
         const timeAgo = this.getTimeAgo(new Date(activity.timestamp));
         
         return `
             <div class="activity-item" data-activity-id="${activity._id}">
-                <img src="${avatarSrc}" alt="${activity.friendName}" class="activity-avatar" onerror="this.src='../../assets/avator.jpeg'">
+                <img src="${avatarSrc}" alt="${activity.friendName}" class="activity-avatar" onerror="this.src='../assets/avator.jpeg'">
                 <div class="activity-content">
                     <span class="activity-name">${activity.friendName}</span>
                     <span class="activity-action">${activity.action}</span>
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     avatarWrap.style.display = 'inline-block';
                     // Avatar
                     const avatar = document.createElement('img');
-                    avatar.src = `../../assets/${user.avatar || 'avator1.jpeg'}`;
+                    avatar.src = `../assets/${user.avatar || 'avator1.jpeg'}`;
                     avatar.alt = user.profileName || user.fullName || user.username || 'User';
                     avatar.className = 'friend-avatar';
                     avatar.style.width = '56px';
@@ -824,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const friendDiv = document.createElement('div');
                 friendDiv.className = 'friend-item';
                 friendDiv.innerHTML = `
-                    <img src="../../assets/${friend.avatar || 'avator1.jpeg'}" alt="${friend.profileName || friend.email}" class="friend-avatar">
+                    <img src="../assets/${friend.avatar || 'avator1.jpeg'}" alt="${friend.profileName || friend.email}" class="friend-avatar">
                     <div class="friend-info">
                         <h3>${friend.username || friend.profileName || friend.email}</h3>
                         <span class="friend-level">Level ${friend.level || 1}</span>
@@ -931,7 +931,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 reqDiv.className = 'request-item';
                 reqDiv.setAttribute('data-email', req.email);
                 reqDiv.innerHTML = `
-                    <img src="../../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
+                    <img src="../assets/${req.avatar || 'avator1.jpeg'}" alt="${req.profileName || req.email}" class="request-avatar">
                     <div class="request-info">
                         <h3>${req.username || req.profileName || req.email}</h3>
                         <span class="level-tag">Friend Request</span>
@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tr.innerHTML = `
                 <td>${start + idx + 1}</td>
                 <td class="user-cell">
-                    <img src="../../assets/${user.avatar || 'avator1.jpeg'}" alt="${displayName}" class="small-avatar">
+                    <img src="../assets/${user.avatar || 'avator1.jpeg'}" alt="${displayName}" class="small-avatar">
                     ${displayName}
                 </td>
                 <td>${user.level || 1}</td>
