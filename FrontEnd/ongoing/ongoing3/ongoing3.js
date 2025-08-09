@@ -1,7 +1,11 @@
 // --- JWT Auth Check (Protected Page) ---
 (async function() {
     const redirectToLogin = () => {
-        window.location.href = '/Login/login.html';
+        if (typeof navigateTo === 'function') {
+            navigateTo('/Login/login.html');
+        } else {
+            window.location.href = '/Login/login.html';
+        }
     };
     
     const token = localStorage.getItem('authToken');
@@ -67,7 +71,11 @@ document.getElementById("diet-form").addEventListener("submit", async function (
       return;
     }
     // Redirect to next onboarding step
-    window.location.href = "../ongoing4/ongoing4.html";
+    if (typeof navigateTo === 'function') {
+        navigateTo('/ongoing/ongoing4/ongoing4.html');
+    } else {
+        window.location.href = "../ongoing4/ongoing4.html";
+    }
   } catch (err) {
     alert('Server error. Please try again.');
   }
@@ -92,5 +100,9 @@ function signOut() {
     alert('Signed out successfully!');
     
     // Redirect to home page
-    window.location.href = '../../Home/home.html';
+    if (typeof navigateTo === 'function') {
+        navigateTo('/Home/home.html');
+    } else {
+        window.location.href = '../../Home/home.html';
+    }
 }

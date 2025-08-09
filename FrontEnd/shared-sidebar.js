@@ -293,7 +293,7 @@ class SharedSidebarManager {
         
         // Create avatar
         const avatar = document.createElement('img');
-        avatar.src = this.userData.avatar ? `../../assets/${this.userData.avatar}` : '../../assets/avator.jpeg';
+        avatar.src = this.userData.avatar ? this.getAssetPath(this.userData.avatar) : this.getAssetPath('avator.jpeg');
         avatar.alt = 'User Avatar';
         avatar.className = 'avatar';
         avatar.id = 'sidebar-avatar';
@@ -430,6 +430,28 @@ class SharedSidebarManager {
         return filename.replace('.html', '');
     }
 
+    // Helper method to get correct asset path based on current page location
+    getAssetPath(assetName) {
+        const currentPath = window.location.pathname;
+        const pathParts = currentPath.split('/').filter(part => part !== '' && part !== 'index.html');
+        
+        // Calculate how many levels deep we are from the FrontEnd root
+        let depth = 0;
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+            if (pathParts[i] !== pathParts[pathParts.length - 1]) {
+                depth++;
+            }
+        }
+        
+        // If we're in a subfolder, we need to go up one level
+        if (pathParts.length > 1 || (pathParts.length === 1 && !currentPath.endsWith('index.html'))) {
+            depth = 1;
+        }
+        
+        const relativePath = '../'.repeat(depth);
+        return `${relativePath}assets/${assetName}`;
+    }
+
     updateSidebarDisplay() {
         // Wait a bit for DOM elements to be created
         setTimeout(() => {
@@ -460,21 +482,12 @@ class SharedSidebarManager {
                 }
             }
             
-            // Keep username styling simple and normal
-            sidebarUsername.style.background = 'none';
-            sidebarUsername.style.padding = '0';
-            sidebarUsername.style.borderRadius = '0';
-            sidebarUsername.style.border = 'none';
-            sidebarUsername.style.fontWeight = '600';
-            sidebarUsername.style.fontSize = '1.1rem';
-            sidebarUsername.style.textAlign = 'center';
-            sidebarUsername.style.margin = '0';
-            sidebarUsername.style.boxShadow = 'none';
+
 
             // Update avatar if available
             const avatar = document.querySelector('.avatar');
             if (avatar && this.userData.avatar) {
-                avatar.src = `../../assets/${this.userData.avatar}`;
+                avatar.src = this.getAssetPath(this.userData.avatar);
             }
 
             // Update level badge if available

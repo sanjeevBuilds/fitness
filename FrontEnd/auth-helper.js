@@ -103,7 +103,11 @@
     
     function redirectToLogin() {
         console.log('Redirecting to login page');
-        window.location.href = '/Login/login.html';
+        if (typeof navigateTo === 'function') {
+            navigateTo('/Login/login.html');
+        } else {
+            window.location.href = '/Login/login.html';
+        }
     }
     
     // Run authentication check when DOM is ready, with a delay to ensure scripts are loaded

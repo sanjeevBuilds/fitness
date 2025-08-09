@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(`Login successful!\n\nWelcome, ${data.profileName}!\nLevel: ${data.level}\nXP: ${data.xp}`);
                 
                 // Redirect to dashboard
-                window.location.href = '/Dashboard/dashbaord.html';
+                window.location.href = '../Dashboard/dashbaord.html';
                 
             } else {
                 // Error

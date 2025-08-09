@@ -173,8 +173,12 @@
             // Show a brief message
             alert('Signed out successfully!');
             
-                         // Redirect to home page
-             window.location.href = '/Home/home.html';
+            // Redirect to home page
+             if (typeof navigateTo === 'function') {
+                 navigateTo('/Home/home.html');
+             } else {
+                 window.location.href = '/Home/home.html';
+             }
         }
     </script>
 </body>

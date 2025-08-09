@@ -5,7 +5,11 @@ console.log('=== INITIALIZING DASHBOARD ===');
 // --- JWT Auth Check (Protected Page) ---
 (async function() {
     const redirectToLogin = () => {
+        if (typeof navigateTo === 'function') {
+            navigateTo('/Login/login.html');
+        } else {
         window.location.href = '/Login/login.html';
+        }
     };
     
     const token = localStorage.getItem('authToken');
@@ -2484,7 +2488,7 @@ class EnhancedDashboardGamification {
             'quest': '🎯',
             'levelup': '⭐',
             'badge': '🏅',
-            'title': '🏆',
+            'title': '<i class="fas fa-trophy"></i>',
             'challenge': '🎮',
             'purchase': '🛒'
         };
@@ -3159,7 +3163,11 @@ document.head.appendChild(style);
     
     const redirectToLogin = () => {
         console.log('[AUTH CHECK] Redirecting to login...');
+        if (typeof navigateTo === 'function') {
+            navigateTo('/Login/login.html');
+        } else {
         window.location.href = '/Login/login.html';
+        }
     };
 
     const token = localStorage.getItem('authToken');

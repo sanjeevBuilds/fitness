@@ -429,11 +429,19 @@
 
         // Navigation functions
         function goToLogin() {
-            window.location.href = '/Login/login.html';
+            if (typeof navigateTo === 'function') {
+                navigateTo('/Login/login.html');
+            } else {
+                window.location.href = '/Login/login.html';
+            }
         }
 
         function goToDashboard() {
-            window.location.href = '/Dashboard/dashbaord.html';
+            if (typeof navigateTo === 'function') {
+                navigateTo('Dashboard/dashbaord.html');
+            } else {
+                window.location.href = 'Dashboard/dashbaord.html';
+            }
         }
 
         // Export debug data

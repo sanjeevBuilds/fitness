@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Href Config</title>
+</head>
+<body>
+    <h1>Testing Href Configuration</h1>
+    
+    <nav>
+        <a href="/Signup/Signup.html" class="signup">Sign Up (Original)</a>
+        <a href="/Login/login.html" class="login">Log In (Original)</a>
+        <a href="/Support/Support.html" class="support">Support (Original)</a>
+    </nav>
+    
+    <div id="test-results">
+        <h2>Test Results:</h2>
+        <div id="environment"></div>
+        <div id="depth"></div>
+        <div id="signup-href"></div>
+        <div id="login-href"></div>
+        <div id="support-href"></div>
+    </div>
+    
+    <script src="href-config.js"></script>
+    <script>
+        // Test the href configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Testing HREF_CONFIG...');
+            
+            // Display test results
+            document.getElementById('environment').innerHTML = 
+                '<strong>Environment:</strong> ' + (HREF_CONFIG.isDevelopment() ? 'Development' : 'Production');
+            
+            document.getElementById('depth').innerHTML = 
+                '<strong>Current Depth:</strong> ' + HREF_CONFIG.getCurrentFolderDepth();
+            
+            document.getElementById('signup-href').innerHTML = 
+                '<strong>Signup Href:</strong> ' + HREF_CONFIG.getHref('SIGNUP');
+            
+            document.getElementById('login-href').innerHTML = 
+                '<strong>Login Href:</strong> ' + HREF_CONFIG.getHref('LOGIN');
+            
+            document.getElementById('support-href').innerHTML = 
+                '<strong>Support Href:</strong> ' + HREF_CONFIG.getHref('SUPPORT');
+            
+            // Check if links were updated
+            setTimeout(() => {
+                const signupLink = document.querySelector('a[href*="Signup"]');
+                const loginLink = document.querySelector('a[href*="Login"]');
+                const supportLink = document.querySelector('a[href*="Support"]');
+                
+                console.log('Signup link href:', signupLink ? signupLink.href : 'Not found');
+                console.log('Login link href:', loginLink ? loginLink.href : 'Not found');
+                console.log('Support link href:', supportLink ? supportLink.href : 'Not found');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

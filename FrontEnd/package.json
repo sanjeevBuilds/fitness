@@ -4,7 +4,7 @@
   "description": "HealthQuest Frontend - Static HTML/CSS/JS files",
   "scripts": {
     "build": "echo 'Frontend is already built'",
-    "start": "npx http-server Public -p 3000 -o && start http://localhost:3000/Home/home.html"
+    "start": "npx http-server . -p 3000 -o /Home/home.html"
   },
   "engines": {
     "node": ">=16.0.0"

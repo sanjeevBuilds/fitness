@@ -3,7 +3,10 @@ const API_CONFIG = {
     // Change this URL when deploying
     // Local development: 'http://localhost:8000'
     // Production: 'https://your-app-name.onrender.com'
-    BASE_URL: 'https://fitness-ewwi.onrender.com',
+    BASE_URL: 'http://localhost:8000',
+    // Base path for static site routing (use '' when hosted at domain root, e.g., Vercel)
+    // If your frontend is served under a subpath (e.g., https://site.com/fitness), set APP_BASE_PATH to '/fitness'
+    APP_BASE_PATH: '',
     
     // API endpoints
     ENDPOINTS: {
@@ -26,6 +29,59 @@ const API_CONFIG = {
 // Helper function to get full API URL
 function getApiUrl(endpoint) {
     return API_CONFIG.BASE_URL + endpoint;
+}
+
+// Resolve a frontend route or asset path with the configured base path
+function withBase(path) {
+    if (!path || typeof path !== 'string') return path;
+    const cleanBase = (API_CONFIG.APP_BASE_PATH || '').replace(/\/$/, '');
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${cleanBase}${cleanPath}` || cleanPath;
+}
+
+// Navigate to a path within the app respecting base path
+function navigateTo(path) {
+    window.location.href = withBase(path);
+}
+
+// Automatically rewrite links and asset src attributes that start with '/'
+function rewriteAppLinksAndAssets() {
+    try {
+        const prefix = (API_CONFIG.APP_BASE_PATH || '').replace(/\/$/, '');
+        if (!prefix || prefix === '') return; // No rewrite needed when served at root
+
+        // Anchors
+        document.querySelectorAll("a[href^='/' i]").forEach(a => {
+            const href = a.getAttribute('href');
+            if (href && !href.startsWith('//')) a.setAttribute('href', withBase(href));
+        });
+        // Images
+        document.querySelectorAll("img[src^='/' i]").forEach(img => {
+            const src = img.getAttribute('src');
+            if (src && !src.startsWith('//')) img.setAttribute('src', withBase(src));
+        });
+        // Scripts
+        document.querySelectorAll("script[src^='/' i]").forEach(s => {
+            const src = s.getAttribute('src');
+            if (src && !src.startsWith('//')) s.setAttribute('src', withBase(src));
+        });
+        // Links (stylesheets)
+        document.querySelectorAll("link[href^='/' i]").forEach(l => {
+            const href = l.getAttribute('href');
+            if (href && !href.startsWith('//')) l.setAttribute('href', withBase(href));
+        });
+    } catch (e) {
+        console.warn('Link/asset rewrite skipped:', e);
+    }
+}
+
+// Run rewrite after DOM is ready
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', rewriteAppLinksAndAssets);
+    } else {
+        rewriteAppLinksAndAssets();
+    }
 }
 
 // Simple and Reliable Token Manager
@@ -155,5 +211,5 @@ const TokenManager = {
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { API_CONFIG, getApiUrl, TokenManager };
-} 
+    module.exports = { API_CONFIG, getApiUrl, TokenManager, withBase, navigateTo };
+}
